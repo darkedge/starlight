@@ -5,7 +5,7 @@ void game::Init() {
 	input::Init();
 }
 
-void ::MoveCamera() {
+void MoveCamera() {
 
 }
 

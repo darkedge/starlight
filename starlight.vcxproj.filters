@@ -2,14 +2,50 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="imgui_impl_dx11.cpp" />
     <ClCompile Include="game.cpp" />
     <ClCompile Include="input.cpp" />
+    <ClCompile Include="external\imgui-1.47\imgui_impl_dx11.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="external\enet-1.3.13\packet.c">
+      <Filter>ENet</Filter>
+    </ClCompile>
+    <ClCompile Include="external\enet-1.3.13\peer.c">
+      <Filter>ENet</Filter>
+    </ClCompile>
+    <ClCompile Include="external\enet-1.3.13\protocol.c">
+      <Filter>ENet</Filter>
+    </ClCompile>
+    <ClCompile Include="external\enet-1.3.13\win32.c">
+      <Filter>ENet</Filter>
+    </ClCompile>
+    <ClCompile Include="external\enet-1.3.13\callbacks.c">
+      <Filter>ENet</Filter>
+    </ClCompile>
+    <ClCompile Include="external\enet-1.3.13\compress.c">
+      <Filter>ENet</Filter>
+    </ClCompile>
+    <ClCompile Include="external\enet-1.3.13\host.c">
+      <Filter>ENet</Filter>
+    </ClCompile>
+    <ClCompile Include="external\enet-1.3.13\list.c">
+      <Filter>ENet</Filter>
+    </ClCompile>
+    <ClCompile Include="external\enet-1.3.13\unix.c">
+      <Filter>ENet</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="imgui_impl_dx11.h" />
     <ClInclude Include="starlight_generated.h" />
     <ClInclude Include="game.h" />
     <ClInclude Include="input.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="ImGui">
+      <UniqueIdentifier>{e741359c-33de-4e60-b582-c8171e3fbc64}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ENet">
+      <UniqueIdentifier>{13de547b-19fe-494f-8c65-b52e2735be56}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>
