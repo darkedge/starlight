@@ -2,5 +2,14 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="imgui_impl_dx11.cpp" />
+    <ClCompile Include="game.cpp" />
+    <ClCompile Include="input.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="imgui_impl_dx11.h" />
+    <ClInclude Include="starlight_generated.h" />
+    <ClInclude Include="game.h" />
+    <ClInclude Include="input.h" />
   </ItemGroup>
 </Project>
