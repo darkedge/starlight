@@ -1,6 +1,7 @@
 #include "game.h"
 #include "input.h"
 #include "log.h"
+#include <process.h>
 
 void game::Init() {
 	input::Init();

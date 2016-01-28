@@ -1,9 +1,4 @@
 #ifdef _MSC_VER
-#define NOMINMAX
-#define STRICT
-#endif
-
-#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable:4456)
 #endif
