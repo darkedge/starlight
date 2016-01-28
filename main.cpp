@@ -153,7 +153,7 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	return DefWindowProcW(hWnd, msg, wParam, lParam);
 }
 
-int main(int, char**)
+int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
 {
 	// Create application window
 	WNDCLASSEX wc = { sizeof(WNDCLASSEX), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandleW(nullptr), nullptr, LoadCursorW(nullptr, IDC_ARROW), nullptr, nullptr, L"ImGui Example", nullptr };
@@ -180,13 +180,16 @@ int main(int, char**)
 	ImGuiIO& io = ImGui::GetIO();
 	//io.Fonts->AddFontDefault();
 	//io.Fonts->AddFontFromFileTTF("../../extra_fonts/Cousine-Regular.ttf", 15.0f);
-	io.Fonts->AddFontFromFileTTF("external/imgui-1.47/extra_fonts/DroidSans.ttf", 16.0f);
+	io.Fonts->AddFontFromFileTTF("external/imgui-1.47/extra_fonts/DroidSans.ttf", 16.0f, nullptr, io.Fonts->GetGlyphRangesCyrillic());
 	//io.Fonts->AddFontFromFileTTF("../../extra_fonts/ProggyClean.ttf", 13.0f);
 	//io.Fonts->AddFontFromFileTTF("../../extra_fonts/ProggyTiny.ttf", 10.0f);
 	//io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
+	//io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\consola.ttf", 14.0f, nullptr, io.Fonts->GetGlyphRangesCyrillic());
 
+#if 0
 	bool show_test_window = true;
 	bool show_another_window = false;
+#endif
 	ImVec4 clear_col = ImColor(114, 144, 154);
 
 	game::Init();
@@ -204,6 +207,7 @@ int main(int, char**)
 		}
 		ImGui_ImplDX11_NewFrame();
 
+#if 0
 		// 1. Show a simple window
 		// Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets appears in a window automatically called "Debug"
 		{
@@ -231,6 +235,7 @@ int main(int, char**)
 			ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiSetCond_FirstUseEver);     // Normally user code doesn't need/want to call it because positions are saved in .ini file anyway. Here we just want to make the demo initial state a bit more friendly!
 			ImGui::ShowTestWindow(&show_test_window);
 		}
+#endif
 
 		// Rendering
 		g_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView, (float*)&clear_col);

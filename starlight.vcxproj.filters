@@ -34,11 +34,13 @@
     <ClCompile Include="external\enet-1.3.13\unix.c">
       <Filter>ENet</Filter>
     </ClCompile>
+    <ClCompile Include="log.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="starlight_generated.h" />
     <ClInclude Include="game.h" />
     <ClInclude Include="input.h" />
+    <ClInclude Include="log.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ImGui">
