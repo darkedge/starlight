@@ -1,42 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="external\imgui-1.47\imgui_impl_dx11.cpp">
-      <Filter>ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="external\enet-1.3.13\packet.c">
-      <Filter>ENet</Filter>
-    </ClCompile>
-    <ClCompile Include="external\enet-1.3.13\peer.c">
-      <Filter>ENet</Filter>
-    </ClCompile>
-    <ClCompile Include="external\enet-1.3.13\protocol.c">
-      <Filter>ENet</Filter>
-    </ClCompile>
-    <ClCompile Include="external\enet-1.3.13\win32.c">
-      <Filter>ENet</Filter>
-    </ClCompile>
-    <ClCompile Include="external\enet-1.3.13\callbacks.c">
-      <Filter>ENet</Filter>
-    </ClCompile>
-    <ClCompile Include="external\enet-1.3.13\compress.c">
-      <Filter>ENet</Filter>
-    </ClCompile>
-    <ClCompile Include="external\enet-1.3.13\host.c">
-      <Filter>ENet</Filter>
-    </ClCompile>
-    <ClCompile Include="external\enet-1.3.13\list.c">
-      <Filter>ENet</Filter>
-    </ClCompile>
-    <ClCompile Include="external\enet-1.3.13\unix.c">
-      <Filter>ENet</Filter>
-    </ClCompile>
     <ClCompile Include="starlight_input.cpp" />
     <ClCompile Include="starlight_log.cpp" />
     <ClCompile Include="starlight_game.cpp" />
     <ClCompile Include="starlight_windows.cpp" />
     <ClCompile Include="starlight_transform.cpp" />
     <ClCompile Include="starlight_renderer.cpp" />
+    <ClCompile Include="starlight_external.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="starlight_generated.h" />
@@ -45,14 +16,6 @@
     <ClInclude Include="starlight_log.h" />
     <ClInclude Include="starlight_transform.h" />
     <ClInclude Include="starlight_renderer.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <Filter Include="ImGui">
-      <UniqueIdentifier>{e741359c-33de-4e60-b582-c8171e3fbc64}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ENet">
-      <UniqueIdentifier>{13de547b-19fe-494f-8c65-b52e2735be56}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="starlight.fbs" />

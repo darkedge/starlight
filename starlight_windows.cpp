@@ -1,24 +1,16 @@
 // Windows-specific platform functions.
 #ifdef _WIN32
 
-#include "imgui.cpp"
-
-// These are temporary, ImGui draw layer needs to be rewritten
-// and the demo file will be removed once I actually use ImGui
-#include "imgui_draw.cpp"
-
-#include <imgui.h>
-#include "imgui_impl_dx11.h"
-#include <d3d11.h>
-#include <d3dcompiler.h>
-#define DIRECTINPUT_VERSION 0x0800
-#include <dinput.h>
+// ImGui implementation
 
 #include "starlight_game.h"
 #include "starlight_renderer.h"
 
-//#define NOWIDE_MSVC
-#include <nowide/convert.hpp>
+#include <imgui.h>
+// These are temporary, ImGui draw layer needs to be rewritten
+// and the demo file will be removed once I actually use ImGui
+#include "imgui_impl_dx11.h"
+
 
 // Data
 
