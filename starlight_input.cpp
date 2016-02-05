@@ -1,6 +1,4 @@
 #include "starlight_input.h"
-//#include <Windows.h>
-//#include <WinUser.h>
 
 #define NUM_KEYBOARD_KEYS 0x100
 #define NUM_MOUSE_BUTTONS 5

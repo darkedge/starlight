@@ -6,7 +6,6 @@
 // These are temporary, ImGui draw layer needs to be rewritten
 // and the demo file will be removed once I actually use ImGui
 #include "imgui_draw.cpp"
-#include "imgui_demo.cpp"
 
 #include <imgui.h>
 #include "imgui_impl_dx11.h"
@@ -19,7 +18,7 @@
 #include "starlight_renderer.h"
 
 //#define NOWIDE_MSVC
-#include "nowide/convert.hpp"
+#include <nowide/convert.hpp>
 
 // Data
 
