@@ -1,5 +1,11 @@
 // Unity build file for external libraries
 
+// Wrapper header for Windows to prevent warning spam
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable:4245 4456 4701)
+#endif
+
 // ENet
 #include "external/enet-1.3.13/callbacks.c"
 #include "external/enet-1.3.13/compress.c"
@@ -15,3 +21,7 @@
 #include "imgui.cpp"
 #include "imgui_draw.cpp"
 #include "imgui_impl_dx11.cpp"
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif

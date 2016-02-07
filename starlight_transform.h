@@ -1,5 +1,5 @@
 #pragma once
-#include <glm/gtc/quaternion.hpp>
+#include "starlight_glm.h"
 
 class Transform
 {
@@ -15,6 +15,9 @@ public:
 	glm::mat4 GetLocalToWorldMatrix();
 	// Returns the matrix that transforms a point from world space into local space.
 	glm::mat4 GetWorldToLocalMatrix();
+
+	// Create a view matrix.
+	glm::mat4 GetViewMatrix();
 
 	// Returns the position of the transform relative to the parent transform.
 	glm::vec3 GetLocalPosition() const { return m_localPosition; }

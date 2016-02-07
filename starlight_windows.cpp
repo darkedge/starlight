@@ -1,3 +1,4 @@
+#include "starlight_platform.h"
 // Windows-specific platform functions.
 #ifdef _WIN32
 
@@ -7,9 +8,21 @@
 #include "starlight_renderer.h"
 
 #include <imgui.h>
-// These are temporary, ImGui draw layer needs to be rewritten
-// and the demo file will be removed once I actually use ImGui
 #include "imgui_impl_dx11.h"
+
+static HWND s_hwnd = nullptr;
+
+HWND platform::GetHWND() {
+	return s_hwnd;
+}
+
+glm::uvec2 platform::GetWindowSize() {
+	RECT clientRect;
+	GetClientRect(s_hwnd, &clientRect);
+	assert(clientRect.right >= clientRect.left);
+	assert(clientRect.bottom >= clientRect.top);
+	return glm::uvec2(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top);
+}
 
 
 // Data
@@ -41,8 +54,10 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	return DefWindowProcW(hWnd, msg, wParam, lParam);
 }
 
-int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
+//int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
+int main()
 {
+	auto className = L"ImGui Example";
 	// Create application window
 	WNDCLASSEX wc = {
 		sizeof(WNDCLASSEX),
@@ -55,14 +70,14 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 		LoadCursorW(nullptr, IDC_ARROW),
 		nullptr,
 		nullptr,
-		L"ImGui Example",
+		className,
 		nullptr
 	};
 	RegisterClassExW(&wc);
 
-	HWND hwnd = CreateWindowW(
-		L"ImGui Example",
-		L"ImGui DirectX11 Example",
+	s_hwnd = CreateWindowW(
+		className,
+		L"This is the title bar",
 		WS_OVERLAPPEDWINDOW,
 		100,
 		100,
@@ -74,21 +89,21 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 		nullptr
 	);
 
-	if (renderer::Init(hwnd) < 0)
+	// Show the window
+	ShowWindow(s_hwnd, SW_SHOWDEFAULT);
+	UpdateWindow(s_hwnd);
+
+	if (renderer::Init() < 0)
 	{
 		// Failed to created D3D device
 		renderer::Destroy();
-		UnregisterClassW(L"ImGui Example", wc.hInstance);
+		UnregisterClassW(className, wc.hInstance);
 		return 1;
 	}
 
-	// Show the window
-	ShowWindow(hwnd, SW_SHOWDEFAULT);
-	UpdateWindow(hwnd);
-
 	// Setup ImGui binding (TODO: Write my own version)
 	{
-		ImGui_ImplDX11_Init(hwnd, renderer::GetDevice(), renderer::GetDeviceContext());
+		ImGui_ImplDX11_Init(s_hwnd, renderer::GetDevice(), renderer::GetDeviceContext());
 
 		// Load Fonts
 		ImGuiIO& io = ImGui::GetIO();
@@ -121,7 +136,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
 	ImGui_ImplDX11_Shutdown();
 	renderer::Destroy();
-	UnregisterClassW(L"ImGui Example", wc.hInstance);
+	UnregisterClassW(className, wc.hInstance);
 
 	return 0;
 }

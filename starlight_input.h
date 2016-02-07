@@ -1,5 +1,5 @@
 #pragma once
-#include <glm/glm.hpp>
+#include "starlight_glm.h"
 
 namespace input {
 	bool GetKey(int key);

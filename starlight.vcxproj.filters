@@ -16,13 +16,15 @@
     <ClInclude Include="starlight_log.h" />
     <ClInclude Include="starlight_transform.h" />
     <ClInclude Include="starlight_renderer.h" />
+    <ClInclude Include="starlight_platform.h" />
+    <ClInclude Include="starlight_glm.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="starlight.fbs" />
     <None Include="Header.hlsli" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="PixelShader.hlsl" />
-    <FxCompile Include="VertexShader.hlsl" />
+    <FxCompile Include="SimplePixelShader.hlsl" />
+    <FxCompile Include="SimpleVertexShader.hlsl" />
   </ItemGroup>
 </Project>

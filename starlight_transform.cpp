@@ -1,5 +1,4 @@
 #include "starlight_transform.h"
-#include <glm/gtx/transform.hpp>
 #include <cassert>
 
 void Transform::SetLocalPosition(float x, float y, float z) {
@@ -57,6 +56,13 @@ glm::mat4 Transform::GetLocalToWorldMatrix() {
 
 glm::mat4 Transform::GetWorldToLocalMatrix() {
 	return glm::inverse(GetLocalToWorldMatrix());
+}
+
+glm::mat4 Transform::GetViewMatrix()
+{
+	glm::mat4 translate = glm::translate(-GetPosition());
+	glm::mat4 rotate = glm::transpose(glm::mat4(GetRotation()));
+	return rotate * translate;
 }
 
 glm::vec3 Transform::TransformPoint(const glm::vec3 &point) {
