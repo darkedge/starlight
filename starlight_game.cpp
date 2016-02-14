@@ -290,7 +290,7 @@ void game::Update() {
 	glm::mat4 viewMatrix = s_player.GetViewMatrix();
 	context->UpdateSubresource(s_constantBuffers[CB_Frame], 0, nullptr, &viewMatrix, 0, 0);
 	glm::mat4 identity;
-	context->UpdateSubresource(s_constantBuffers[CB_Appliation], 0, nullptr, &identity, 0, 0);
+	context->UpdateSubresource(s_constantBuffers[CB_Object], 0, nullptr, &identity, 0, 0);
 
 	// Input Assembler
 	const uint32_t stride = sizeof(Vertex);
@@ -313,6 +313,7 @@ void game::Update() {
 
 	// Output Merger
 	//context->OMSetRenderTargets(1, &renderer::GetRenderTargetView(), renderer::GetDepthStencilView());
+	context->OMSetRenderTargets(1, &renderer::GetRenderTargetView(), nullptr);
 	context->OMSetDepthStencilState(renderer::GetDepthStencilState(), 1);
 
 	// Draw call
