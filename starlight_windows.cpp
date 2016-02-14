@@ -16,12 +16,12 @@ HWND platform::GetHWND() {
 	return s_hwnd;
 }
 
-glm::uvec2 platform::GetWindowSize() {
+glm::ivec2 platform::GetWindowSize() {
 	RECT clientRect;
 	GetClientRect(s_hwnd, &clientRect);
 	assert(clientRect.right >= clientRect.left);
 	assert(clientRect.bottom >= clientRect.top);
-	return glm::uvec2(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top);
+	return glm::ivec2(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top);
 }
 
 
@@ -58,34 +58,40 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 int main()
 {
 	auto className = L"ImGui Example";
-	// Create application window
-	WNDCLASSEX wc = {
-		sizeof(WNDCLASSEX),
-		CS_CLASSDC,
-		WndProc,
-		0L,
-		0L,
-		GetModuleHandleW(nullptr),
-		nullptr,
-		LoadCursorW(nullptr, IDC_ARROW),
-		nullptr,
-		nullptr,
-		className,
-		nullptr
-	};
-	RegisterClassExW(&wc);
+
+	WNDCLASSEXW wndClass = { 0 };
+	wndClass.cbSize = sizeof(WNDCLASSEXW);
+	wndClass.style = CS_CLASSDC;// CS_HREDRAW | CS_VREDRAW;
+	wndClass.lpfnWndProc = WndProc;
+	wndClass.hInstance = GetModuleHandleW(nullptr);
+	wndClass.hCursor = LoadCursorW(nullptr, IDC_ARROW);
+	wndClass.lpszClassName = className;
+
+	RegisterClassExW(&wndClass);
+
+	// Get desktop rectangle
+	RECT desktopRect;
+	GetClientRect(GetDesktopWindow(), &desktopRect);
+
+	// Get window rectangle
+	RECT windowRect = { 0, 0, 1280, 720 }; // TODO: Config file?
+	AdjustWindowRect(&windowRect, WS_OVERLAPPEDWINDOW, FALSE);
+
+	// Calculate window dimensions
+	auto windowWidth = windowRect.right - windowRect.left;
+	auto windowHeight = windowRect.bottom - windowRect.top;
 
 	s_hwnd = CreateWindowW(
 		className,
 		L"This is the title bar",
 		WS_OVERLAPPEDWINDOW,
-		100,
-		100,
-		1280,
-		800,
+		desktopRect.right / 2 - windowWidth / 2,
+		desktopRect.bottom / 2 - windowHeight / 2,
+		windowWidth,
+		windowHeight,
 		nullptr,
 		nullptr,
-		wc.hInstance,
+		GetModuleHandleW(nullptr),
 		nullptr
 	);
 
@@ -97,7 +103,7 @@ int main()
 	{
 		// Failed to created D3D device
 		renderer::Destroy();
-		UnregisterClassW(className, wc.hInstance);
+		UnregisterClassW(className, GetModuleHandleW(nullptr));
 		return 1;
 	}
 
@@ -135,8 +141,9 @@ int main()
 	}
 
 	ImGui_ImplDX11_Shutdown();
+	game::Destroy();
 	renderer::Destroy();
-	UnregisterClassW(className, wc.hInstance);
+	UnregisterClassW(className, GetModuleHandleW(nullptr));
 
 	return 0;
 }

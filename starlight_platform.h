@@ -2,7 +2,7 @@
 #include "starlight_glm.h"
 
 namespace platform {
-	glm::uvec2 GetWindowSize();
+	glm::ivec2 GetWindowSize();
 }
 
 #ifdef _WIN32

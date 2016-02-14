@@ -2,6 +2,14 @@
 #include <cstddef>
 #include <Windows.h>
 
+template<typename T>
+inline void SafeRelease(T& ptr) {
+	if (ptr) {
+		ptr->Release();
+		ptr = nullptr;
+	}
+}
+
 struct ID3D11PixelShader;
 struct ID3D11VertexShader;
 struct ID3D11Device;

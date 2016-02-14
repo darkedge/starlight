@@ -59,7 +59,6 @@ static LARGE_INTEGER s_perfFreq;
 static float s_deltaTime;
 
 static ID3D11RasterizerState* s_rasterizerState = nullptr;
-
 static ID3D11PixelShader* s_pixelShader = nullptr;
 static ID3D11VertexShader* s_vertexShader = nullptr;
 static ID3D11InputLayout* s_inputLayout = nullptr;
@@ -281,12 +280,15 @@ void game::Update() {
 
 	ID3D11DeviceContext* context = renderer::GetDeviceContext();
 
+	// Gets screen size
 	auto windowSize = platform::GetWindowSize();
 
 	// Constant Buffers
 	//glm::mat4 projectionMatrix = glm::perspectiveLH(s_camera.m_fieldOfView, 16.0f / 9.0f, s_camera.m_zNear, s_camera.m_zFar);
-	glm::mat4 projectionMatrix = glm::perspectiveFovLH(glm::radians(45.0f), (float) windowSize.x, (float) windowSize.y, 0.1f, 100.0f);
-	context->UpdateSubresource(s_constantBuffers[CB_Appliation], 0, nullptr, &projectionMatrix, 0, 0);
+	if (windowSize.x > 0 && windowSize.y > 0) {
+		glm::mat4 projectionMatrix = glm::perspectiveFovLH(glm::radians(45.0f), (float)windowSize.x, (float)windowSize.y, 0.1f, 100.0f);
+		context->UpdateSubresource(s_constantBuffers[CB_Appliation], 0, nullptr, &projectionMatrix, 0, 0);
+	}
 	glm::mat4 viewMatrix = s_player.GetViewMatrix();
 	context->UpdateSubresource(s_constantBuffers[CB_Frame], 0, nullptr, &viewMatrix, 0, 0);
 	glm::mat4 identity;
@@ -305,6 +307,8 @@ void game::Update() {
 	context->VSSetConstantBuffers(0, 3, s_constantBuffers);
 
 	// Rasterizer
+	s_viewport.Width = static_cast<float>(windowSize.x);
+	s_viewport.Height = static_cast<float>(windowSize.y);
 	context->RSSetState(s_rasterizerState);
 	context->RSSetViewports(1, &s_viewport);
 
@@ -326,4 +330,16 @@ void game::Update() {
 
 	// Does not render, but builds display lists
 	logger::Render();
+}
+
+void game::Destroy() {
+	SafeRelease(s_rasterizerState);
+	SafeRelease(s_pixelShader);
+	SafeRelease(s_vertexShader);
+	SafeRelease(s_inputLayout);
+	SafeRelease(s_mesh.m_indexBuffer);
+	SafeRelease(s_mesh.m_vertexBuffer);
+	for (int i = 0; i < NumConstantBuffers; i++) {
+		SafeRelease(s_constantBuffers[i]);
+	}
 }
