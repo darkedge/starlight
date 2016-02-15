@@ -58,7 +58,8 @@ struct Console
 			return;
 		}
 
-		ImGui::TextWrapped("This example implements a console with basic coloring, completion and history. A more elaborate implementation may want to store entries along with extra data such as timestamp, emitter, etc.");
+		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+		//ImGui::TextWrapped("This example implements a console with basic coloring, completion and history. A more elaborate implementation may want to store entries along with extra data such as timestamp, emitter, etc.");
 		ImGui::TextWrapped("Enter 'HELP' for help, press TAB to use text completion.");
 
 		// TODO: display items starting from the bottom

@@ -232,3 +232,5 @@ _Pvt_Extensions
 # FAKE - F# Make
 .fake/
 imgui.ini
+SimplePixelShader.h
+SimplePixelShader.h

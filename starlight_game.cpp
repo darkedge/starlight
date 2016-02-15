@@ -12,21 +12,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "starlight_glm.h"
 
-#include <sstream>
-#define STR(x) #x
-#define XSTR(x) STR(x)
-#define D3D_TRY(expr) \
-do { \
-	HRESULT	hr = expr; \
-	if (FAILED( hr )) { \
-		std::stringstream s;\
-		s << __FILE__ << "(" << __LINE__ << "): " << STR(expr) << " failed";\
-		logger::LogInfo(s.str());\
-		_CrtDbgBreak(); \
-	} \
-} while (0)
-
-
 // shaders (generated)
 // changed to defines to prevent visual studio hanging
 #include "SimplePixelShader.h"
@@ -146,6 +131,8 @@ void game::Init() {
 	s_player.SetPosition(0, 0, -10);
 
 	auto windowSize = platform::GetWindowSize();
+	//auto windowSize = renderer::GetSize();
+	//auto windowSize = glm::ivec2(1600,900);
 
 	// Rasterizer State
 	D3D11_RASTERIZER_DESC rasterizerDesc;
@@ -278,10 +265,17 @@ void game::Update() {
 	MoveCamera();
 	input::EndFrame();
 
+	// Does not render, but builds display lists
+	logger::Render();
+}
+
+void game::Render() {
 	ID3D11DeviceContext* context = renderer::GetDeviceContext();
 
 	// Gets screen size
 	auto windowSize = platform::GetWindowSize();
+	//auto windowSize = renderer::GetSize();
+	//auto windowSize = glm::ivec2(1600, 900);
 
 	// Constant Buffers
 	//glm::mat4 projectionMatrix = glm::perspectiveLH(s_camera.m_fieldOfView, 16.0f / 9.0f, s_camera.m_zNear, s_camera.m_zFar);
@@ -327,9 +321,6 @@ void game::Update() {
 	context->IASetInputLayout(nullptr);
 	context->PSSetShader(nullptr, nullptr, 0);
 	context->VSSetShader(nullptr, nullptr, 0);
-
-	// Does not render, but builds display lists
-	logger::Render();
 }
 
 void game::Destroy() {

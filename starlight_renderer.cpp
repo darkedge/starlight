@@ -4,21 +4,6 @@
 #include <imgui.h> // for the clear color
 
 #include "starlight_log.h"
-#include <sstream>
-
-#define STR(x) #x
-#define XSTR(x) STR(x)
-
-#define D3D_TRY(expr) \
-do { \
-	HRESULT	hr = expr; \
-	if (FAILED( hr )) { \
-		std::stringstream s;\
-		s << __FILE__ << "(" << __LINE__ << "): " << STR(expr) << "failed\n";\
-		logger::LogInfo(s.str());\
-		_CrtDbgBreak(); \
-	} \
-} while (0)
 
 // Direct3D 11 device
 static ID3D11Device* s_device = nullptr;
@@ -29,7 +14,6 @@ static ID3D11DepthStencilState* s_depthStencilState = nullptr;
 static ID3D11DepthStencilView* s_depthStencilView = nullptr;
 static ID3D11Texture2D* s_depthStencilBuffer = nullptr;
 
-void CleanupRenderTarget();
 void CreateRenderTarget();
 
 
@@ -95,10 +79,10 @@ void renderer::Clear()
 	s_deviceContext->ClearDepthStencilView(s_depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 }
 
-void renderer::Resize(LPARAM lParam)
+void renderer::Resize()
 {
-	CleanupRenderTarget();
-	D3D_TRY(s_swapChain->ResizeBuffers(0, (UINT)LOWORD(lParam), (UINT)HIWORD(lParam), DXGI_FORMAT_UNKNOWN, 0));
+	SafeRelease(s_mainRenderTargetView);
+	D3D_TRY(s_swapChain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, 0));
 	CreateRenderTarget();
 }
 
@@ -109,22 +93,10 @@ void CreateRenderTarget()
 
 	// Create the render target
 	ID3D11Texture2D* pBackBuffer;
-	D3D11_RENDER_TARGET_VIEW_DESC render_target_view_desc;
-	ZeroMemory(&render_target_view_desc, sizeof(render_target_view_desc));
-	render_target_view_desc.Format = sd.BufferDesc.Format;
-	render_target_view_desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-	D3D_TRY(s_swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer));
-	D3D_TRY(s_device->CreateRenderTargetView(pBackBuffer, &render_target_view_desc, &s_mainRenderTargetView));
+	D3D_TRY(s_swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&pBackBuffer));
+	D3D_TRY(s_device->CreateRenderTargetView(pBackBuffer, nullptr, &s_mainRenderTargetView));
 	s_deviceContext->OMSetRenderTargets(1, &s_mainRenderTargetView, nullptr);
 	pBackBuffer->Release();
-}
-
-void CleanupRenderTarget()
-{
-	if (s_mainRenderTargetView) {
-		s_mainRenderTargetView->Release();
-		s_mainRenderTargetView = nullptr;
-	}
 }
 
 HRESULT renderer::Init()
@@ -155,7 +127,6 @@ HRESULT renderer::Init()
 #endif
 	D3D_FEATURE_LEVEL featureLevel;
 
-	//const D3D_FEATURE_LEVEL featureLevelArray[1] = { D3D_FEATURE_LEVEL_11_0, };
 	D3D_FEATURE_LEVEL featureLevels[] =
 	{
 		D3D_FEATURE_LEVEL_11_1,

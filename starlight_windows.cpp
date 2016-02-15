@@ -14,6 +14,8 @@
 
 #include "starlight_thread_safe_queue.h"
 
+static std::mutex s_mutex;
+
 struct WindowMessage {
 	HWND hWnd;
 	UINT msg;
@@ -32,21 +34,24 @@ static std::atomic_bool s_running;
 void ParseMessages() {
 	WindowMessage message;
 	while (s_queue.Dequeue(&message)) {
+#if 0
 		//HWND hWnd = message.hWnd;
 		UINT msg = message.msg;
 		WPARAM wParam = message.wParam;
-		LPARAM lParam = message.lParam;
+		//LPARAM lParam = message.lParam;
 
 		switch (msg) {
 		case WM_SIZE:
-			if (renderer::GetDevice() != nullptr && wParam != SIZE_MINIMIZED)
-			{
+			if (renderer::GetDevice() != nullptr && wParam != SIZE_MINIMIZED) {
+				renderer::Resize();
 				ImGui_ImplDX11_InvalidateDeviceObjects();
-				renderer::Resize(lParam);
 				ImGui_ImplDX11_CreateDeviceObjects();
 			}
 			break;
+		default:
+			break;
 		}
+#endif
 	}
 }
 
@@ -76,13 +81,16 @@ DWORD WINAPI MyThreadFunction(LPVOID lpPAram) {
 
 		ImGui_ImplDX11_NewFrame();
 
-		// Rendering
-		renderer::Clear();
-
 		game::Update();
 
-		ImGui::Render();
-		renderer::SwapBuffers();
+		// Rendering
+		if (std::try_lock(s_mutex)) {
+			renderer::Clear();
+			game::Render();
+			ImGui::Render();
+			renderer::SwapBuffers();
+			s_mutex.unlock();
+		}
 	}
 
 	ImGui_ImplDX11_Shutdown();
@@ -117,13 +125,18 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 	switch (msg)
 	{
-	
+	case WM_SIZE:
+		if (renderer::GetDevice() != nullptr && wParam != SIZE_MINIMIZED) {
+			renderer::Resize();
+			//ImGui_ImplDX11_InvalidateDeviceObjects();
+			//ImGui_ImplDX11_CreateDeviceObjects();
+		}
+		break;
 	case WM_SYSCOMMAND:
 		if ((wParam & 0xfff0) == SC_KEYMENU) // Disable ALT application menu
 			return 0;
 		break;
 	case WM_DESTROY:
-		// TODO: Signal game thread to quit
 		s_running.store(false);
 		PostQuitMessage(0);
 		return 0;
@@ -189,24 +202,12 @@ int main()
 
 	// Message loop
 	MSG msg;
-	ZeroMemory(&msg, sizeof(msg));
-#if 1
-	while (msg.message != WM_QUIT)
+	while (GetMessageW(&msg, nullptr, 0, 0))
 	{
-		if (PeekMessageW(&msg, nullptr, 0U, 0U, PM_REMOVE))
-		{
-			TranslateMessage(&msg);
-			DispatchMessageW(&msg);
-			continue;
-		}
-	}
-#else
-	while (GetMessage(&msg, NULL, 0, 0))
-	{
+		std::lock_guard<std::mutex> lock(s_mutex);
 		TranslateMessage(&msg);
-		DispatchMessage(&msg);
+		DispatchMessageW(&msg);
 	}
-#endif
 
 	WaitForSingleObject(thread, INFINITE);
 
