@@ -154,20 +154,32 @@ HRESULT renderer::Init()
 	createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 	D3D_FEATURE_LEVEL featureLevel;
-	const D3D_FEATURE_LEVEL featureLevelArray[1] = { D3D_FEATURE_LEVEL_11_0, };
-	D3D11CreateDeviceAndSwapChain(
+
+	//const D3D_FEATURE_LEVEL featureLevelArray[1] = { D3D_FEATURE_LEVEL_11_0, };
+	D3D_FEATURE_LEVEL featureLevels[] =
+	{
+		D3D_FEATURE_LEVEL_11_1,
+		D3D_FEATURE_LEVEL_11_0,
+		D3D_FEATURE_LEVEL_10_1,
+		D3D_FEATURE_LEVEL_10_0,
+		D3D_FEATURE_LEVEL_9_3,
+		D3D_FEATURE_LEVEL_9_2,
+		D3D_FEATURE_LEVEL_9_1
+	};
+
+	D3D_TRY(D3D11CreateDeviceAndSwapChain(
 		nullptr,
 		D3D_DRIVER_TYPE_HARDWARE,
 		nullptr,
 		createDeviceFlags,
-		featureLevelArray,
-		1,
+		featureLevels,
+		_countof(featureLevels),
 		D3D11_SDK_VERSION,
 		&swapChainDesc,
 		&s_swapChain,
 		&s_device,
 		&featureLevel,
-		&s_deviceContext);
+		&s_deviceContext));
 
 	CreateRenderTarget();
 
