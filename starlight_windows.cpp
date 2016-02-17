@@ -27,40 +27,21 @@ static HWND s_hwnd = nullptr;
 static util::ThreadSafeQueue<WindowMessage> s_queue;
 
 
-DWORD WINAPI MyThreadFunction(LPVOID lpParam);
-
 static std::atomic_bool s_running;
 
 void ParseMessages() {
 	WindowMessage message;
 	while (s_queue.Dequeue(&message)) {
-#if 0
-		//HWND hWnd = message.hWnd;
-		UINT msg = message.msg;
-		WPARAM wParam = message.wParam;
-		//LPARAM lParam = message.lParam;
-
-		switch (msg) {
-		case WM_SIZE:
-			if (renderer::GetDevice() != nullptr && wParam != SIZE_MINIMIZED) {
-				renderer::Resize();
-				ImGui_ImplDX11_InvalidateDeviceObjects();
-				ImGui_ImplDX11_CreateDeviceObjects();
-			}
-			break;
-		default:
-			break;
-		}
-#endif
+		
 	}
 }
 
-DWORD WINAPI MyThreadFunction(LPVOID lpPAram) {
+void MyThreadFunction() {
 	if (renderer::Init() < 0)
 	{
 		// Failed to created D3D device
 		renderer::Destroy();
-		return 1;
+		return;
 	}
 
 	// Setup ImGui binding (TODO: Write my own version)
@@ -96,8 +77,6 @@ DWORD WINAPI MyThreadFunction(LPVOID lpPAram) {
 	ImGui_ImplDX11_Shutdown();
 	game::Destroy();
 	renderer::Destroy();
-
-	return 0;
 }
 
 
@@ -192,13 +171,7 @@ int main()
 
 	
 	// Create thread
-	auto thread = CreateThread(
-		nullptr,                // default security attributes
-		0,                      // use default stack size  
-		MyThreadFunction,       // thread function name
-		nullptr,          // argument to thread function 
-		0,                      // use default creation flags 
-		nullptr);   // returns the thread identifier
+	std::thread thread(MyThreadFunction);
 
 	// Message loop
 	MSG msg;
@@ -209,7 +182,7 @@ int main()
 		DispatchMessageW(&msg);
 	}
 
-	WaitForSingleObject(thread, INFINITE);
+	thread.join();
 
 	UnregisterClassW(className, GetModuleHandleW(nullptr));
 }
