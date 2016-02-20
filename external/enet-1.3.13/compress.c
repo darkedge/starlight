@@ -55,7 +55,7 @@ enet_range_coder_create (void)
     return rangeCoder;
 }
 
-void
+void __cdecl
 enet_range_coder_destroy (void * context)
 {
     ENetRangeCoder * rangeCoder = (ENetRangeCoder *) context;
@@ -243,7 +243,7 @@ ENET_CONTEXT_WALK(context, { \
 })
 #endif
 
-size_t
+size_t __cdecl
 enet_range_coder_compress (void * context, const ENetBuffer * inBuffers, size_t inBufferCount, size_t inLimit, enet_uint8 * outData, size_t outLimit)
 {
     ENetRangeCoder * rangeCoder = (ENetRangeCoder *) context;
@@ -495,7 +495,7 @@ typedef struct _ENetExclude
 
 #define ENET_CONTEXT_NOT_EXCLUDED(value_, after, before)
 
-size_t
+size_t __cdecl
 enet_range_coder_decompress (void * context, const enet_uint8 * inData, size_t inLimit, enet_uint8 * outData, size_t outLimit)
 {
     ENetRangeCoder * rangeCoder = (ENetRangeCoder *) context;
