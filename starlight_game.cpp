@@ -19,8 +19,6 @@
 #include "SimpleVertexShader.h"
 #define VertexShaderBlob g_SimpleVertexShader
 
-static ID3D11Buffer* s_constantBuffers[renderer::NumConstantBuffers];
-
 struct Camera {
 	float m_fieldOfView = glm::radians(60.0f); // Field of view angle (radians)
 	float m_zNear = 0.3f;
@@ -163,26 +161,6 @@ void game::Init() {
 	s_deltaTime = 0.0f;
 	QueryPerformanceFrequency(&s_perfFreq);
 	QueryPerformanceCounter(&s_lastTime);
-
-	// Constant buffer descriptor
-	D3D11_BUFFER_DESC constantBufferDesc;
-	ZeroMemory(&constantBufferDesc, sizeof(constantBufferDesc));
-
-	constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	constantBufferDesc.CPUAccessFlags = 0;
-	constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-
-	// Per frame constant buffer
-	constantBufferDesc.ByteWidth = sizeof(PerFrame);
-	D3D_TRY(renderer::GetDevice()->CreateBuffer(&constantBufferDesc, nullptr, &s_constantBuffers[renderer::Frame]));
-
-	// Per camera constant buffer
-	constantBufferDesc.ByteWidth = sizeof(PerCamera);
-	D3D_TRY(renderer::GetDevice()->CreateBuffer(&constantBufferDesc, nullptr, &s_constantBuffers[renderer::Camera]));
-
-	// Per object constant buffer
-	constantBufferDesc.ByteWidth = sizeof(PerObject);
-	D3D_TRY(renderer::GetDevice()->CreateBuffer(&constantBufferDesc, nullptr, &s_constantBuffers[renderer::Object]));
 }
 
 void MoveCamera() {
