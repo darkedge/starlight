@@ -120,6 +120,7 @@
     <ClCompile Include="starlight_windows.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="starlight.h" />
     <ClInclude Include="starlight_cbuffer.h" />
     <ClInclude Include="starlight_glm.h" />
     <ClInclude Include="starlight_math.h" />

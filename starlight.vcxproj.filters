@@ -4,10 +4,10 @@
     <ClCompile Include="starlight_input.cpp" />
     <ClCompile Include="starlight_log.cpp" />
     <ClCompile Include="starlight_game.cpp" />
-    <ClCompile Include="starlight_windows.cpp" />
     <ClCompile Include="starlight_transform.cpp" />
-    <ClCompile Include="starlight_renderer.cpp" />
     <ClCompile Include="starlight_external.cpp" />
+    <ClCompile Include="starlight_windows.cpp" />
+    <ClCompile Include="starlight_renderer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="starlight_generated.h" />
@@ -15,12 +15,13 @@
     <ClInclude Include="starlight_input.h" />
     <ClInclude Include="starlight_log.h" />
     <ClInclude Include="starlight_transform.h" />
-    <ClInclude Include="starlight_renderer.h" />
     <ClInclude Include="starlight_platform.h" />
     <ClInclude Include="starlight_glm.h" />
     <ClInclude Include="starlight_thread_safe_queue.h" />
     <ClInclude Include="starlight_math.h" />
     <ClInclude Include="starlight_cbuffer.h" />
+    <ClInclude Include="starlight.h" />
+    <ClInclude Include="starlight_renderer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="starlight.fbs" />
