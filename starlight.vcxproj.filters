@@ -19,6 +19,8 @@
     <ClInclude Include="starlight_platform.h" />
     <ClInclude Include="starlight_glm.h" />
     <ClInclude Include="starlight_thread_safe_queue.h" />
+    <ClInclude Include="starlight_math.h" />
+    <ClInclude Include="starlight_cbuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="starlight.fbs" />

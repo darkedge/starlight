@@ -1,17 +1,4 @@
-cbuffer PerApplication : register( b0 )
-{
-    matrix projectionMatrix;
-}
-
-cbuffer PerFrame : register( b1 )
-{
-    matrix viewMatrix;
-}
-
-cbuffer PerObject : register( b2 )
-{
-    matrix worldMatrix;
-}
+#include "starlight_cbuffer.h"
 
 struct AppData
 {
@@ -29,7 +16,7 @@ VertexShaderOutput main( AppData IN )
 {
     VertexShaderOutput OUT;
 
-    matrix mvp = mul( projectionMatrix, mul( viewMatrix, worldMatrix ) );
+    matrix mvp = mul( projection, mul( view, worldMatrix ) );
     OUT.position = mul( mvp, float4( IN.position, 1.0f ) );
     OUT.color = float4( IN.color, 1.0f );
 

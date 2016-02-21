@@ -19,21 +19,12 @@
 #include "SimpleVertexShader.h"
 #define VertexShaderBlob g_SimpleVertexShader
 
+static ID3D11Buffer* s_constantBuffers[renderer::NumConstantBuffers];
+
 struct Camera {
 	float m_fieldOfView = glm::radians(60.0f); // Field of view angle (radians)
 	float m_zNear = 0.3f;
 	float m_zFar = 1000.0f;
-};
-
-struct Vertex {
-	glm::vec3 position;
-	glm::vec3 color;
-};
-
-struct Mesh {
-	ID3D11Buffer* m_vertexBuffer = nullptr;
-	ID3D11Buffer* m_indexBuffer = nullptr;
-	int32_t m_indexCount = -1;
 };
 
 static Transform s_player;
@@ -43,36 +34,30 @@ static LARGE_INTEGER s_lastTime;
 static LARGE_INTEGER s_perfFreq;
 static float s_deltaTime;
 
-static ID3D11RasterizerState* s_rasterizerState = nullptr;
-static ID3D11PixelShader* s_pixelShader = nullptr;
-static ID3D11VertexShader* s_vertexShader = nullptr;
-static ID3D11InputLayout* s_inputLayout = nullptr;
+static ID3D11RasterizerState* s_rasterizerState;
+static ID3D11PixelShader* s_pixelShader;
+static ID3D11VertexShader* s_vertexShader;
+static ID3D11InputLayout* s_inputLayout;
 
 static D3D11_VIEWPORT s_viewport;
 
-enum ConstantBuffer
-{
-	CB_Appliation,
-	CB_Frame,
-	CB_Object,
-	NumConstantBuffers
-};
-
-ID3D11Buffer* s_constantBuffers[NumConstantBuffers];
+static PerCamera s_perCamera;
+static PerFrame s_perFrame;
+static PerObject s_perObject;
 
 Mesh s_mesh;
 
 Mesh CreateCube() {
 	Vertex vertices[8] =
 	{
-		{ {-1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, 0.0f} }, // 0
-		{ {-1.0f,  1.0f, -1.0f}, {0.0f, 1.0f, 0.0f} }, // 1
-		{ {1.0f,  1.0f, -1.0f}, {1.0f, 1.0f, 0.0f} }, // 2
-		{ {1.0f, -1.0f, -1.0f}, {1.0f, 0.0f, 0.0f} }, // 3
-		{ {-1.0f, -1.0f,  1.0f}, {0.0f, 0.0f, 1.0f} }, // 4
-		{ {-1.0f,  1.0f,  1.0f}, {0.0f, 1.0f, 1.0f} }, // 5
-		{ {1.0f,  1.0f,  1.0f}, {1.0f, 1.0f, 1.0f} }, // 6
-		{ {1.0f, -1.0f,  1.0f}, {1.0f, 0.0f, 1.0f} }  // 7
+		{ { -1.0f, -1.0f, -1.0f },{ 0.0f, 0.0f, 0.0f } }, // 0
+		{ { -1.0f,  1.0f, -1.0f },{ 0.0f, 1.0f, 0.0f } }, // 1
+		{ { 1.0f,  1.0f, -1.0f },{ 1.0f, 1.0f, 0.0f } }, // 2
+		{ { 1.0f, -1.0f, -1.0f },{ 1.0f, 0.0f, 0.0f } }, // 3
+		{ { -1.0f, -1.0f,  1.0f },{ 0.0f, 0.0f, 1.0f } }, // 4
+		{ { -1.0f,  1.0f,  1.0f },{ 0.0f, 1.0f, 1.0f } }, // 5
+		{ { 1.0f,  1.0f,  1.0f },{ 1.0f, 1.0f, 1.0f } }, // 6
+		{ { 1.0f, -1.0f,  1.0f },{ 1.0f, 0.0f, 1.0f } }  // 7
 	};
 
 	uint16_t indices[36] =
@@ -87,7 +72,7 @@ Mesh CreateCube() {
 
 	// Create the primitive object.
 	Mesh mesh;
-	
+
 	// vertex buffer
 	{
 		D3D11_BUFFER_DESC bufferDesc = { 0 };
@@ -100,7 +85,7 @@ Mesh CreateCube() {
 
 		dataDesc.pSysMem = vertices;
 
-		D3D_TRY(renderer::GetDevice()->CreateBuffer(&bufferDesc, &dataDesc, &mesh.m_vertexBuffer));
+		D3D_TRY(renderer::GetDevice()->CreateBuffer(&bufferDesc, &dataDesc, &mesh.vertexBuffer));
 	}
 
 	// index buffer
@@ -115,10 +100,10 @@ Mesh CreateCube() {
 
 		dataDesc.pSysMem = indices;
 
-		D3D_TRY(renderer::GetDevice()->CreateBuffer(&bufferDesc, &dataDesc, &mesh.m_indexBuffer));
+		D3D_TRY(renderer::GetDevice()->CreateBuffer(&bufferDesc, &dataDesc, &mesh.indexBuffer));
 	}
 
-	mesh.m_indexCount = _countof(indices);
+	mesh.numIndices = _countof(indices);
 
 	return mesh;
 }
@@ -131,8 +116,6 @@ void game::Init() {
 	s_player.SetPosition(0, 0, -10);
 
 	auto windowSize = platform::GetWindowSize();
-	//auto windowSize = renderer::GetSize();
-	//auto windowSize = glm::ivec2(1600,900);
 
 	// Rasterizer State
 	D3D11_RASTERIZER_DESC rasterizerDesc;
@@ -163,7 +146,7 @@ void game::Init() {
 	s_vertexShader = renderer::CreateVertexShader(VertexShaderBlob, sizeof(VertexShaderBlob));
 
 	// TODO Sampler (for texturing)
-	
+
 
 	// Input layout
 	D3D11_INPUT_ELEMENT_DESC inputElementDescs[] = {
@@ -171,21 +154,6 @@ void game::Init() {
 		{ "COLOR",     0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 	D3D_TRY(renderer::GetDevice()->CreateInputLayout(inputElementDescs, _countof(inputElementDescs), VertexShaderBlob, sizeof(VertexShaderBlob), &s_inputLayout));
-
-	// Constant buffer
-	// Create the constant buffers for the variables defined in the vertex shader.
-	D3D11_BUFFER_DESC constantBufferDesc;
-	ZeroMemory(&constantBufferDesc, sizeof(D3D11_BUFFER_DESC));
-
-	constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	constantBufferDesc.ByteWidth = sizeof(glm::mat4);
-	constantBufferDesc.CPUAccessFlags = 0;
-	constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-
-	D3D_TRY(renderer::GetDevice()->CreateBuffer(&constantBufferDesc, nullptr, &s_constantBuffers[CB_Appliation]));
-	D3D_TRY(renderer::GetDevice()->CreateBuffer(&constantBufferDesc, nullptr, &s_constantBuffers[CB_Frame]));
-	D3D_TRY(renderer::GetDevice()->CreateBuffer(&constantBufferDesc, nullptr, &s_constantBuffers[CB_Object]));
-
 
 	// Cube
 	s_mesh = CreateCube();
@@ -195,6 +163,26 @@ void game::Init() {
 	s_deltaTime = 0.0f;
 	QueryPerformanceFrequency(&s_perfFreq);
 	QueryPerformanceCounter(&s_lastTime);
+
+	// Constant buffer descriptor
+	D3D11_BUFFER_DESC constantBufferDesc;
+	ZeroMemory(&constantBufferDesc, sizeof(constantBufferDesc));
+
+	constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	constantBufferDesc.CPUAccessFlags = 0;
+	constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+
+	// Per frame constant buffer
+	constantBufferDesc.ByteWidth = sizeof(PerFrame);
+	D3D_TRY(renderer::GetDevice()->CreateBuffer(&constantBufferDesc, nullptr, &s_constantBuffers[renderer::Frame]));
+
+	// Per camera constant buffer
+	constantBufferDesc.ByteWidth = sizeof(PerCamera);
+	D3D_TRY(renderer::GetDevice()->CreateBuffer(&constantBufferDesc, nullptr, &s_constantBuffers[renderer::Camera]));
+
+	// Per object constant buffer
+	constantBufferDesc.ByteWidth = sizeof(PerObject);
+	D3D_TRY(renderer::GetDevice()->CreateBuffer(&constantBufferDesc, nullptr, &s_constantBuffers[renderer::Object]));
 }
 
 void MoveCamera() {
@@ -267,60 +255,37 @@ void game::Update() {
 
 	// Does not render, but builds display lists
 	logger::Render();
-}
 
-void game::Render() {
-	ID3D11DeviceContext* context = renderer::GetDeviceContext();
-
-	// Gets screen size
 	auto windowSize = platform::GetWindowSize();
-	//auto windowSize = renderer::GetSize();
-	//auto windowSize = glm::ivec2(1600, 900);
-
-	// Constant Buffers
-	//glm::mat4 projectionMatrix = glm::perspectiveLH(s_camera.m_fieldOfView, 16.0f / 9.0f, s_camera.m_zNear, s_camera.m_zFar);
 	if (windowSize.x > 0 && windowSize.y > 0) {
 		glm::mat4 projectionMatrix = glm::perspectiveFovLH(glm::radians(45.0f), (float)windowSize.x, (float)windowSize.y, 0.1f, 100.0f);
-		context->UpdateSubresource(s_constantBuffers[CB_Appliation], 0, nullptr, &projectionMatrix, 0, 0);
+		s_perCamera.view = s_player.GetViewMatrix();
+		renderer::SetPerCamera(&s_perCamera);
+		s_perFrame.projection = projectionMatrix;
+		renderer::SetPerFrame(&s_perFrame);
+
+		s_viewport.Width = static_cast<float>(windowSize.x);
+		s_viewport.Height = static_cast<float>(windowSize.y);
 	}
-	glm::mat4 viewMatrix = s_player.GetViewMatrix();
-	context->UpdateSubresource(s_constantBuffers[CB_Frame], 0, nullptr, &viewMatrix, 0, 0);
-	glm::mat4 identity;
-	context->UpdateSubresource(s_constantBuffers[CB_Object], 0, nullptr, &identity, 0, 0);
 
-	// Input Assembler
-	const uint32_t stride = sizeof(Vertex);
-	const uint32_t offset = 0;
-	context->IASetInputLayout(s_inputLayout);
-	context->IASetVertexBuffers(0, 1, &s_mesh.m_vertexBuffer, &stride, &offset);
-	context->IASetIndexBuffer(s_mesh.m_indexBuffer, DXGI_FORMAT_R16_UINT, 0);
-	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	//s_perObject.worldMatrix = glm::mat4();
+	s_perObject.worldMatrix = glm::translate(glm::vec3(0, 0, 10.0f));
+}
 
-	// Vertex Shader
-	context->VSSetShader(s_vertexShader, nullptr, 0);
-	context->VSSetConstantBuffers(0, 3, s_constantBuffers);
+void game::CreateDrawCommands() {
+	renderer::DrawCommand cmd;
+	ZeroMemory(&cmd, sizeof(cmd));
 
-	// Rasterizer
-	s_viewport.Width = static_cast<float>(windowSize.x);
-	s_viewport.Height = static_cast<float>(windowSize.y);
-	context->RSSetState(s_rasterizerState);
-	context->RSSetViewports(1, &s_viewport);
+	cmd.mesh = &s_mesh;
+	cmd.pipelineState.inputLayout = s_inputLayout;
+	cmd.pipelineState.numViewports = 1;
+	cmd.pipelineState.viewports = &s_viewport;
+	cmd.pipelineState.pixelShader = s_pixelShader;
+	cmd.pipelineState.vertexShader = s_vertexShader;
+	cmd.pipelineState.rasterizerState = s_rasterizerState;
+	cmd.perObject = &s_perObject;
 
-	// Pixel Shader
-	context->PSSetShader(s_pixelShader, nullptr, 0);
-
-	// Output Merger
-	//context->OMSetRenderTargets(1, &renderer::GetRenderTargetView(), renderer::GetDepthStencilView());
-	context->OMSetRenderTargets(1, &renderer::GetRenderTargetView(), nullptr);
-	context->OMSetDepthStencilState(renderer::GetDepthStencilState(), 1);
-
-	// Draw call
-	context->DrawIndexed(s_mesh.m_indexCount, 0, 0);
-
-	// Restore modified state
-	context->IASetInputLayout(nullptr);
-	context->PSSetShader(nullptr, nullptr, 0);
-	context->VSSetShader(nullptr, nullptr, 0);
+	renderer::AddDrawCommand(cmd);
 }
 
 void game::Destroy() {
@@ -328,9 +293,6 @@ void game::Destroy() {
 	SafeRelease(s_pixelShader);
 	SafeRelease(s_vertexShader);
 	SafeRelease(s_inputLayout);
-	SafeRelease(s_mesh.m_indexBuffer);
-	SafeRelease(s_mesh.m_vertexBuffer);
-	for (int i = 0; i < NumConstantBuffers; i++) {
-		SafeRelease(s_constantBuffers[i]);
-	}
+	SafeRelease(s_mesh.indexBuffer);
+	SafeRelease(s_mesh.vertexBuffer);
 }

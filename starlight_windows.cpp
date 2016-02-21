@@ -67,8 +67,9 @@ void MyThreadFunction() {
 		// Rendering
 		if (std::try_lock(s_mutex)) {
 			renderer::Clear();
-			game::Render();
-			ImGui::Render();
+			game::CreateDrawCommands();
+			renderer::Submit();
+			ImGui::Render();// TODO: Make this create draw commands
 			renderer::SwapBuffers();
 			s_mutex.unlock();
 		}
@@ -96,7 +97,6 @@ glm::ivec2 platform::GetWindowSize() {
 extern LRESULT ImGui_ImplDX11_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-
 	s_queue.Enqueue(WindowMessage{hWnd, msg, wParam, lParam});
 
 	if (ImGui_ImplDX11_WndProcHandler(hWnd, msg, wParam, lParam))
@@ -123,7 +123,7 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	return DefWindowProcW(hWnd, msg, wParam, lParam);
 }
 
-int main()
+int __cdecl main()
 {
 	auto className = L"ImGui Example";
 
@@ -151,7 +151,8 @@ int main()
 
 	s_running.store(true);
 
-	s_hwnd = CreateWindowW(
+	s_hwnd = CreateWindowExW(
+		0L,
 		className,
 		L"This is the title bar",
 		WS_OVERLAPPEDWINDOW,

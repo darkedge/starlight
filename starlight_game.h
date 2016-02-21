@@ -3,6 +3,6 @@
 namespace game {
 	void Init();
 	void Update();
-	void Render();
+	void CreateDrawCommands();
 	void Destroy();
 }

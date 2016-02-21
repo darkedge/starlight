@@ -44,10 +44,14 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <CodeAnalysisRuleSet>C:\Program Files (x86)\Microsoft Visual Studio 14.0\Team Tools\Static Analysis Tools\Rule Sets\NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
+    <OutDir>$(Configuration)\bin\</OutDir>
+    <IntDir>$(Configuration)\obj\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <CodeAnalysisRuleSet>C:\Program Files (x86)\Microsoft Visual Studio 14.0\Team Tools\Static Analysis Tools\Rule Sets\NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
+    <OutDir>$(Configuration)\bin\</OutDir>
+    <IntDir>$(Configuration)\obj\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -60,6 +64,10 @@
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <MSCompatibility>true</MSCompatibility>
       <EnablePREfast>false</EnablePREfast>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <CallingConvention>VectorCall</CallingConvention>
     </ClCompile>
     <Link>
       <AdditionalDependencies>winmm.lib;ws2_32.lib;d3d11.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -69,6 +77,7 @@
       <VariableName>g_%(Filename)</VariableName>
       <HeaderFileOutput>%(Filename).h</HeaderFileOutput>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <ObjectFileOutput />
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -84,6 +93,9 @@
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <MSCompatibility>true</MSCompatibility>
       <EnablePREfast>false</EnablePREfast>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <CallingConvention>VectorCall</CallingConvention>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -95,6 +107,7 @@
       <VariableName>g_%(Filename)</VariableName>
       <HeaderFileOutput>%(Filename).h</HeaderFileOutput>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <ObjectFileOutput />
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -107,7 +120,9 @@
     <ClCompile Include="starlight_windows.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="starlight_cbuffer.h" />
     <ClInclude Include="starlight_glm.h" />
+    <ClInclude Include="starlight_math.h" />
     <ClInclude Include="starlight_platform.h" />
     <ClInclude Include="starlight_game.h" />
     <ClInclude Include="starlight_generated.h" />
