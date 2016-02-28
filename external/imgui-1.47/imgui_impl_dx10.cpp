@@ -500,7 +500,7 @@ void ImGui_ImplDX10_NewFrame()
     // io.MouseWheel : filled by WM_MOUSEWHEEL events
 
     // Hide OS mouse cursor if ImGui is drawing it
-    SetCursor(io.MouseDrawCursor ? NULL : LoadCursor(NULL, IDC_ARROW));
+    //SetCursor(io.MouseDrawCursor ? NULL : LoadCursor(NULL, IDC_ARROW));
 
     // Start the frame
     ImGui::NewFrame();

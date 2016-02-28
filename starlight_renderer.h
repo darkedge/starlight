@@ -1,130 +1,140 @@
 #pragma once
-#include <cstddef>
-#include <Windows.h>
+#include <cstdint>
 #include "starlight_glm.h"
-#include "starlight_cbuffer.h"
+#include "starlight_config.h"
 
-#ifdef _DEBUG
-#include <sstream>
-#define STR(x) #x
-#define XSTR(x) STR(x)
-#define D3D_TRY(expr) \
-do { \
-	HRESULT	hr = expr; \
-	if (FAILED( hr )) { \
-		std::stringstream s;\
-		s << __FILE__ << "(" << __LINE__ << "): " << STR(expr) << "failed\n";\
-		logger::LogInfo(s.str());\
-		_CrtDbgBreak(); \
-	} \
-} while (0)
-#else
-#define D3D_TRY(expr) expr
-#endif
-
-template<typename T>
-inline void SafeRelease(T& ptr) {
-	if (ptr) {
-		ptr->Release();
-		ptr = nullptr;
-	}
-}
+// Platform needs to provide this
+struct PlatformData;
+struct WindowEvent;
 
 struct Vertex {
 	glm::vec3 position;
 	glm::vec3 color;
+	// glm::vec3 normal;
+	// glm::vec3 tangent;
 };
 
-struct ID3D11PixelShader;
-struct ID3D11VertexShader;
-struct ID3D11Device;
-struct ID3D11DeviceContext;
-struct ID3D11RenderTargetView;
-struct ID3D11DepthStencilState;
-struct ID3D11DepthStencilView;
-struct ID3D11Buffer;
-struct ID3D11InputLayout;
-struct ID3D11SamplerState;
-struct D3D11_VIEWPORT;
-struct ID3D11RasterizerState;
-
-// TODO: Base vertex location, start index (assumed zero)
 struct Mesh {
-	ID3D11Buffer* vertexBuffer = nullptr;
-	ID3D11Buffer* indexBuffer = nullptr;
-	int32_t numIndices = -1;
+	int32_t index;
+	// int32_t numVertices;
+	// int32_t numIndices;
+};
+
+// Note: #undef these at the bottom of this file
+#define FUNC_00 void Destroy()
+#define FUNC_01 void Render()
+#define FUNC_02 void Resize(int32_t width, int32_t height)
+#define FUNC_03 bool Init(PlatformData* data)
+#define FUNC_04 void Update()
+#define FUNC_05 void ImGuiNewFrame()
+#define FUNC_06 bool ImGuiHandleEvent(WindowEvent* event)
+#define FUNC_07 int32_t UploadMesh(Vertex* vertices, int32_t numVertices, int32_t* indices, int32_t numIndices)
+#define FUNC_08 void SetPlayerCameraViewMatrix(glm::mat4 mat)
+#define FUNC_09 void SetProjectionMatrix(glm::mat4 mat)
+
+#define PURE_VIRTUAL(_f) virtual _f = 0
+#define OVERRIDE_FINAL(_f) virtual _f override final
+
+#define RENDERER_IMPLEMENTATION(_c) \
+class _c : public IGraphicsApi { \
+public: \
+	OVERRIDE_FINAL(FUNC_00); \
+	OVERRIDE_FINAL(FUNC_01); \
+	OVERRIDE_FINAL(FUNC_02); \
+	OVERRIDE_FINAL(FUNC_03); \
+	OVERRIDE_FINAL(FUNC_04); \
+	OVERRIDE_FINAL(FUNC_05); \
+	OVERRIDE_FINAL(FUNC_06); \
+	OVERRIDE_FINAL(FUNC_07); \
+	OVERRIDE_FINAL(FUNC_08); \
+	OVERRIDE_FINAL(FUNC_09); \
 };
 
 namespace renderer {
 
-	enum EConstantBuffer
-	{
-		Frame,
-		Camera,
-		Object,
-		//Material,
-		NumConstantBuffers
+	class IGraphicsApi {
+	public:
+		PURE_VIRTUAL(FUNC_00);
+		PURE_VIRTUAL(FUNC_01);
+		PURE_VIRTUAL(FUNC_02);
+		PURE_VIRTUAL(FUNC_03);
+		PURE_VIRTUAL(FUNC_04);
+		PURE_VIRTUAL(FUNC_05);
+		PURE_VIRTUAL(FUNC_06);
+		PURE_VIRTUAL(FUNC_07);
+		PURE_VIRTUAL(FUNC_08);
+		PURE_VIRTUAL(FUNC_09);
 	};
 
-	struct SortKey1 {
-		uint32_t depth;
-		uint32_t seq;
-		uint16_t program;
-		uint8_t  view;
-		uint8_t  trans;
-	};
 
-	// depth: 32 bits, offset 0x00
-	// program: 9 bits, offset 0x20
-	// trans: 2 bits, offset 0x29
-	// seq: 11 bits, offset 0x2b
-	// draw: 1 bit, offset 0x36
-	// view: 8 bits, offset 0x37
-	uint64_t encodeDraw(SortKey1 sortkey);
+#ifdef STARLIGHT_D3D10
+#define D3D10_IMPL(_c) RENDERER_IMPLEMENTATION(_c)
+#else
+#define D3D10_IMPL(_c)
+#endif
 
-	SortKey1 decode(uint64_t _key);
+#ifdef STARLIGHT_D3D11
+#define D3D11_IMPL(_c) RENDERER_IMPLEMENTATION(_c)
+#else
+#define D3D11_IMPL(_c)
+#endif
 
-	struct PipelineState {
-		ID3D11InputLayout* inputLayout;
-		//ID3D11SamplerState* samplerState;
-		ID3D11VertexShader* vertexShader;
-		ID3D11PixelShader* pixelShader;
-		//ID3D11Buffer** constantBuffers;
-		D3D11_VIEWPORT* viewports;
-		ID3D11RasterizerState* rasterizerState;
-		int32_t numViewports;
-		//int32_t numConstantBuffers;
+#ifdef STARLIGHT_D3D12
+#define D3D12_IMPL(_c) RENDERER_IMPLEMENTATION(_c)
+#else
+#define D3D12_IMPL(_c)
+#endif
 
-		// TODO: Textures?
-		//int32_t id;
-	};
+#ifdef STARLIGHT_VULKAN
+#define VULKAN_IMPL(_c) RENDERER_IMPLEMENTATION(_c)
+#else
+#define VULKAN_IMPL(_c)
+#endif
 
-	struct DrawCommand {
-		uint64_t key;
-		Mesh* mesh;
-		PipelineState pipelineState;
-		//PerFrame* perFrame;
-		//PerCamera* perCamera;
-		PerObject* perObject;
-	};
+#ifdef STARLIGHT_OPENGL
+#define OPENGL_IMPL(_c) RENDERER_IMPLEMENTATION(_c)
+#else
+#define OPENGL_IMPL(_c)
+#endif
 
-	ID3D11PixelShader* CreatePixelShader(const void* ptr, std::size_t size);
-	ID3D11VertexShader* CreateVertexShader(const void* ptr, std::size_t size);
+#ifdef STARLIGHT_METAL
+#define METAL_IMPL(_c) RENDERER_IMPLEMENTATION(_c)
+#else
+#define METAL_IMPL(_c)
+#endif
 
-	ID3D11Device* GetDevice();
-	ID3D11DeviceContext* GetDeviceContext();
-	ID3D11RenderTargetView*& GetRenderTargetView();
-	ID3D11DepthStencilState* GetDepthStencilState();
-	ID3D11DepthStencilView* GetDepthStencilView();
 
-	void AddDrawCommand(DrawCommand pair);
-	void SetPerFrame(PerFrame* perFrame);
-	void SetPerCamera(PerCamera* perCamera);
-	void Submit();
-	void SwapBuffers();
+// Support listing
+#ifdef _WIN32
+	D3D10_IMPL(D3D10);
+	D3D11_IMPL(D3D11);
+	D3D12_IMPL(D3D12);
+	VULKAN_IMPL(Vulkan);
+	OPENGL_IMPL(OpenGL);
+#endif
 
-	HRESULT Init();
-	void Destroy();
-	void Clear();
-	void Resize();
-}
+#ifdef __APPLE__
+	OPENGL_IMPL(OpenGL);
+	METAL_IMPL(Metal);
+#endif
+
+#ifdef __linux__
+	OPENGL_IMPL(OpenGL);
+	VULKAN_IMPL(Vulkan);
+#endif
+
+} // namespace renderer
+
+#undef RENDERER_IMPLEMENTATION
+
+#undef OVERRIDE_FINAL
+#undef PURE_VIRTUAL
+
+#undef FUNC_07
+#undef FUNC_06
+#undef FUNC_05
+#undef FUNC_04
+#undef FUNC_03
+#undef FUNC_02
+#undef FUNC_01
+#undef FUNC_00

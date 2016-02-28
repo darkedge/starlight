@@ -5,19 +5,11 @@
 #include "starlight_transform.h"
 #include "starlight_renderer.h"
 #include "starlight_platform.h"
-#include <process.h>
+//#include <process.h> // ?
 #include <cstdint>
-#include <Windows.h>
-#include <d3d11.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include "starlight_glm.h"
-
-// shaders (generated)
-// changed to defines to prevent visual studio hanging
-#include "SimplePixelShader.h"
-#define PixelShaderBlob g_SimplePixelShader
-#include "SimpleVertexShader.h"
-#define VertexShaderBlob g_SimpleVertexShader
+#include "imgui.h"
 
 struct Camera {
 	float m_fieldOfView = glm::radians(60.0f); // Field of view angle (radians)
@@ -27,25 +19,11 @@ struct Camera {
 
 static Transform s_player;
 static Camera s_camera;
-// Todo: texture
-static LARGE_INTEGER s_lastTime;
-static LARGE_INTEGER s_perfFreq;
 static float s_deltaTime;
 
-static ID3D11RasterizerState* s_rasterizerState;
-static ID3D11PixelShader* s_pixelShader;
-static ID3D11VertexShader* s_vertexShader;
-static ID3D11InputLayout* s_inputLayout;
+int32_t s_mesh;
 
-static D3D11_VIEWPORT s_viewport;
-
-static PerCamera s_perCamera;
-static PerFrame s_perFrame;
-static PerObject s_perObject;
-
-Mesh s_mesh;
-
-Mesh CreateCube() {
+int32_t CreateCube(renderer::IGraphicsApi* graphicsApi) {
 	Vertex vertices[8] =
 	{
 		{ { -1.0f, -1.0f, -1.0f },{ 0.0f, 0.0f, 0.0f } }, // 0
@@ -58,7 +36,7 @@ Mesh CreateCube() {
 		{ { 1.0f, -1.0f,  1.0f },{ 1.0f, 0.0f, 1.0f } }  // 7
 	};
 
-	uint16_t indices[36] =
+	int32_t indices[36] =
 	{
 		0, 1, 2, 0, 2, 3,
 		4, 6, 5, 4, 7, 6,
@@ -68,101 +46,31 @@ Mesh CreateCube() {
 		4, 0, 3, 4, 3, 7
 	};
 
-	// Create the primitive object.
-	Mesh mesh;
-
-	// vertex buffer
-	{
-		D3D11_BUFFER_DESC bufferDesc = { 0 };
-
-		bufferDesc.ByteWidth = sizeof(vertices);
-		bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-		bufferDesc.Usage = D3D11_USAGE_DEFAULT;
-
-		D3D11_SUBRESOURCE_DATA dataDesc = { 0 };
-
-		dataDesc.pSysMem = vertices;
-
-		D3D_TRY(renderer::GetDevice()->CreateBuffer(&bufferDesc, &dataDesc, &mesh.vertexBuffer));
-	}
-
-	// index buffer
-	{
-		D3D11_BUFFER_DESC bufferDesc = { 0 };
-
-		bufferDesc.ByteWidth = sizeof(indices);
-		bufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-		bufferDesc.Usage = D3D11_USAGE_DEFAULT;
-
-		D3D11_SUBRESOURCE_DATA dataDesc = { 0 };
-
-		dataDesc.pSysMem = indices;
-
-		D3D_TRY(renderer::GetDevice()->CreateBuffer(&bufferDesc, &dataDesc, &mesh.indexBuffer));
-	}
-
-	mesh.numIndices = _countof(indices);
-
-	return mesh;
+	return graphicsApi->UploadMesh(vertices, _countof(vertices), indices, _countof(indices));
 }
 
-void game::Init() {
+void game::Init(renderer::IGraphicsApi* graphicsApi) {
 	input::Init();
 	logger::Init();
+
+	{
+		// Load Fonts
+		ImGuiIO& io = ImGui::GetIO();
+		io.Fonts->AddFontFromFileTTF("external/imgui-1.47/extra_fonts/DroidSans.ttf", 16.0f, nullptr, io.Fonts->GetGlyphRangesCyrillic());
+	}
+	
 	LogInfo("Сука блять!");
 
 	s_player.SetPosition(0, 0, -10);
 
-	auto windowSize = platform::GetWindowSize();
-
-	// Rasterizer State
-	D3D11_RASTERIZER_DESC rasterizerDesc;
-	ZeroMemory(&rasterizerDesc, sizeof(D3D11_RASTERIZER_DESC));
-
-	rasterizerDesc.AntialiasedLineEnable = FALSE;
-	rasterizerDesc.CullMode = D3D11_CULL_BACK;
-	rasterizerDesc.DepthBias = 0;
-	rasterizerDesc.DepthBiasClamp = 0.0f;
-	rasterizerDesc.DepthClipEnable = TRUE;
-	rasterizerDesc.FillMode = D3D11_FILL_SOLID;
-	rasterizerDesc.FrontCounterClockwise = FALSE;
-	rasterizerDesc.MultisampleEnable = FALSE;
-	rasterizerDesc.ScissorEnable = FALSE;
-	rasterizerDesc.SlopeScaledDepthBias = 0.0f;
-	D3D_TRY(renderer::GetDevice()->CreateRasterizerState(&rasterizerDesc, &s_rasterizerState));
-
-	// Initialize the viewport to occupy the entire client area.
-	s_viewport.Width = static_cast<float>(windowSize.x);
-	s_viewport.Height = static_cast<float>(windowSize.y);
-	s_viewport.TopLeftX = 0.0f;
-	s_viewport.TopLeftY = 0.0f;
-	s_viewport.MinDepth = 0.0f;
-	s_viewport.MaxDepth = 1.0f;
-
-	// Shaders
-	s_pixelShader = renderer::CreatePixelShader(PixelShaderBlob, sizeof(PixelShaderBlob));
-	s_vertexShader = renderer::CreateVertexShader(VertexShaderBlob, sizeof(VertexShaderBlob));
-
-	// TODO Sampler (for texturing)
-
-
-	// Input layout
-	D3D11_INPUT_ELEMENT_DESC inputElementDescs[] = {
-		{ "POSITION",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "COLOR",     0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	};
-	D3D_TRY(renderer::GetDevice()->CreateInputLayout(inputElementDescs, _countof(inputElementDescs), VertexShaderBlob, sizeof(VertexShaderBlob), &s_inputLayout));
-
 	// Cube
-	s_mesh = CreateCube();
-
-
+	s_mesh = CreateCube(graphicsApi);
+	
 	// Timing
 	s_deltaTime = 0.0f;
-	QueryPerformanceFrequency(&s_perfFreq);
-	QueryPerformanceCounter(&s_lastTime);
 }
 
+#if 0
 void MoveCamera() {
 	// TODO: probably need to check if i'm typing something in ImGui or not
 	static glm::vec2 lastRotation;
@@ -218,27 +126,30 @@ void MoveCamera() {
 		//printf("pos: %.1f, %.1f, %.1f\n", m_player.GetPosition().x, m_player.GetPosition().y, m_player.GetPosition().z);
 	}
 }
+#endif
 
-void game::Update() {
+void game::Update(renderer::IGraphicsApi* graphicsApi) {
 	// Timing
-	LARGE_INTEGER currentTime;
-	QueryPerformanceCounter(&currentTime);
-	s_deltaTime = float(currentTime.QuadPart - s_lastTime.QuadPart) / float(s_perfFreq.QuadPart);
-	s_lastTime = currentTime;
+	s_deltaTime = platform::CalculateDeltaTime();
 
 	// Begin logic
 	input::BeginFrame();
-	MoveCamera();
+	//MoveCamera(); // TODO
 	input::EndFrame();
 
 	// Does not render, but builds display lists
 	logger::Render();
 
+	graphicsApi->SetPlayerCameraViewMatrix(s_player.GetViewMatrix());
+
+
+#if 0
+	renderer::SetPerCamera(&s_perCamera);
+
 	auto windowSize = platform::GetWindowSize();
 	if (windowSize.x > 0 && windowSize.y > 0) {
 		glm::mat4 projectionMatrix = glm::perspectiveFovLH(glm::radians(45.0f), (float)windowSize.x, (float)windowSize.y, 0.1f, 100.0f);
 		s_perCamera.view = s_player.GetViewMatrix();
-		renderer::SetPerCamera(&s_perCamera);
 		s_perFrame.projection = projectionMatrix;
 		renderer::SetPerFrame(&s_perFrame);
 
@@ -248,29 +159,9 @@ void game::Update() {
 
 	//s_perObject.worldMatrix = glm::mat4();
 	s_perObject.worldMatrix = glm::translate(glm::vec3(0, 0, 10.0f));
-}
-
-void game::CreateDrawCommands() {
-	renderer::DrawCommand cmd;
-	ZeroMemory(&cmd, sizeof(cmd));
-
-	cmd.mesh = &s_mesh;
-	cmd.pipelineState.inputLayout = s_inputLayout;
-	cmd.pipelineState.numViewports = 1;
-	cmd.pipelineState.viewports = &s_viewport;
-	cmd.pipelineState.pixelShader = s_pixelShader;
-	cmd.pipelineState.vertexShader = s_vertexShader;
-	cmd.pipelineState.rasterizerState = s_rasterizerState;
-	cmd.perObject = &s_perObject;
-
-	renderer::AddDrawCommand(cmd);
+#endif
 }
 
 void game::Destroy() {
-	SafeRelease(s_rasterizerState);
-	SafeRelease(s_pixelShader);
-	SafeRelease(s_vertexShader);
-	SafeRelease(s_inputLayout);
-	SafeRelease(s_mesh.indexBuffer);
-	SafeRelease(s_mesh.vertexBuffer);
+	// Free dynamic memory used by game here
 }

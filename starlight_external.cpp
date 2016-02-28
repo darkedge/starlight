@@ -20,7 +20,6 @@
 // ImGui
 #include "imgui.cpp"
 #include "imgui_draw.cpp"
-#include "imgui_impl_dx11.cpp"
 
 #ifdef _MSC_VER
 #pragma warning(pop)
