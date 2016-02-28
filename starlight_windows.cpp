@@ -50,29 +50,24 @@ bool platform::LoadRenderApi(renderer::IGraphicsApi* renderApi) {
 void ParseMessages() {
 	WindowEvent message;
 	// Clear queue for now
+	// TODO: Process input
 	while (s_queue.Dequeue(&message)) {}
 }
 
 void MyThreadFunction() {
-
-	// TODO: Select api based on file config
-	renderer::IGraphicsApi* graphicsApi = nullptr;
-
 	// Load D3D11
 	bool success = false;
 
 #ifdef STARLIGHT_D3D11
 	renderer::D3D11 d3d11;
 	if (!success) {
-		graphicsApi = &d3d11;
-		success = platform::LoadRenderApi(graphicsApi);
+		success = platform::LoadRenderApi(&d3d11);
 	}
 #endif
 #ifdef STARLIGHT_D3D10
 	renderer::D3D10 d3d10;
 	if (!success) {
-		graphicsApi = &d3d10;
-		success = platform::LoadRenderApi(graphicsApi);
+		success = platform::LoadRenderApi(&d3d10);
 	}
 #endif
 	if (!success) {
@@ -80,7 +75,7 @@ void MyThreadFunction() {
 		s_running.store(false);
 	}
 
-	game::Init(graphicsApi);
+	game::Init(g_renderApi);
 
 	// Init time
 	QueryPerformanceFrequency(&s_perfFreq);
@@ -93,7 +88,7 @@ void MyThreadFunction() {
 
 		g_renderApi->ImGuiNewFrame();
 
-		game::Update(graphicsApi);
+		game::Update(g_renderApi);
 
 		// Rendering
 		if (std::try_lock(s_mutex)) {
@@ -117,9 +112,7 @@ glm::ivec2 platform::GetWindowSize() {
 }
 #endif
 
-LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-
+LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	WindowEvent params;
 	ZeroMemory(&params, sizeof(params));
 	params.hWnd = hWnd;
@@ -137,7 +130,7 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_SIZE:
 		if (g_renderApi && wParam != SIZE_MINIMIZED) {
 			g_renderApi->Resize((int32_t) LOWORD(lParam), (int32_t) HIWORD(lParam));
-			return 0;
+			//return 0;
 		}
 		break;
 	case WM_SYSCOMMAND:
@@ -173,7 +166,7 @@ int __cdecl main()
 	GetClientRect(GetDesktopWindow(), &desktopRect);
 
 	// Get window rectangle
-	RECT windowRect = { 0, 0, 1600, 900 }; // TODO: Config file?
+	RECT windowRect = { 0, 0, 1280, 720 }; // TODO: Config file?
 	AdjustWindowRect(&windowRect, WS_OVERLAPPEDWINDOW, FALSE);
 
 	// Calculate window dimensions

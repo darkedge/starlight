@@ -198,8 +198,7 @@ static void CreateRenderTarget()
 	pBackBuffer->Release();
 }
 
-void renderer::D3D11::Resize(int32_t width, int32_t height)
-{
+void renderer::D3D11::Resize(int32_t width, int32_t height) {
 	SafeRelease(s_renderTargetView);
 	D3D_TRY(s_swapChain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, 0));
 	CreateRenderTarget();
@@ -354,6 +353,8 @@ bool renderer::D3D11::Init(PlatformData *data)
 	};
 	D3D_TRY(s_device->CreateInputLayout(inputElementDescs, _countof(inputElementDescs), VertexShaderBlob, sizeof(VertexShaderBlob), &s_inputLayout));
 
+	ImGui_ImplDX11_Init(data->hWnd, s_device, s_deviceContext);
+
 	return S_OK;
 }
 #if 0
@@ -452,12 +453,15 @@ void renderer::D3D11::Update() {
 }
 
 void renderer::D3D11::ImGuiNewFrame() {
-	// TODO
+	ImGui_ImplDX11_NewFrame();
 }
 
 extern LRESULT ImGui_ImplDX11_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 bool renderer::D3D11::ImGuiHandleEvent(WindowEvent* e) {
-	return (ImGui_ImplDX11_WndProcHandler(e->hWnd, e->msg, e->wParam, e->lParam) == 1);
+	if (ImGui_ImplDX11_WndProcHandler(e->hWnd, e->msg, e->wParam, e->lParam)) {
+		return true;
+	}
+	return false;
 }
 
 void renderer::D3D11::SetPlayerCameraViewMatrix(glm::mat4 matrix) {
