@@ -1,4 +1,5 @@
 #include "starlight_windows.h"
+#include "starlight_renderer.h"
 #include "starlight_game.h"
 #include <imgui.h>
 #include <atomic>
@@ -105,6 +106,8 @@ void MyThreadFunction() {
 	g_renderApi->Destroy();
 }
 
+#if 0
+// Perhaps better suited for the renderer
 glm::ivec2 platform::GetWindowSize() {
 	RECT clientRect;
 	GetClientRect(s_hwnd, &clientRect);
@@ -112,6 +115,7 @@ glm::ivec2 platform::GetWindowSize() {
 	assert(clientRect.bottom >= clientRect.top);
 	return glm::ivec2(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top);
 }
+#endif
 
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {

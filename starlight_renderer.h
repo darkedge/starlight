@@ -1,7 +1,8 @@
 #pragma once
-#include <cstdint>
+#include "starlight.h"
 #include "starlight_glm.h"
 #include "starlight_config.h"
+#include <cstdint>
 
 // Platform needs to provide this
 struct PlatformData;
@@ -21,16 +22,16 @@ struct Mesh {
 };
 
 // Note: #undef these at the bottom of this file
-#define FUNC_00 void Destroy()
-#define FUNC_01 void Render()
-#define FUNC_02 void Resize(int32_t width, int32_t height)
-#define FUNC_03 bool Init(PlatformData* data)
-#define FUNC_04 void Update()
-#define FUNC_05 void ImGuiNewFrame()
-#define FUNC_06 bool ImGuiHandleEvent(WindowEvent* event)
-#define FUNC_07 int32_t UploadMesh(Vertex* vertices, int32_t numVertices, int32_t* indices, int32_t numIndices)
-#define FUNC_08 void SetPlayerCameraViewMatrix(glm::mat4 mat)
-#define FUNC_09 void SetProjectionMatrix(glm::mat4 mat)
+#define FUNC_00 void SL_CALL Destroy()
+#define FUNC_01 void SL_CALL Render()
+#define FUNC_02 void SL_CALL Resize(int32_t width, int32_t height)
+#define FUNC_03 bool SL_CALL Init(PlatformData* data)
+#define FUNC_04 void SL_CALL Update()
+#define FUNC_05 void SL_CALL ImGuiNewFrame()
+#define FUNC_06 bool SL_CALL ImGuiHandleEvent(WindowEvent* event)
+#define FUNC_07 int32_t SL_CALL UploadMesh(Vertex* vertices, int32_t numVertices, int32_t* indices, int32_t numIndices)
+#define FUNC_08 void SL_CALL SetPlayerCameraViewMatrix(glm::mat4 mat)
+#define FUNC_09 void SL_CALL SetProjectionMatrix(glm::mat4 mat)
 
 #define PURE_VIRTUAL(_f) virtual _f = 0
 #define OVERRIDE_FINAL(_f) virtual _f override final
@@ -130,6 +131,8 @@ namespace renderer {
 #undef OVERRIDE_FINAL
 #undef PURE_VIRTUAL
 
+#undef FUNC_09
+#undef FUNC_08
 #undef FUNC_07
 #undef FUNC_06
 #undef FUNC_05
