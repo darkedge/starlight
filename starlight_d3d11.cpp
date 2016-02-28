@@ -205,6 +205,7 @@ void renderer::D3D11::Resize(int32_t width, int32_t height)
 	CreateRenderTarget();
 }
 
+// TODO: Any error here is unrecoverable and should return false
 bool renderer::D3D11::Init(PlatformData *data)
 {
 	// Setup swap chain
@@ -243,7 +244,7 @@ bool renderer::D3D11::Init(PlatformData *data)
 		D3D_FEATURE_LEVEL_9_1
 	};
 
-	D3D_TRY(D3D11CreateDeviceAndSwapChain(
+	HRESULT hr = D3D11CreateDeviceAndSwapChain(
 		nullptr,
 		D3D_DRIVER_TYPE_HARDWARE,
 		nullptr,
@@ -255,7 +256,12 @@ bool renderer::D3D11::Init(PlatformData *data)
 		&s_swapChain,
 		&s_device,
 		&featureLevel,
-		&s_deviceContext));
+		&s_deviceContext);
+
+	if (FAILED(hr)) {
+		logger::LogInfo("Failed to initialize Direct3D 11 device!");
+		return false;
+	}
 
 	CreateRenderTarget();
 

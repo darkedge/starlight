@@ -14,14 +14,13 @@ inline void SafeRelease(T& ptr) {
 #include <sstream>
 #define STR(x) #x
 #define XSTR(x) STR(x)
-#define D3D_TRY(expr) \
+#define D3D_TRY(_expr) \
 do { \
-	HRESULT	hr = expr; \
-	if (FAILED( hr )) { \
-		std::stringstream s;\
-		s << __FILE__ << "(" << __LINE__ << "): " << STR(expr) << "failed\n";\
-		logger::LogInfo(s.str());\
-		_CrtDbgBreak(); \
+	HRESULT	_hr = _expr; \
+	if (FAILED( _hr )) { \
+		std::stringstream _s;\
+		_s << __FILE__ << "(" << __LINE__ << "): " << STR(_expr) << "failed\n";\
+		logger::LogInfo(_s.str());\
 	} \
 } while (0)
 #else

@@ -51,7 +51,6 @@ int32_t CreateCube(renderer::IGraphicsApi* graphicsApi) {
 
 void game::Init(renderer::IGraphicsApi* graphicsApi) {
 	input::Init();
-	logger::Init();
 
 	{
 		// Load Fonts

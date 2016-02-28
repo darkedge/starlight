@@ -3,6 +3,7 @@
 #include <imgui.h>
 #include <atomic>
 #include "starlight_thread_safe_queue.h"
+#include "starlight_log.h"
 
 // Globals
 static std::mutex s_mutex;
@@ -149,6 +150,8 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 int __cdecl main()
 {
+	logger::Init();
+
 	auto className = L"StarlightClassName";
 
 	WNDCLASSEXW wndClass = { 0 };
