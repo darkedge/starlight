@@ -99,6 +99,7 @@ void MyThreadFunction() {
 
 	game::Destroy();
 	g_renderApi->Destroy();
+	g_renderApi = nullptr;
 }
 
 #if 0
