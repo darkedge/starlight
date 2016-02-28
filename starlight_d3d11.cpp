@@ -355,7 +355,7 @@ bool renderer::D3D11::Init(PlatformData *data)
 
 	ImGui_ImplDX11_Init(data->hWnd, s_device, s_deviceContext);
 
-	return S_OK;
+	return true;
 }
 #if 0
 uint64_t d3d11::encodeDraw(d3d11::SortKey1 sortkey)
