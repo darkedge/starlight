@@ -101,11 +101,9 @@ bool renderer::D3D10::ImGuiHandleEvent(WindowEvent* e) {
 }
 
 void renderer::D3D10::Resize(int32_t width, int32_t height) {
-	ImGui_ImplDX10_InvalidateDeviceObjects();
 	CleanupRenderTarget();
-	g_pSwapChain->ResizeBuffers(0, (UINT) width, (UINT) height, DXGI_FORMAT_UNKNOWN, 0);
+	g_pSwapChain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, 0);
 	CreateRenderTarget();
-	ImGui_ImplDX10_CreateDeviceObjects();
 }
 
 extern void ImGui_ImplDX10_NewFrame();
