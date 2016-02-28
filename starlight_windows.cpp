@@ -53,22 +53,26 @@ void ParseMessages() {
 
 void MyThreadFunction() {
 
-	renderer::D3D11 d3d11;
-	renderer::D3D10 d3d10;
-
 	// TODO: Select api based on file config
 	renderer::IGraphicsApi* graphicsApi = nullptr;
 
 	// Load D3D11
 	bool success = false;
+
+#ifdef STARLIGHT_D3D11
+	renderer::D3D11 d3d11;
 	if (!success) {
 		graphicsApi = &d3d11;
 		success = platform::LoadRenderApi(graphicsApi);
 	}
+#endif
+#ifdef STARLIGHT_D3D10
+	renderer::D3D10 d3d10;
 	if (!success) {
 		graphicsApi = &d3d10;
 		success = platform::LoadRenderApi(graphicsApi);
 	}
+#endif
 	if (!success) {
 		MessageBoxW(nullptr, L"No renderer available!", nullptr, MB_OK);
 		s_running.store(false);
