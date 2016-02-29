@@ -153,17 +153,6 @@ void MyThreadFunction() {
 	g_renderApi = nullptr;
 }
 
-#if 0
-// Perhaps better suited for the renderer
-glm::ivec2 platform::GetWindowSize() {
-	RECT clientRect;
-	GetClientRect(s_hwnd, &clientRect);
-	assert(clientRect.right >= clientRect.left);
-	assert(clientRect.bottom >= clientRect.top);
-	return glm::ivec2(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top);
-}
-#endif
-
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	WindowEvent params;
 	ZeroMemory(&params, sizeof(params));
@@ -197,8 +186,9 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	return DefWindowProcW(hWnd, msg, wParam, lParam);
 }
 
-int __cdecl main()
-{
+extern "C"
+__declspec(dllexport)
+void __stdcall Start() {
 	logger::Init();
 
 	auto className = L"StarlightClassName";
@@ -218,7 +208,7 @@ int __cdecl main()
 	GetClientRect(GetDesktopWindow(), &desktopRect);
 
 	// Get window rectangle
-	RECT windowRect = { 0, 0, 1280, 720 }; // TODO: Config file?
+	RECT windowRect = { 0, 0, 800, 600 }; // TODO: Config file?
 	AdjustWindowRect(&windowRect, WS_OVERLAPPEDWINDOW, FALSE);
 
 	// Calculate window dimensions
