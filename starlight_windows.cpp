@@ -17,8 +17,13 @@ static std::atomic_bool s_running;
 static LARGE_INTEGER s_lastTime;
 static LARGE_INTEGER s_perfFreq;
 
+// This is ugly
+#ifdef STARLIGHT_D3D11
 static renderer::D3D11 d3d11;
+#endif
+#ifdef STARLIGHT_D3D10
 static renderer::D3D10 d3d10;
+#endif
 
 static bool switchApi;
 static EGraphicsApi nextApi;
@@ -36,15 +41,19 @@ float platform::CalculateDeltaTime() {
 bool LoadRenderApiImpl(EGraphicsApi e) {
 	renderer::IGraphicsApi* api = nullptr;
 	switch (e) {
+#ifdef STARLIGHT_D3D11
 	case D3D11:
 		api = &d3d11;
 		break;
+#endif
+#ifdef STARLIGHT_D3D10
 	case D3D10:
 		api = &d3d10;
 		break;
+#endif
 	default:
-		logger::LogInfo("The requested graphics API is not implemented on this platform.");
-		break;
+		logger::LogInfo("The requested graphics API is not enabled.");
+		return false;
 	}
 
 	// Requested API is same as current API
