@@ -1,11 +1,8 @@
 #pragma once
-
-namespace renderer {
-	class IGraphicsApi;
-}
+#include "starlight_renderer.h"
 
 namespace platform {
-	bool LoadRenderApi(renderer::IGraphicsApi* renderApi);
+	bool LoadRenderApi(EGraphicsApi api);
 	float CalculateDeltaTime();
 }
 

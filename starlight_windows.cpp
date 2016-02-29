@@ -17,6 +17,12 @@ static std::atomic_bool s_running;
 static LARGE_INTEGER s_lastTime;
 static LARGE_INTEGER s_perfFreq;
 
+static renderer::D3D11 d3d11;
+static renderer::D3D10 d3d10;
+
+static bool switchApi;
+static EGraphicsApi nextApi;
+
 float platform::CalculateDeltaTime() {
 	LARGE_INTEGER currentTime;
 	QueryPerformanceCounter(&currentTime);
@@ -27,8 +33,22 @@ float platform::CalculateDeltaTime() {
 
 // Try to initialize the specified rendering API.
 // If it fails, it returns false.
-bool platform::LoadRenderApi(renderer::IGraphicsApi* renderApi) {
-	if (!renderApi) return false;
+bool LoadRenderApiImpl(EGraphicsApi e) {
+	renderer::IGraphicsApi* api = nullptr;
+	switch (e) {
+	case D3D11:
+		api = &d3d11;
+		break;
+	case D3D10:
+		api = &d3d10;
+		break;
+	default:
+		logger::LogInfo("The requested graphics API is not implemented on this platform.");
+		break;
+	}
+
+	// Requested API is same as current API
+	//if (g_renderApi == api) return true;
 
 	// Cannot init if there is no window
 	assert(s_hwnd);
@@ -37,14 +57,41 @@ bool platform::LoadRenderApi(renderer::IGraphicsApi* renderApi) {
 	ZeroMemory(&platformData, sizeof(platformData));
 	platformData.hWnd = s_hwnd;
 
-	if (renderApi->Init(&platformData)) {
+#if 1
+	if (g_renderApi == api) {
+		g_renderApi->Destroy();
+		g_renderApi->Init(&platformData);
+		return true;
+	}
+	// This goes bad if the same api is requested twice
+	if (api->Init(&platformData)) {
 		if (g_renderApi) {
 			g_renderApi->Destroy();
 		}
-		g_renderApi = renderApi;
+		g_renderApi = api;
 		return true;
 	}
+#else
+	// Destroy first, init after
+	if (g_renderApi) {
+		g_renderApi->Destroy();
+		g_renderApi = nullptr;
+	}
+	if (api->Init(&platformData)) {
+		g_renderApi = api;
+		return true;
+	}
+
+#endif
 	return false;
+}
+
+bool platform::LoadRenderApi(EGraphicsApi e) {
+	switchApi = true;
+	nextApi = e;
+
+	// TODO: Change signature to void
+	return true;
 }
 
 void ParseMessages() {
@@ -59,15 +106,15 @@ void MyThreadFunction() {
 	bool success = false;
 
 #ifdef STARLIGHT_D3D11
-	renderer::D3D11 d3d11;
 	if (!success) {
-		success = platform::LoadRenderApi(&d3d11);
+		logger::LogInfo("Loading Direct3D 11...");
+		success = LoadRenderApiImpl(D3D11);
 	}
 #endif
 #ifdef STARLIGHT_D3D10
-	renderer::D3D10 d3d10;
 	if (!success) {
-		success = platform::LoadRenderApi(&d3d10);
+		logger::LogInfo("Loading Direct3D 10...");
+		success = LoadRenderApiImpl(D3D10);
 	}
 #endif
 	if (!success) {
@@ -84,6 +131,10 @@ void MyThreadFunction() {
 	// Main loop
 	while (s_running.load())
 	{
+		if (switchApi) {
+			switchApi = false;
+			LoadRenderApiImpl(nextApi);
+		}
 		ParseMessages();
 
 		g_renderApi->ImGuiNewFrame();

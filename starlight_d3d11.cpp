@@ -355,6 +355,12 @@ bool renderer::D3D11::Init(PlatformData *data)
 
 	ImGui_ImplDX11_Init(data->hWnd, s_device, s_deviceContext);
 
+	{
+		// Load Fonts
+		ImGuiIO& io = ImGui::GetIO();
+		io.Fonts->AddFontFromFileTTF("external/imgui-1.47/extra_fonts/DroidSans.ttf", 16.0f, nullptr, io.Fonts->GetGlyphRangesCyrillic());
+	}
+
 	return true;
 }
 #if 0

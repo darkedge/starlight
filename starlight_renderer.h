@@ -8,6 +8,15 @@
 struct PlatformData;
 struct WindowEvent;
 
+enum EGraphicsApi {
+	D3D12,
+	D3D11,
+	D3D10,
+	OpenGL,
+	Vulkan,
+	Metal,
+};
+
 struct Vertex {
 	glm::vec3 position;
 	glm::vec3 color;

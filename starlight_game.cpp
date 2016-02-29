@@ -51,12 +51,6 @@ int32_t CreateCube(renderer::IGraphicsApi* graphicsApi) {
 
 void game::Init(renderer::IGraphicsApi* graphicsApi) {
 	input::Init();
-
-	{
-		// Load Fonts
-		ImGuiIO& io = ImGui::GetIO();
-		io.Fonts->AddFontFromFileTTF("external/imgui-1.47/extra_fonts/DroidSans.ttf", 16.0f, nullptr, io.Fonts->GetGlyphRangesCyrillic());
-	}
 	
 	LogInfo("Сука блять!");
 
@@ -135,6 +129,17 @@ void game::Update(renderer::IGraphicsApi* graphicsApi) {
 	input::BeginFrame();
 	//MoveCamera(); // TODO
 	input::EndFrame();
+
+	bool stay = true;
+	ImGui::Begin("Renderer Test", &stay);
+	// These calls should be deferred until next frame
+	if (ImGui::Button("Load D3D11")) {
+		platform::LoadRenderApi(D3D11);
+	}
+	if (ImGui::Button("Load D3D10")) {
+		platform::LoadRenderApi(D3D10);
+	}
+	ImGui::End();
 
 	// Does not render, but builds display lists
 	logger::Render();
