@@ -358,7 +358,7 @@ bool renderer::D3D11::Init(PlatformData *data)
 	{
 		// Load Fonts (TODO: Hardcoded!)
 		ImGuiIO& io = ImGui::GetIO();
-		io.Fonts->AddFontFromFileTTF("../../external/imgui-1.47/extra_fonts/DroidSans.ttf", 16.0f, nullptr, io.Fonts->GetGlyphRangesCyrillic());
+		io.Fonts->AddFontFromFileTTF("external/imgui-1.47/extra_fonts/DroidSans.ttf", 16.0f, nullptr, io.Fonts->GetGlyphRangesCyrillic());
 	}
 
 	return true;
