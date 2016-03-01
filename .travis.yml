@@ -1,0 +1,5 @@
+language: cpp
+solution: starlight.solution
+compiler:
+  - clang
+  - gcc
