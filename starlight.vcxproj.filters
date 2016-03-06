@@ -8,12 +8,12 @@
     <ClCompile Include="starlight_external.cpp" />
     <ClCompile Include="starlight_d3d10.cpp" />
     <ClCompile Include="starlight_d3d11.cpp" />
-    <ClCompile Include="starlight_renderer.cpp" />
     <ClCompile Include="starlight_platform.cpp" />
     <ClCompile Include="starlight_opengl.cpp" />
     <ClCompile Include="starlight_d3d10_imgui.cpp" />
     <ClCompile Include="starlight_d3d11_imgui.cpp" />
     <ClCompile Include="starlight_windows.cpp" />
+    <ClCompile Include="starlight_graphics.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="starlight_generated.h" />
@@ -26,7 +26,6 @@
     <ClInclude Include="starlight_thread_safe_queue.h" />
     <ClInclude Include="starlight_math.h" />
     <ClInclude Include="starlight_cbuffer.h" />
-    <ClInclude Include="starlight_renderer.h" />
     <ClInclude Include="starlight_d3d_shared.h" />
     <ClInclude Include="starlight_opengl.h" />
     <ClInclude Include="starlight_d3d10.h" />
@@ -35,6 +34,7 @@
     <ClInclude Include="starlight_config.h" />
     <ClInclude Include="starlight.h" />
     <ClInclude Include="starlight_windows.h" />
+    <ClInclude Include="starlight_graphics.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="starlight.fbs" />

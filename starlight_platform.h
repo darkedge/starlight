@@ -1,8 +1,7 @@
 #pragma once
-#include "starlight_renderer.h"
+#include "starlight_graphics.h"
 
 namespace platform {
-	bool LoadRenderApi(EGraphicsApi api);
 	float CalculateDeltaTime();
 }
 

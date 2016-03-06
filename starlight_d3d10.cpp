@@ -1,4 +1,4 @@
-#include "starlight_renderer.h"
+#include "starlight_graphics.h"
 #if defined(_WIN32) && defined(STARLIGHT_D3D10)
 #include "starlight_d3d_shared.h"
 #include "starlight_d3d10.h"
@@ -21,7 +21,7 @@ static ID3D10Device*            g_pd3dDevice = nullptr;
 static IDXGISwapChain*          g_pSwapChain = nullptr;
 static ID3D10RenderTargetView*  g_mainRenderTargetView = nullptr;
 
-void CreateRenderTarget()
+static void CreateRenderTarget()
 {
 	DXGI_SWAP_CHAIN_DESC sd;
 	g_pSwapChain->GetDesc(&sd);
@@ -38,12 +38,12 @@ void CreateRenderTarget()
 	pBackBuffer->Release();
 }
 
-void CleanupRenderTarget()
+static void CleanupRenderTarget()
 {
 	if (g_mainRenderTargetView) { g_mainRenderTargetView->Release(); g_mainRenderTargetView = nullptr; }
 }
 
-HRESULT CreateDeviceD3D(HWND hWnd)
+static HRESULT CreateDeviceD3D(HWND hWnd)
 {
 	// Setup swap chain
 	DXGI_SWAP_CHAIN_DESC sd;
@@ -95,29 +95,31 @@ HRESULT CreateDeviceD3D(HWND hWnd)
 	return S_OK;
 }
 
-extern LRESULT ImGui_ImplDX10_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-bool renderer::D3D10::ImGuiHandleEvent(WindowEvent* e) {
-	return (ImGui_ImplDX10_WndProcHandler(e->hWnd, e->msg, e->wParam, e->lParam) == 1);
+static void CleanupDeviceD3D() {
+	CleanupRenderTarget();
+	SafeRelease(g_pSwapChain);
+	SafeRelease(g_pd3dDevice);
 }
 
-void renderer::D3D10::Resize(int32_t width, int32_t height) {
+// graphics::API implementation
+
+void graphics::D3D10::Resize(int32_t width, int32_t height) {
 	CleanupRenderTarget();
 	g_pSwapChain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, 0);
 	CreateRenderTarget();
 }
 
 extern void ImGui_ImplDX10_NewFrame();
-void renderer::D3D10::ImGuiNewFrame() {
+void graphics::D3D10::ImGuiNewFrame() {
 	ImGui_ImplDX10_NewFrame();
 }
 
-void CleanupDeviceD3D() {
-	CleanupRenderTarget();
-	SafeRelease(g_pSwapChain);
-	SafeRelease(g_pd3dDevice);
+extern LRESULT ImGui_ImplDX10_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+bool graphics::D3D10::ImGuiHandleEvent(WindowEvent* e) {
+	return (ImGui_ImplDX10_WndProcHandler(e->hWnd, e->msg, e->wParam, e->lParam) == 1);
 }
 
-bool renderer::D3D10::Init(PlatformData* data)
+bool graphics::D3D10::Init(PlatformData* data)
 {
 	if (CreateDeviceD3D(data->hWnd) != S_OK) {
 		CleanupDeviceD3D();
@@ -126,16 +128,10 @@ bool renderer::D3D10::Init(PlatformData* data)
 
 	ImGui_ImplDX10_Init(data->hWnd, g_pd3dDevice);
 
-	{
-		// Load Fonts (TODO: Hardcoded!)
-		ImGuiIO& io = ImGui::GetIO();
-		io.Fonts->AddFontFromFileTTF("external/imgui-1.47/extra_fonts/DroidSans.ttf", 16.0f, nullptr, io.Fonts->GetGlyphRangesCyrillic());
-	}
-
 	return true;
 }
 
-void renderer::D3D10::Render() {
+void graphics::D3D10::Render() {
 	// Clear
 	ImVec4 clear_col = ImColor(114, 144, 154);
 	g_pd3dDevice->ClearRenderTargetView(g_mainRenderTargetView, (float*) &clear_col);
@@ -148,24 +144,24 @@ void renderer::D3D10::Render() {
 	g_pSwapChain->Present(0, 0);
 }
 
-void renderer::D3D10::Destroy() {
+void graphics::D3D10::Destroy() {
 	ImGui_ImplDX10_Shutdown();
 	CleanupDeviceD3D();
 }
 
-void renderer::D3D10::Update() {
+void graphics::D3D10::Update() {
 	// TODO
 }
 
-void renderer::D3D10::SetPlayerCameraViewMatrix(glm::mat4 matrix) {
+void graphics::D3D10::SetPlayerCameraViewMatrix(glm::mat4 matrix) {
 	// TODO
 }
 
-void renderer::D3D10::SetProjectionMatrix(glm::mat4 matrix) {
+void graphics::D3D10::SetProjectionMatrix(glm::mat4 matrix) {
 	// TODO
 }
 
-int32_t renderer::D3D10::UploadMesh(Vertex* vertices, int32_t numVertices, int32_t* indices, int32_t numIndices) {
+int32_t graphics::D3D10::UploadMesh(Vertex* vertices, int32_t numVertices, int32_t* indices, int32_t numIndices) {
 	// TOOD
 	return -1;
 }

@@ -1,5 +1,5 @@
 #include "starlight_windows.h"
-#include "starlight_renderer.h"
+#include "starlight_graphics.h"
 #include "starlight_game.h"
 #include <imgui.h>
 #include <atomic>
@@ -8,7 +8,7 @@
 
 // Globals
 static std::mutex s_mutex;
-static renderer::IGraphicsApi* g_renderApi;
+static graphics::API* g_renderApi;
 
 static HWND s_hwnd = nullptr;
 static util::ThreadSafeQueue<WindowEvent> s_queue;
@@ -19,14 +19,11 @@ static LARGE_INTEGER s_perfFreq;
 
 // This is ugly
 #ifdef STARLIGHT_D3D11
-static renderer::D3D11 d3d11;
+static graphics::D3D11 d3d11;
 #endif
 #ifdef STARLIGHT_D3D10
-static renderer::D3D10 d3d10;
+static graphics::D3D10 d3d10;
 #endif
-
-static bool switchApi;
-static EGraphicsApi nextApi;
 
 float platform::CalculateDeltaTime() {
 	LARGE_INTEGER currentTime;
@@ -37,27 +34,27 @@ float platform::CalculateDeltaTime() {
 }
 
 // Try to initialize the specified rendering API.
+// TODO: Remove globals for the APIs
 // If it fails, it returns false.
 bool LoadRenderApiImpl(EGraphicsApi e) {
-	renderer::IGraphicsApi* api = nullptr;
+	graphics::API* api = nullptr;
 	switch (e) {
-#ifdef STARLIGHT_D3D11
-	case D3D11:
-		api = &d3d11;
-		break;
-#endif
 #ifdef STARLIGHT_D3D10
 	case D3D10:
+		logger::LogInfo("Loading D3D10...");
 		api = &d3d10;
+		break;
+#endif
+#ifdef STARLIGHT_D3D11
+	case D3D11:
+		logger::LogInfo("Loading D3D11...");
+		api = &d3d11;
 		break;
 #endif
 	default:
 		logger::LogInfo("The requested graphics API is not enabled.");
 		return false;
 	}
-
-	// Requested API is same as current API
-	//if (g_renderApi == api) return true;
 
 	// Cannot init if there is no window
 	assert(s_hwnd);
@@ -67,21 +64,21 @@ bool LoadRenderApiImpl(EGraphicsApi e) {
 	platformData.hWnd = s_hwnd;
 
 #if 1
-	if (g_renderApi == api) {
-		g_renderApi->Destroy();
-		g_renderApi->Init(&platformData);
-		return true;
-	}
-	// This goes bad if the same api is requested twice
+	// Init new -> destroy old
 	if (api->Init(&platformData)) {
 		if (g_renderApi) {
 			g_renderApi->Destroy();
 		}
 		g_renderApi = api;
+
+		// Reload fonts
+		ImGuiIO& io = ImGui::GetIO();
+		io.Fonts->Clear();
+		io.Fonts->AddFontFromFileTTF("external/imgui-1.47/extra_fonts/DroidSans.ttf", 16.0f, nullptr, io.Fonts->GetGlyphRangesCyrillic());
 		return true;
 	}
 #else
-	// Destroy first, init after
+	// Destroy old -> init new
 	if (g_renderApi) {
 		g_renderApi->Destroy();
 		g_renderApi = nullptr;
@@ -95,14 +92,6 @@ bool LoadRenderApiImpl(EGraphicsApi e) {
 	return false;
 }
 
-bool platform::LoadRenderApi(EGraphicsApi e) {
-	switchApi = true;
-	nextApi = e;
-
-	// TODO: Change signature to void
-	return true;
-}
-
 void ParseMessages() {
 	WindowEvent message;
 	// Clear queue for now
@@ -111,44 +100,34 @@ void ParseMessages() {
 }
 
 void MyThreadFunction() {
-	// Load D3D11
-	bool success = false;
-
-#ifdef STARLIGHT_D3D11
-	if (!success) {
-		logger::LogInfo("Loading Direct3D 11...");
-		success = LoadRenderApiImpl(D3D11);
-	}
-#endif
-#ifdef STARLIGHT_D3D10
-	if (!success) {
-		logger::LogInfo("Loading Direct3D 10...");
-		success = LoadRenderApiImpl(D3D10);
-	}
-#endif
-	if (!success) {
-		MessageBoxW(nullptr, L"No renderer available!", nullptr, MB_OK);
-		s_running.store(false);
-	}
-
-	game::Init(g_renderApi);
+	EGraphicsApi graphicsApi = EGraphicsApi::D3D11;
+	LoadRenderApiImpl(graphicsApi);
 
 	// Init time
 	QueryPerformanceFrequency(&s_perfFreq);
 	QueryPerformanceCounter(&s_lastTime);
 
+	GameInfo gameInfo;
+	ZeroMemory(&gameInfo, sizeof(gameInfo));
+	gameInfo.graphicsApi = graphicsApi;
+
 	// Main loop
 	while (s_running.load())
 	{
-		if (switchApi) {
-			switchApi = false;
-			LoadRenderApiImpl(nextApi);
+		// Check if graphics API change was requested
+		if (gameInfo.graphicsApi != graphicsApi) {
+			if (LoadRenderApiImpl(gameInfo.graphicsApi)) {
+				graphicsApi = gameInfo.graphicsApi;
+			} else {
+				gameInfo.graphicsApi = graphicsApi;
+			}
 		}
+
 		ParseMessages();
 
 		g_renderApi->ImGuiNewFrame();
 
-		game::Update(g_renderApi);
+		game::Update(&gameInfo, g_renderApi);
 
 		// Rendering
 		if (std::try_lock(s_mutex)) {
@@ -159,6 +138,7 @@ void MyThreadFunction() {
 
 	game::Destroy();
 	g_renderApi->Destroy();
+	ImGui::Shutdown();
 	g_renderApi = nullptr;
 }
 
@@ -195,9 +175,7 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	return DefWindowProcW(hWnd, msg, wParam, lParam);
 }
 
-extern "C"
-__declspec(dllexport)
-void __stdcall Start() {
+int __stdcall main() {
 	logger::Init();
 
 	auto className = L"StarlightClassName";

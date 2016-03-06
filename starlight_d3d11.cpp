@@ -1,5 +1,6 @@
-#include "starlight_renderer.h"
+#include "starlight_graphics.h"
 #if defined(_WIN32) && defined(STARLIGHT_D3D11)
+
 #include "starlight_d3d_shared.h"
 #include "starlight_d3d11.h"
 #include "starlight_renderer_windows.h"
@@ -13,6 +14,8 @@
 
 // Include ImGui implementation
 #include "imgui_impl_dx11.h"
+
+#if 0
 
 // shaders (generated)
 // changed to defines to prevent visual studio hanging
@@ -69,7 +72,7 @@ ID3D11VertexShader* CreateVertexShader(const void *ptr, std::size_t size)
 	return shader;
 }
 
-void renderer::D3D11::Render() {
+void graphics::D3D11::Render() {
 	//s_numDrawCommands = 0;
 	//ZeroMemory(&s_drawCommands, sizeof(s_drawCommands));
 
@@ -163,8 +166,9 @@ void renderer::D3D11::Render() {
 }
 
 
-void renderer::D3D11::Destroy()
+void graphics::D3D11::Destroy()
 {
+	ImGui_ImplDX11_Shutdown();
 	SafeRelease(s_device);
 	SafeRelease(s_deviceContext);
 	SafeRelease(s_swapChain);
@@ -198,14 +202,14 @@ static void CreateRenderTarget()
 	pBackBuffer->Release();
 }
 
-void renderer::D3D11::Resize(int32_t width, int32_t height) {
+void graphics::D3D11::Resize(int32_t width, int32_t height) {
 	SafeRelease(s_renderTargetView);
 	D3D_TRY(s_swapChain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, 0));
 	CreateRenderTarget();
 }
 
 // TODO: Any error here is unrecoverable and should return false
-bool renderer::D3D11::Init(PlatformData *data)
+bool graphics::D3D11::Init(PlatformData *data)
 {
 	// Setup swap chain
 	DXGI_SWAP_CHAIN_DESC swapChainDesc;
@@ -408,7 +412,7 @@ void d3d11::AddDrawCommand(DrawCommand pair) {
 static MeshD3D11 g_meshes[MAX_MESHES];
 static int32_t g_numMeshes;
 
-int32_t renderer::D3D11::UploadMesh(Vertex* vertices, int32_t numVertices, int32_t* indices, int32_t numIndices) {
+int32_t graphics::D3D11::UploadMesh(Vertex* vertices, int32_t numVertices, int32_t* indices, int32_t numIndices) {
 	return -1;
 #if 0
 	MeshD3D11 mesh;
@@ -454,28 +458,179 @@ int32_t renderer::D3D11::UploadMesh(Vertex* vertices, int32_t numVertices, int32
 #endif
 }
 
-void renderer::D3D11::Update() {
+void graphics::D3D11::Update() {
 	// TODO
 }
 
-void renderer::D3D11::ImGuiNewFrame() {
+void graphics::D3D11::ImGuiNewFrame() {
 	ImGui_ImplDX11_NewFrame();
 }
 
 extern LRESULT ImGui_ImplDX11_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-bool renderer::D3D11::ImGuiHandleEvent(WindowEvent* e) {
+bool graphics::D3D11::ImGuiHandleEvent(WindowEvent* e) {
 	if (ImGui_ImplDX11_WndProcHandler(e->hWnd, e->msg, e->wParam, e->lParam)) {
 		return true;
 	}
 	return false;
 }
 
-void renderer::D3D11::SetPlayerCameraViewMatrix(glm::mat4 matrix) {
+void graphics::D3D11::SetPlayerCameraViewMatrix(glm::mat4 matrix) {
 	// TODO
 }
 
-void renderer::D3D11::SetProjectionMatrix(glm::mat4 matrix) {
+void graphics::D3D11::SetProjectionMatrix(glm::mat4 matrix) {
 	// TODO
 }
+
+#endif
+
+#include <imgui.h>
+#include "imgui_impl_dx11.h"
+#include <d3d11.h>
+#include <d3dcompiler.h>
+#define DIRECTINPUT_VERSION 0x0800
+#include <dinput.h>
+#include <tchar.h>
+
+// Data
+static ID3D11Device*            g_pd3dDevice = NULL;
+static ID3D11DeviceContext*     g_pd3dDeviceContext = NULL;
+static IDXGISwapChain*          g_pSwapChain = NULL;
+static ID3D11RenderTargetView*  g_mainRenderTargetView = NULL;
+
+static void CreateRenderTarget()
+{
+	DXGI_SWAP_CHAIN_DESC sd;
+	g_pSwapChain->GetDesc(&sd);
+
+	// Create the render target
+	ID3D11Texture2D* pBackBuffer;
+	D3D11_RENDER_TARGET_VIEW_DESC render_target_view_desc;
+	ZeroMemory(&render_target_view_desc, sizeof(render_target_view_desc));
+	render_target_view_desc.Format = sd.BufferDesc.Format;
+	render_target_view_desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+	g_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*) &pBackBuffer);
+	g_pd3dDevice->CreateRenderTargetView(pBackBuffer, &render_target_view_desc, &g_mainRenderTargetView);
+	g_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, NULL);
+	pBackBuffer->Release();
+}
+
+static void CleanupRenderTarget()
+{
+	if (g_mainRenderTargetView) { g_mainRenderTargetView->Release(); g_mainRenderTargetView = NULL; }
+}
+
+static HRESULT CreateDeviceD3D(HWND hWnd)
+{
+	// Setup swap chain
+	DXGI_SWAP_CHAIN_DESC sd;
+	{
+		ZeroMemory(&sd, sizeof(sd));
+		sd.BufferCount = 2;
+		sd.BufferDesc.Width = 0;
+		sd.BufferDesc.Height = 0;
+		sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		sd.BufferDesc.RefreshRate.Numerator = 60;
+		sd.BufferDesc.RefreshRate.Denominator = 1;
+		sd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+		sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+		sd.OutputWindow = hWnd;
+		sd.SampleDesc.Count = 1;
+		sd.SampleDesc.Quality = 0;
+		sd.Windowed = TRUE;
+		sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+	}
+
+	UINT createDeviceFlags = 0;
+	//createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
+	D3D_FEATURE_LEVEL featureLevel;
+	const D3D_FEATURE_LEVEL featureLevelArray[1] = { D3D_FEATURE_LEVEL_11_0, };
+	if (D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, createDeviceFlags, featureLevelArray, 1, D3D11_SDK_VERSION, &sd, &g_pSwapChain, &g_pd3dDevice, &featureLevel, &g_pd3dDeviceContext) != S_OK)
+		return E_FAIL;
+
+	// Setup rasterizer
+	{
+		D3D11_RASTERIZER_DESC RSDesc;
+		memset(&RSDesc, 0, sizeof(D3D11_RASTERIZER_DESC));
+		RSDesc.FillMode = D3D11_FILL_SOLID;
+		RSDesc.CullMode = D3D11_CULL_NONE;
+		RSDesc.FrontCounterClockwise = FALSE;
+		RSDesc.DepthBias = 0;
+		RSDesc.SlopeScaledDepthBias = 0.0f;
+		RSDesc.DepthBiasClamp = 0;
+		RSDesc.DepthClipEnable = TRUE;
+		RSDesc.ScissorEnable = TRUE;
+		RSDesc.AntialiasedLineEnable = FALSE;
+		RSDesc.MultisampleEnable = (sd.SampleDesc.Count > 1) ? TRUE : FALSE;
+
+		ID3D11RasterizerState* pRState = NULL;
+		g_pd3dDevice->CreateRasterizerState(&RSDesc, &pRState);
+		g_pd3dDeviceContext->RSSetState(pRState);
+		pRState->Release();
+	}
+
+	CreateRenderTarget();
+
+	return S_OK;
+}
+
+static void CleanupDeviceD3D()
+{
+	CleanupRenderTarget();
+	if (g_pSwapChain) { g_pSwapChain->Release(); g_pSwapChain = NULL; }
+	if (g_pd3dDeviceContext) { g_pd3dDeviceContext->Release(); g_pd3dDeviceContext = NULL; }
+	if (g_pd3dDevice) { g_pd3dDevice->Release(); g_pd3dDevice = NULL; }
+}
+
+// graphics::API implementation
+
+void graphics::D3D11::Destroy() {
+	ImGui_ImplDX11_Shutdown();
+	CleanupDeviceD3D();
+}
+
+void graphics::D3D11::Render() {
+	// Clear
+	ImVec4 clear_col = ImColor(114, 144, 154);
+	g_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView, (float*) &clear_col);
+
+	// TODO: Game rendering here
+
+	ImGui::Render();
+
+	// Present
+	g_pSwapChain->Present(0, 0);
+}
+
+void graphics::D3D11::Resize(int32_t, int32_t) {}
+
+bool graphics::D3D11::Init(PlatformData *data) {
+	// Initialize Direct3D
+	if (CreateDeviceD3D(data->hWnd) < 0)
+	{
+		CleanupDeviceD3D();
+		return false;
+	}
+
+	// Setup ImGui binding
+	ImGui_ImplDX11_Init(data->hWnd, g_pd3dDevice, g_pd3dDeviceContext);
+
+	return true;
+}
+void graphics::D3D11::Update() {} // TODO
+
+extern void ImGui_ImplDX11_NewFrame();
+void graphics::D3D11::ImGuiNewFrame() {
+	ImGui_ImplDX11_NewFrame();
+}
+
+extern LRESULT ImGui_ImplDX11_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+bool graphics::D3D11::ImGuiHandleEvent(WindowEvent* e) {
+	return (ImGui_ImplDX11_WndProcHandler(e->hWnd, e->msg, e->wParam, e->lParam) == 1);
+}
+
+int32_t graphics::D3D11::UploadMesh(Vertex *, int, int *, int) { return -1; } // TODO
+void graphics::D3D11::SetPlayerCameraViewMatrix(glm::mat4) {} // TODO
+void graphics::D3D11::SetProjectionMatrix(glm::mat4) {} // TODO
 
 #endif // defined(_WIN32) && defined(STARLIGHT_D3D11)

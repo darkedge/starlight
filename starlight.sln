@@ -5,11 +5,6 @@ VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "starlight", "starlight.vcxproj", "{836A3AB8-8A53-4AF8-8897-1D85684C07E3}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "starlight_win32", "starlight_win32.vcxproj", "{0B50EF3E-1DAC-4646-82DD-2024AE8F84F5}"
-	ProjectSection(ProjectDependencies) = postProject
-		{836A3AB8-8A53-4AF8-8897-1D85684C07E3} = {836A3AB8-8A53-4AF8-8897-1D85684C07E3}
-	EndProjectSection
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -20,10 +15,6 @@ Global
 		{836A3AB8-8A53-4AF8-8897-1D85684C07E3}.Debug|x64.Build.0 = Debug|x64
 		{836A3AB8-8A53-4AF8-8897-1D85684C07E3}.Release|x64.ActiveCfg = Release|x64
 		{836A3AB8-8A53-4AF8-8897-1D85684C07E3}.Release|x64.Build.0 = Release|x64
-		{0B50EF3E-1DAC-4646-82DD-2024AE8F84F5}.Debug|x64.ActiveCfg = Debug|x64
-		{0B50EF3E-1DAC-4646-82DD-2024AE8F84F5}.Debug|x64.Build.0 = Debug|x64
-		{0B50EF3E-1DAC-4646-82DD-2024AE8F84F5}.Release|x64.ActiveCfg = Release|x64
-		{0B50EF3E-1DAC-4646-82DD-2024AE8F84F5}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

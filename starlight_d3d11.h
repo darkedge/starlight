@@ -1,5 +1,5 @@
 #pragma once 
-#include "starlight_renderer.h"
+#include "starlight_graphics.h"
 #include "starlight_renderer_windows.h"
 
 struct ID3D11PixelShader;

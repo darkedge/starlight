@@ -46,7 +46,7 @@ struct Mesh {
 #define OVERRIDE_FINAL(_f) virtual _f override final
 
 #define RENDERER_IMPLEMENTATION(_c) \
-class _c : public IGraphicsApi { \
+class _c : public API { \
 public: \
 	OVERRIDE_FINAL(FUNC_00); \
 	OVERRIDE_FINAL(FUNC_01); \
@@ -60,9 +60,9 @@ public: \
 	OVERRIDE_FINAL(FUNC_09); \
 };
 
-namespace renderer {
+namespace graphics {
 
-	class IGraphicsApi {
+	class API {
 	public:
 		PURE_VIRTUAL(FUNC_00);
 		PURE_VIRTUAL(FUNC_01);

@@ -3,7 +3,7 @@
 #include "starlight_log.h"
 #include "starlight_generated.h"
 #include "starlight_transform.h"
-#include "starlight_renderer.h"
+#include "starlight_graphics.h"
 #include "starlight_platform.h"
 //#include <process.h> // ?
 #include <cstdint>
@@ -23,7 +23,7 @@ static float s_deltaTime;
 
 int32_t s_mesh;
 
-int32_t CreateCube(renderer::IGraphicsApi* graphicsApi) {
+int32_t CreateCube(graphics::API* graphicsApi) {
 	Vertex vertices[8] =
 	{
 		{ { -1.0f, -1.0f, -1.0f },{ 0.0f, 0.0f, 0.0f } }, // 0
@@ -49,7 +49,7 @@ int32_t CreateCube(renderer::IGraphicsApi* graphicsApi) {
 	return graphicsApi->UploadMesh(vertices, _countof(vertices), indices, _countof(indices));
 }
 
-void game::Init(renderer::IGraphicsApi* graphicsApi) {
+void Init(graphics::API* graphicsApi) {
 	input::Init();
 	
 	s_player.SetPosition(0, 0, -10);
@@ -119,7 +119,11 @@ void MoveCamera() {
 }
 #endif
 
-void game::Update(renderer::IGraphicsApi* graphicsApi) {
+void game::Update(GameInfo* gameInfo, graphics::API* graphicsApi) {
+	if(!gameInfo->initialized) {
+		Init(graphicsApi);
+	}
+
 	// Timing
 	s_deltaTime = platform::CalculateDeltaTime();
 
@@ -131,11 +135,11 @@ void game::Update(renderer::IGraphicsApi* graphicsApi) {
 	bool stay = true;
 	ImGui::Begin("Renderer Test", &stay);
 	// These calls should be deferred until next frame
-	if (ImGui::Button("Load D3D11")) {
-		platform::LoadRenderApi(D3D11);
-	}
 	if (ImGui::Button("Load D3D10")) {
-		platform::LoadRenderApi(D3D10);
+		gameInfo->graphicsApi = EGraphicsApi::D3D10;
+	}
+	if (ImGui::Button("Load D3D11")) {
+		gameInfo->graphicsApi = EGraphicsApi::D3D11;
 	}
 	ImGui::End();
 

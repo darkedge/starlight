@@ -1,11 +1,12 @@
 #pragma once
+#include "starlight_graphics.h"
 
-namespace renderer {
-	class IGraphicsApi;
-}
+struct GameInfo {
+	bool initialized;
+	EGraphicsApi graphicsApi;
+};
 
 namespace game {
-	void Init(renderer::IGraphicsApi* graphicsApi);
-	void Update(renderer::IGraphicsApi* graphicsApi);
+	void Update(GameInfo* gameInfo, graphics::API* graphicsApi);
 	void Destroy();
 }
