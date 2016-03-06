@@ -602,7 +602,11 @@ void graphics::D3D11::Render() {
 	g_pSwapChain->Present(0, 0);
 }
 
-void graphics::D3D11::Resize(int32_t, int32_t) {}
+void graphics::D3D11::Resize(int32_t, int32_t) {
+	CleanupRenderTarget();
+	g_pSwapChain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, 0);
+	CreateRenderTarget();
+}
 
 bool graphics::D3D11::Init(PlatformData *data) {
 	// Initialize Direct3D
