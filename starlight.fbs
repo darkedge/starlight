@@ -1,25 +1,70 @@
-// Example IDL file for our monster's schema.
-namespace MyGame.Sample;
-enum Color:byte { Red = 0, Green, Blue = 2 }
-union Equipment { Weapon } // Optionally add more tables.
-struct Vec3 {
-  x:float;
-  y:float;
-  z:float;
+namespace network;
+
+struct ChunkPosition {
+  x:int;
+  z:int;
 }
-table Monster {
-  pos:Vec3; // Struct.
-  mana:short = 150;
-  hp:short = 100;
+
+struct BlockPosition {
+  x:int;
+  y:int;
+  z:int;
+}
+
+// This gets inlined
+struct SimpleBlock {
+  type:ushort; // Minecraft uses 12 bits
+}
+
+table TAG_End {}
+table TAG_Byte { value:byte; }
+table TAG_Short { value:short; }
+table TAG_Int { value:int; }
+table TAG_Long { value:long; }
+table TAG_Float { value:float; }
+table TAG_Double { value:double; }
+table TAG_Byte_Array { value:[byte]; }
+table TAG_String { value:string; }
+//table TAG_List { value:[Tag]; } // TODO: Vector of payloads of one type
+table TAG_Compound { value:[Tag]; }
+table TAG_Int_Array { value:[int]; }
+
+union Payload {
+  TAG_End,
+  TAG_Byte,
+  TAG_Short,
+  TAG_Int,
+  TAG_Long,
+  TAG_Float,
+  TAG_Double,
+  TAG_Byte_Array,
+  TAG_String,
+  //TAG_List,
+  TAG_Compound,
+  TAG_Int_Array,
+}
+
+table Tag {
   name:string;
-  friendly:bool = false (deprecated);
-  inventory:[ubyte];  // Vector of scalars.
-  color:Color = Blue; // Enum.
-  weapons:[Weapon];   // Vector of tables.
-  equipped:Equipment; // Union.
+  payload:Payload;
 }
-table Weapon {
-  name:string;
-  damage:short;
+
+table ComplexBlock {
+  type:ushort;
+  position:BlockPosition;
+  tags:[Tag];
 }
-root_type Monster;
+
+table Chunk {
+  position:ChunkPosition (required);
+  // This array is fixed and block coordinates are derived from indices
+  simpleBlocks:[SimpleBlock] (required);
+  complexBlocks:[ComplexBlock];
+}
+
+// Network protocol
+// Maybe addons don't have to write network code?
+
+table Chat {
+  
+}
