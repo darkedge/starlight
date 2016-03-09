@@ -111,6 +111,10 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Addon.cpp" />
+    <ClCompile Include="Block.cpp" />
+    <ClCompile Include="Network.cpp" />
+    <ClCompile Include="Observer.cpp" />
     <ClCompile Include="starlight_d3d10.cpp" />
     <ClCompile Include="starlight_d3d10_imgui.cpp" />
     <ClCompile Include="starlight_d3d11_imgui.cpp" />
@@ -126,6 +130,7 @@
     <ClCompile Include="starlight_windows.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Observer.h" />
     <ClInclude Include="starlight.h" />
     <ClInclude Include="starlight_cbuffer.h" />
     <ClInclude Include="starlight_config.h" />

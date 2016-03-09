@@ -14,6 +14,10 @@
     <ClCompile Include="starlight_d3d11_imgui.cpp" />
     <ClCompile Include="starlight_windows.cpp" />
     <ClCompile Include="starlight_graphics.cpp" />
+    <ClCompile Include="Block.cpp" />
+    <ClCompile Include="Addon.cpp" />
+    <ClCompile Include="Observer.cpp" />
+    <ClCompile Include="Network.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="starlight_generated.h" />
@@ -35,6 +39,7 @@
     <ClInclude Include="starlight.h" />
     <ClInclude Include="starlight_windows.h" />
     <ClInclude Include="starlight_graphics.h" />
+    <ClInclude Include="Observer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="starlight.fbs" />
