@@ -74,7 +74,7 @@ bool LoadRenderApiImpl(EGraphicsApi e) {
 		// Reload fonts
 		ImGuiIO& io = ImGui::GetIO();
 		io.Fonts->Clear();
-		io.Fonts->AddFontFromFileTTF("external/imgui-1.47/extra_fonts/DroidSans.ttf", 16.0f, nullptr, io.Fonts->GetGlyphRangesCyrillic());
+		io.Fonts->AddFontFromFileTTF("external/imgui-1.47/extra_fonts/DroidSans.ttf", 14.0f, nullptr, io.Fonts->GetGlyphRangesCyrillic());
 		return true;
 	}
 #else
