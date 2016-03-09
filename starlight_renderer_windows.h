@@ -1,5 +1,5 @@
-#ifdef _WIN32
 #pragma once
+#ifdef _WIN32
 #include <Windows.h>
 // Stuff in this header is shared between the windows-specific code
 // and all supported renderers
