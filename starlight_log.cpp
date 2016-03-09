@@ -1,8 +1,7 @@
+#include "starlight.h"
 #include "starlight_log.h"
 #include <imgui.h>
 #include <sstream>
-
-#define IM_ARRAYSIZE(_ARR)  ((int)(sizeof(_ARR)/sizeof(*_ARR)))
 
 struct Console
 {
@@ -42,8 +41,8 @@ struct Console
 		char buf[1024];
 		va_list args;
 		va_start(args, fmt);
-		vsnprintf(buf, IM_ARRAYSIZE(buf), fmt, args);
-		buf[IM_ARRAYSIZE(buf) - 1] = 0;
+		vsnprintf(buf, COUNT_OF(buf), fmt, args);
+		buf[COUNT_OF(buf) - 1] = 0;
 		va_end(args);
 		Items.push_back(strdup(buf));
 		ScrollToBottom = true;
@@ -60,12 +59,12 @@ struct Console
 
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		//ImGui::TextWrapped("This example implements a console with basic coloring, completion and history. A more elaborate implementation may want to store entries along with extra data such as timestamp, emitter, etc.");
-		ImGui::TextWrapped("Enter 'HELP' for help, press TAB to use text completion.");
+		ImGui::TextWrapped("Press TAB to use text completion.");
 
 		// TODO: display items starting from the bottom
 
-		if (ImGui::SmallButton("Add Dummy Text")) { AddLog("%d some text", Items.Size); AddLog("some more text"); AddLog("display very important message here!"); } ImGui::SameLine();
-		if (ImGui::SmallButton("Add Dummy Error")) AddLog("[error] something went wrong"); ImGui::SameLine();
+		//if (ImGui::SmallButton("Add Dummy Text")) { AddLog("%d some text", Items.Size); AddLog("some more text"); AddLog("display very important message here!"); } ImGui::SameLine();
+		//if (ImGui::SmallButton("Add Dummy Error")) AddLog("[error] something went wrong"); ImGui::SameLine();
 		if (ImGui::SmallButton("Clear")) ClearLog();
 		//static float t = 0.0f; if (ImGui::GetTime() - t > 0.02f) { t = ImGui::GetTime(); AddLog("Spam %f", t); }
 
@@ -107,7 +106,7 @@ struct Console
 		ImGui::Separator();
 
 		// Command-line
-		if (ImGui::InputText("Input", InputBuf, IM_ARRAYSIZE(InputBuf), ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory, &TextEditCallbackStub, (void*)this))
+		if (ImGui::InputText("", InputBuf, COUNT_OF(InputBuf), ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory, &TextEditCallbackStub, (void*)this))
 		{
 			char* input_end = InputBuf + strlen(InputBuf);
 			while (input_end > InputBuf && input_end[-1] == ' ') input_end--; *input_end = 0;
@@ -128,7 +127,7 @@ struct Console
 
 	void    ExecCommand(const char* command_line)
 	{
-		AddLog("# %s\n", command_line);
+		AddLog("] %s\n", command_line);
 
 		// Insert into history. First find match and delete it so it can be pushed to the back. This isn't trying to be smart or optimal.
 		HistoryPos = -1;
@@ -141,6 +140,7 @@ struct Console
 			}
 		History.push_back(strdup(command_line));
 
+#if 0
 		// Process command
 		if (Stricmp(command_line, "CLEAR") == 0)
 		{
@@ -161,6 +161,7 @@ struct Console
 		{
 			AddLog("Unknown command: '%s'\n", command_line);
 		}
+#endif
 	}
 
 	static int TextEditCallbackStub(ImGuiTextEditCallbackData* data) // In C++11 you are better off using lambdas for this sort of forwarding callbacks
@@ -171,7 +172,6 @@ struct Console
 
 	int     TextEditCallback(ImGuiTextEditCallbackData* data)
 	{
-		//AddLog("cursor: %d, selection: %d-%d", data->CursorPos, data->SelectionStart, data->SelectionEnd);
 		switch (data->EventFlag)
 		{
 		case ImGuiInputTextFlags_CallbackCompletion:
