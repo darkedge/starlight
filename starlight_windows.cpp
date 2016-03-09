@@ -101,7 +101,10 @@ void ParseMessages() {
 
 void MyThreadFunction() {
 	EGraphicsApi graphicsApi = EGraphicsApi::D3D11;
-	LoadRenderApiImpl(graphicsApi);
+	if (!LoadRenderApiImpl(graphicsApi)) {
+		s_running.store(false);
+		return;
+	}
 
 	// Init time
 	QueryPerformanceFrequency(&s_perfFreq);
