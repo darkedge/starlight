@@ -58,7 +58,7 @@
       <WarningLevel>Level4</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <DisableSpecificWarnings>4100;4505</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>external\imgui-1.47;external\flatbuffers-1.2.0\include;external\glm-0.9.7.2;external\nowide_standalone;external\enet-1.3.13\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>external\imgui-1.47;external\flatbuffers-1.3.0\include;external\glm-0.9.7.2;external\nowide_standalone;external\enet-1.3.13\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NOMINMAX;VC_EXTRALEAN;STRICT;WIN32_LEAN_AND_MEAN;NOGDI;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <TreatWarningAsError>true</TreatWarningAsError>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
@@ -87,7 +87,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <DisableSpecificWarnings>4100;4505</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>external\imgui-1.47;external\flatbuffers-1.2.0\include;external\glm-0.9.7.2;external\nowide_standalone;external\enet-1.3.13\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>external\imgui-1.47;external\flatbuffers-1.3.0\include;external\glm-0.9.7.2;external\nowide_standalone;external\enet-1.3.13\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NOMINMAX;VC_EXTRALEAN;STRICT;WIN32_LEAN_AND_MEAN;NOGDI;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <TreatWarningAsError>true</TreatWarningAsError>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
