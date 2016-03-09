@@ -110,6 +110,12 @@ void MyThreadFunction() {
 	QueryPerformanceFrequency(&s_perfFreq);
 	QueryPerformanceCounter(&s_lastTime);
 
+	if (enet_initialize() != 0)
+	{
+		s_running.store(false);
+		return;
+	}
+
 	GameInfo gameInfo;
 	ZeroMemory(&gameInfo, sizeof(gameInfo));
 	gameInfo.graphicsApi = graphicsApi;
@@ -143,6 +149,8 @@ void MyThreadFunction() {
 	g_renderApi->Destroy();
 	ImGui::Shutdown();
 	g_renderApi = nullptr;
+
+	enet_deinitialize();
 }
 
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {

@@ -1,15 +1,18 @@
 #include "starlight_game.h"
 #include "starlight_input.h"
 #include "starlight_log.h"
-#include "starlight_generated.h"
 #include "starlight_transform.h"
 #include "starlight_graphics.h"
 #include "starlight_platform.h"
+#include "starlight_generated.h"
 //#include <process.h> // ?
 #include <cstdint>
 #include <glm/gtc/matrix_transform.hpp>
 #include "starlight_glm.h"
 #include "imgui.h"
+
+// temp
+#include <sstream>
 
 struct Camera {
 	float m_fieldOfView = glm::radians(60.0f); // Field of view angle (radians)
@@ -46,12 +49,17 @@ int32_t CreateCube(graphics::API* graphicsApi) {
 		4, 0, 3, 4, 3, 7
 	};
 
-	return graphicsApi->UploadMesh(vertices, _countof(vertices), indices, _countof(indices));
+	return graphicsApi->UploadMesh(vertices, COUNT_OF(vertices), indices, COUNT_OF(indices));
 }
 
-void Init(graphics::API* graphicsApi) {
+void Init(GameInfo* gameInfo, graphics::API* graphicsApi) {
 	input::Init();
+
+	//assert(!gameInfo->chunks);
+	//gameInfo->chunks = new Chunk[BUFFER_CHUNK_COUNT];
+	//ZERO_MEM(gameInfo->chunks, BUFFER_CHUNK_COUNT * sizeof(Chunk));
 	
+	// TODO: Move this stuff after a main menu etc.
 	s_player.SetPosition(0, 0, -10);
 
 	// Cube
@@ -59,6 +67,18 @@ void Init(graphics::API* graphicsApi) {
 	
 	// Timing
 	s_deltaTime = 0.0f;
+
+	// Addon loading
+	// This should happen according to a configuration file.
+	// So in the root folder there would be an /addons/ folder
+	// which contains a separate folder for every addon
+	// and a file which lists the ones to be loaded (file could also be in root).
+
+	// Open file, read contents in one go
+	// Allocate memory to contain the list of addons
+	// Then, for every line, load that addon (or something)
+	// It's useful to have an error and output stream here
+	// Even basic gameplay can (should?) be loaded as an addon
 }
 
 #if 0
@@ -121,7 +141,8 @@ void MoveCamera() {
 
 void game::Update(GameInfo* gameInfo, graphics::API* graphicsApi) {
 	if(!gameInfo->initialized) {
-		Init(graphicsApi);
+		Init(gameInfo, graphicsApi);
+		gameInfo->initialized = true;
 	}
 
 	// Timing
@@ -132,14 +153,177 @@ void game::Update(GameInfo* gameInfo, graphics::API* graphicsApi) {
 	//MoveCamera(); // TODO
 	input::EndFrame();
 
-	bool stay = true;
-	ImGui::Begin("Renderer Test", &stay);
-	// These calls should be deferred until next frame
-	if (ImGui::Button("Load D3D10")) {
-		gameInfo->graphicsApi = EGraphicsApi::D3D10;
+	// Networking
+	if (gameInfo->server) {
+		ENetEvent event;
+		std::stringstream ss;
+		while (enet_host_service(gameInfo->server, &event, 0) > 0)
+		{
+			ss.clear();
+			switch (event.type)
+			{
+			case ENET_EVENT_TYPE_CONNECT:
+				ss << "[SERVER] A new client connected from " << event.peer->address.host << ':' << event.peer->address.port << '.';
+				logger::LogInfo(ss.str());
+				/* Store any relevant client information here. */
+				event.peer->data = "Client information";
+				break;
+
+			case ENET_EVENT_TYPE_RECEIVE:
+				ss << "[SERVER] A packet of length " << event.packet->dataLength << " containing " << event.packet->data << " was received from " << event.peer->data << " on channel " << event.channelID << '.';
+				logger::LogInfo(ss.str());
+
+				// TODO: Flatbuffer unpack
+
+				enet_packet_destroy(event.packet);
+				break;
+
+			case ENET_EVENT_TYPE_DISCONNECT:
+				ss << "[SERVER] " << (const char*) event.peer->data << " disconnected.";
+				logger::LogInfo(ss.str());
+
+				// TODO: Disconnect in-game
+
+				event.peer->data = nullptr;
+				break;
+
+			default:
+				break;
+			}
+		}
 	}
-	if (ImGui::Button("Load D3D11")) {
-		gameInfo->graphicsApi = EGraphicsApi::D3D11;
+
+	if (gameInfo->client) {
+		ENetEvent event;
+		std::stringstream ss;
+		while (enet_host_service(gameInfo->client, &event, 0) > 0)
+		{
+			ss.clear();
+			switch (event.type)
+			{
+			case ENET_EVENT_TYPE_CONNECT:
+				ss << "[CLIENT] Connected to " << event.peer->address.host << ':' << event.peer->address.port << '.';
+				logger::LogInfo(ss.str());
+				/* Store any relevant client information here. */
+				event.peer->data = "Client information";
+				break;
+
+			case ENET_EVENT_TYPE_RECEIVE:
+				ss << "[CLIENT] A packet of length " << event.packet->dataLength << " containing " << event.packet->data << " was received from " << event.peer->data << " on channel " << event.channelID << '.';
+				logger::LogInfo(ss.str());
+
+				// TODO: Flatbuffer unpack
+
+				enet_packet_destroy(event.packet);
+				break;
+
+			case ENET_EVENT_TYPE_DISCONNECT:
+				ss << "[CLIENT] " << (const char*) event.peer->data << " disconnected.";
+				logger::LogInfo(ss.str());
+
+				// TODO: Disconnect in-game
+
+				event.peer->data = nullptr;
+
+
+
+				break;
+
+			default:
+				break;
+			}
+		}
+	}
+
+	// Debug menu
+	bool stay = true;
+	ImGui::Begin("Debug Menu", &stay);
+	if (ImGui::Button("Load D3D10")) gameInfo->graphicsApi = EGraphicsApi::D3D10;
+	if (ImGui::Button("Load D3D11")) gameInfo->graphicsApi = EGraphicsApi::D3D11;
+
+	if (ImGui::Button("Create Server")) {
+		if (gameInfo->server) {
+			logger::LogInfo("Server already created.");
+		}
+		else {
+			// TODO: Extract magic numbers
+			ENetAddress address;
+			address.host = ENET_HOST_ANY;
+			address.port = 1234;
+			gameInfo->server = enet_host_create(&address, 32, 2, 0, 0);
+			if (gameInfo->server) {
+				logger::LogInfo("Successfully created server.");
+			}
+			else {
+				logger::LogInfo("Failed to create server!");
+			}
+		}
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Destroy Server")) {
+		if (gameInfo->server) {
+			enet_host_destroy(gameInfo->server);
+			logger::LogInfo("Destroyed server.");
+			gameInfo->server = nullptr;
+		}
+		else {
+			logger::LogInfo("No server to destroy.");
+		}
+	}
+	if (ImGui::Button("Create Client")) {
+		if (gameInfo->client) {
+			logger::LogInfo("Client already created.");
+		}
+		else {
+			gameInfo->client = enet_host_create(nullptr, 1, 2, 57600 >> 3, 14400 >> 3);
+			if (gameInfo->client) {
+				logger::LogInfo("Successfully created client.");
+			}
+			else {
+				logger::LogInfo("Failed to create client!");
+			}
+		}
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Destroy Client")) {
+		if (gameInfo->client) {
+			// Disconnect first
+			if (gameInfo->peer) {
+				enet_peer_disconnect_now(gameInfo->peer, 0);
+				gameInfo->peer = nullptr;
+			}
+			enet_host_destroy(gameInfo->client);
+			gameInfo->client = nullptr;
+			logger::LogInfo("Destroyed client.");
+		}
+		else {
+			logger::LogInfo("No client to destroy.");
+		}
+	}
+	if (ImGui::Button("Connect to localhost")) {
+		if (gameInfo->client) {
+			ENetAddress address;
+			enet_address_set_host(&address, "127.0.0.1");
+			address.port = 1234;
+			// Heavy function
+			gameInfo->peer = enet_host_connect(gameInfo->client, &address, 1, 0);
+			if (gameInfo->peer) {
+				logger::LogInfo("Connecting...");
+			}
+			else {
+				logger::LogInfo("Connection already in use.");
+			}
+		}
+		else {
+			logger::LogInfo("Create a client first.");
+		}
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Disconnect")) {
+		if (gameInfo->client && gameInfo->peer) {
+			enet_peer_disconnect(gameInfo->peer, 0);
+			gameInfo->peer = nullptr;
+		}
 	}
 	ImGui::End();
 
@@ -147,6 +331,19 @@ void game::Update(GameInfo* gameInfo, graphics::API* graphicsApi) {
 	logger::Render();
 
 	graphicsApi->SetPlayerCameraViewMatrix(s_player.GetViewMatrix());
+
+	// Gameplay code concept
+#if 0
+	// Poll input? TODO: Have an abstraction here (reconfigurable controls etc)
+	if (input::GetKeyDown(input::)) {
+		
+	}
+
+	// Tick all running add-ons
+	// For this, they need to be registered
+	// Mods cannot be added at runtime (that would be overkill)
+	// So that array can be allocated once
+#endif
 
 
 #if 0
