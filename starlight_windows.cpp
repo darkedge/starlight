@@ -175,7 +175,12 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	return DefWindowProcW(hWnd, msg, wParam, lParam);
 }
 
-int __stdcall main() {
+int CALLBACK WinMain(
+	HINSTANCE   hInstance,
+	HINSTANCE   hPrevInstance,
+	LPSTR       lpCmdLine,
+	int         nCmdShow)
+{
 	logger::Init();
 
 	auto className = L"StarlightClassName";
