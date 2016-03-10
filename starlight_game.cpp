@@ -164,6 +164,27 @@ void game::Update(GameInfo* gameInfo, graphics::API* graphicsApi) {
 	if (ImGui::Button("Load D3D11")) gameInfo->graphicsApi = EGraphicsApi::D3D11;
 	ImGui::End();
 
+	// Network chat test
+	static char buf[128];
+	ImGui::Begin("Chat Input");
+	if (ImGui::InputText("Chat", buf, 128, ImGuiInputTextFlags_EnterReturnsTrue))
+	{
+		flatbuffers::FlatBufferBuilder builder;
+		auto str = builder.CreateString(buf);
+		auto chat = network::CreateChat(builder, str);
+		auto pkg = network::CreatePacket(builder, network::MessageType_Chat, chat.Union());
+		builder.Finish(pkg);
+		ENetPacket* packet = enet_packet_create(builder.GetBufferPointer(), builder.GetSize(),	ENET_PACKET_FLAG_RELIABLE);
+		enet_peer_send(gameInfo->peer, 0, packet);
+		//enet_host_flush (host);
+		
+		logger::LogInfo(std::string(buf));
+		ZERO_MEM(buf, sizeof(buf));
+	}
+	if (ImGui::IsRootWindowOrAnyChildFocused() && !ImGui::IsAnyItemActive() && !ImGui::IsMouseClicked(0))
+		ImGui::SetKeyboardFocusHere(-1); // Auto focus
+	ImGui::End();
+
 	// Does not render, but builds display lists
 	logger::Render();
 

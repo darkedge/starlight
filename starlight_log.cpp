@@ -116,7 +116,7 @@ struct Console
 		}
 
 		// Demonstrate keeping auto focus on the input box
-		if (ImGui::IsItemHovered() || (ImGui::IsRootWindowOrAnyChildFocused() && !ImGui::IsAnyItemActive() && !ImGui::IsMouseClicked(0)))
+		if (ImGui::IsRootWindowOrAnyChildFocused() && !ImGui::IsAnyItemActive() && !ImGui::IsMouseClicked(0))
 			ImGui::SetKeyboardFocusHere(-1); // Auto focus
 
 		ImGui::End();

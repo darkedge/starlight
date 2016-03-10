@@ -1,5 +1,6 @@
 #include "Network.h"
 #include "starlight_game.h"
+#include "starlight_generated.h"
 #include "starlight_glm.h"
 #include <sstream>
 #include <enet/enet.h>
@@ -45,12 +46,27 @@ void network::Update(GameInfo* gameInfo) {
 				break;
 
 			case ENET_EVENT_TYPE_RECEIVE:
-				ss << "[SERVER] A packet of length " << event.packet->dataLength << " containing " << event.packet->data << " was received from " << event.peer->data << " on channel " << event.channelID << '.';
+			{
+				ss << "[SERVER] A packet of length " << std::to_string(event.packet->dataLength) << " was received on channel " << std::to_string(event.channelID) << '.';
+				logger::LogInfo(ss.str());
+				ss.str("");
+				ss.clear();
+
+				ss << "Contents: ";
+				flatbuffers::FlatBufferBuilder builder;
+				auto packet = network::GetPacket(event.packet->data);
+				auto union_type = packet->message_type();
+				if (union_type == MessageType_Chat) {
+					auto chat = static_cast<const network::Chat*>(packet->message());
+					ss << chat->message()->str();
+				}
+				else {
+					ss << " Unknown!";
+				}
 				logger::LogInfo(ss.str());
 
-				// TODO: Flatbuffer unpack
-
 				enet_packet_destroy(event.packet);
+			}
 				break;
 
 			case ENET_EVENT_TYPE_DISCONNECT:
