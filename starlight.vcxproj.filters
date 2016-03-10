@@ -18,6 +18,7 @@
     <ClCompile Include="Addon.cpp" />
     <ClCompile Include="Observer.cpp" />
     <ClCompile Include="Network.cpp" />
+    <ClCompile Include="JobSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="starlight_generated.h" />
@@ -40,6 +41,8 @@
     <ClInclude Include="starlight_windows.h" />
     <ClInclude Include="starlight_graphics.h" />
     <ClInclude Include="Observer.h" />
+    <ClInclude Include="Network.h" />
+    <ClInclude Include="JobSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="starlight.fbs" />

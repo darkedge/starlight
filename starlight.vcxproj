@@ -13,7 +13,6 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{836A3AB8-8A53-4AF8-8897-1D85684C07E3}</ProjectGuid>
     <RootNamespace>starlight</RootNamespace>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -61,7 +60,6 @@
       <AdditionalIncludeDirectories>external\imgui-1.47;external\flatbuffers-1.3.0\include;external\glm-0.9.7.2;external\nowide_standalone;external\enet-1.3.13\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NOMINMAX;VC_EXTRALEAN;STRICT;WIN32_LEAN_AND_MEAN;NOGDI;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <MSCompatibility>true</MSCompatibility>
       <EnablePREfast>false</EnablePREfast>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
@@ -90,7 +88,6 @@
       <AdditionalIncludeDirectories>external\imgui-1.47;external\flatbuffers-1.3.0\include;external\glm-0.9.7.2;external\nowide_standalone;external\enet-1.3.13\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NOMINMAX;VC_EXTRALEAN;STRICT;WIN32_LEAN_AND_MEAN;NOGDI;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <MSCompatibility>true</MSCompatibility>
       <EnablePREfast>false</EnablePREfast>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
@@ -113,6 +110,7 @@
   <ItemGroup>
     <ClCompile Include="Addon.cpp" />
     <ClCompile Include="Block.cpp" />
+    <ClCompile Include="JobSystem.cpp" />
     <ClCompile Include="Network.cpp" />
     <ClCompile Include="Observer.cpp" />
     <ClCompile Include="starlight_d3d10.cpp" />
@@ -130,6 +128,8 @@
     <ClCompile Include="starlight_windows.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="JobSystem.h" />
+    <ClInclude Include="Network.h" />
     <ClInclude Include="Observer.h" />
     <ClInclude Include="starlight.h" />
     <ClInclude Include="starlight_cbuffer.h" />
