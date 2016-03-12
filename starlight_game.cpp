@@ -172,7 +172,7 @@ void game::Update(GameInfo* gameInfo, graphics::API* graphicsApi) {
 		flatbuffers::FlatBufferBuilder builder;
 		auto str = builder.CreateString(buf);
 		auto chat = network::CreateChat(builder, str);
-		auto pkg = network::CreatePacket(builder, network::MessageType_Chat, chat.Union());
+		auto pkg = network::CreatePacket(builder, network::Message::Chat, chat.Union());
 		builder.Finish(pkg);
 		ENetPacket* packet = enet_packet_create(builder.GetBufferPointer(), builder.GetSize(),	ENET_PACKET_FLAG_RELIABLE);
 		enet_peer_send(gameInfo->peer, 0, packet);

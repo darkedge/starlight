@@ -28,21 +28,21 @@ struct Chunk;
 struct Packet;
 struct Chat;
 
-enum Payload {
-  Payload_NONE = 0,
-  Payload_TAG_End = 1,
-  Payload_TAG_Byte = 2,
-  Payload_TAG_Short = 3,
-  Payload_TAG_Int = 4,
-  Payload_TAG_Long = 5,
-  Payload_TAG_Float = 6,
-  Payload_TAG_Double = 7,
-  Payload_TAG_Byte_Array = 8,
-  Payload_TAG_String = 9,
-  Payload_TAG_Compound = 10,
-  Payload_TAG_Int_Array = 11,
-  Payload_MIN = Payload_NONE,
-  Payload_MAX = Payload_TAG_Int_Array
+enum class Payload : uint8_t {
+  NONE = 0,
+  TAG_End = 1,
+  TAG_Byte = 2,
+  TAG_Short = 3,
+  TAG_Int = 4,
+  TAG_Long = 5,
+  TAG_Float = 6,
+  TAG_Double = 7,
+  TAG_Byte_Array = 8,
+  TAG_String = 9,
+  TAG_Compound = 10,
+  TAG_Int_Array = 11,
+  MIN = NONE,
+  MAX = TAG_Int_Array
 };
 
 inline const char **EnumNamesPayload() {
@@ -54,21 +54,21 @@ inline const char *EnumNamePayload(Payload e) { return EnumNamesPayload()[static
 
 inline bool VerifyPayload(flatbuffers::Verifier &verifier, const void *union_obj, Payload type);
 
-enum MessageType {
-  MessageType_NONE = 0,
-  MessageType_Chat = 1,
-  MessageType_MIN = MessageType_NONE,
-  MessageType_MAX = MessageType_Chat
+enum class Message : uint8_t {
+  NONE = 0,
+  Chat = 1,
+  MIN = NONE,
+  MAX = Chat
 };
 
-inline const char **EnumNamesMessageType() {
+inline const char **EnumNamesMessage() {
   static const char *names[] = { "NONE", "Chat", nullptr };
   return names;
 }
 
-inline const char *EnumNameMessageType(MessageType e) { return EnumNamesMessageType()[static_cast<int>(e)]; }
+inline const char *EnumNameMessage(Message e) { return EnumNamesMessage()[static_cast<int>(e)]; }
 
-inline bool VerifyMessageType(flatbuffers::Verifier &verifier, const void *union_obj, MessageType type);
+inline bool VerifyMessage(flatbuffers::Verifier &verifier, const void *union_obj, Message type);
 
 MANUALLY_ALIGNED_STRUCT(4) ChunkPosition FLATBUFFERS_FINAL_CLASS {
  private:
@@ -486,7 +486,7 @@ struct TagBuilder {
 
 inline flatbuffers::Offset<Tag> CreateTag(flatbuffers::FlatBufferBuilder &_fbb,
    flatbuffers::Offset<flatbuffers::String> name = 0,
-   Payload payload_type = Payload_NONE,
+   Payload payload_type = Payload::NONE,
    flatbuffers::Offset<void> payload = 0) {
   TagBuilder builder_(_fbb);
   builder_.add_payload(payload);
@@ -593,13 +593,13 @@ struct Packet FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     VT_MESSAGE_TYPE = 4,
     VT_MESSAGE = 6
   };
-  MessageType message_type() const { return static_cast<MessageType>(GetField<uint8_t>(VT_MESSAGE_TYPE, 0)); }
+  Message message_type() const { return static_cast<Message>(GetField<uint8_t>(VT_MESSAGE_TYPE, 0)); }
   const void *message() const { return GetPointer<const void *>(VT_MESSAGE); }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint8_t>(verifier, VT_MESSAGE_TYPE) &&
            VerifyField<flatbuffers::uoffset_t>(verifier, VT_MESSAGE) &&
-           VerifyMessageType(verifier, message(), message_type()) &&
+           VerifyMessage(verifier, message(), message_type()) &&
            verifier.EndTable();
   }
 };
@@ -607,7 +607,7 @@ struct Packet FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 struct PacketBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_message_type(MessageType message_type) { fbb_.AddElement<uint8_t>(Packet::VT_MESSAGE_TYPE, static_cast<uint8_t>(message_type), 0); }
+  void add_message_type(Message message_type) { fbb_.AddElement<uint8_t>(Packet::VT_MESSAGE_TYPE, static_cast<uint8_t>(message_type), 0); }
   void add_message(flatbuffers::Offset<void> message) { fbb_.AddOffset(Packet::VT_MESSAGE, message); }
   PacketBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
   PacketBuilder &operator=(const PacketBuilder &);
@@ -618,7 +618,7 @@ struct PacketBuilder {
 };
 
 inline flatbuffers::Offset<Packet> CreatePacket(flatbuffers::FlatBufferBuilder &_fbb,
-   MessageType message_type = MessageType_NONE,
+   Message message_type = Message::NONE,
    flatbuffers::Offset<void> message = 0) {
   PacketBuilder builder_(_fbb);
   builder_.add_message(message);
@@ -660,26 +660,26 @@ inline flatbuffers::Offset<Chat> CreateChat(flatbuffers::FlatBufferBuilder &_fbb
 
 inline bool VerifyPayload(flatbuffers::Verifier &verifier, const void *union_obj, Payload type) {
   switch (type) {
-    case Payload_NONE: return true;
-    case Payload_TAG_End: return verifier.VerifyTable(reinterpret_cast<const TAG_End *>(union_obj));
-    case Payload_TAG_Byte: return verifier.VerifyTable(reinterpret_cast<const TAG_Byte *>(union_obj));
-    case Payload_TAG_Short: return verifier.VerifyTable(reinterpret_cast<const TAG_Short *>(union_obj));
-    case Payload_TAG_Int: return verifier.VerifyTable(reinterpret_cast<const TAG_Int *>(union_obj));
-    case Payload_TAG_Long: return verifier.VerifyTable(reinterpret_cast<const TAG_Long *>(union_obj));
-    case Payload_TAG_Float: return verifier.VerifyTable(reinterpret_cast<const TAG_Float *>(union_obj));
-    case Payload_TAG_Double: return verifier.VerifyTable(reinterpret_cast<const TAG_Double *>(union_obj));
-    case Payload_TAG_Byte_Array: return verifier.VerifyTable(reinterpret_cast<const TAG_Byte_Array *>(union_obj));
-    case Payload_TAG_String: return verifier.VerifyTable(reinterpret_cast<const TAG_String *>(union_obj));
-    case Payload_TAG_Compound: return verifier.VerifyTable(reinterpret_cast<const TAG_Compound *>(union_obj));
-    case Payload_TAG_Int_Array: return verifier.VerifyTable(reinterpret_cast<const TAG_Int_Array *>(union_obj));
+    case Payload::NONE: return true;
+    case Payload::TAG_End: return verifier.VerifyTable(reinterpret_cast<const TAG_End *>(union_obj));
+    case Payload::TAG_Byte: return verifier.VerifyTable(reinterpret_cast<const TAG_Byte *>(union_obj));
+    case Payload::TAG_Short: return verifier.VerifyTable(reinterpret_cast<const TAG_Short *>(union_obj));
+    case Payload::TAG_Int: return verifier.VerifyTable(reinterpret_cast<const TAG_Int *>(union_obj));
+    case Payload::TAG_Long: return verifier.VerifyTable(reinterpret_cast<const TAG_Long *>(union_obj));
+    case Payload::TAG_Float: return verifier.VerifyTable(reinterpret_cast<const TAG_Float *>(union_obj));
+    case Payload::TAG_Double: return verifier.VerifyTable(reinterpret_cast<const TAG_Double *>(union_obj));
+    case Payload::TAG_Byte_Array: return verifier.VerifyTable(reinterpret_cast<const TAG_Byte_Array *>(union_obj));
+    case Payload::TAG_String: return verifier.VerifyTable(reinterpret_cast<const TAG_String *>(union_obj));
+    case Payload::TAG_Compound: return verifier.VerifyTable(reinterpret_cast<const TAG_Compound *>(union_obj));
+    case Payload::TAG_Int_Array: return verifier.VerifyTable(reinterpret_cast<const TAG_Int_Array *>(union_obj));
     default: return false;
   }
 }
 
-inline bool VerifyMessageType(flatbuffers::Verifier &verifier, const void *union_obj, MessageType type) {
+inline bool VerifyMessage(flatbuffers::Verifier &verifier, const void *union_obj, Message type) {
   switch (type) {
-    case MessageType_NONE: return true;
-    case MessageType_Chat: return verifier.VerifyTable(reinterpret_cast<const Chat *>(union_obj));
+    case Message::NONE: return true;
+    case Message::Chat: return verifier.VerifyTable(reinterpret_cast<const Chat *>(union_obj));
     default: return false;
   }
 }

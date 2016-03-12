@@ -56,7 +56,7 @@ void network::Update(GameInfo* gameInfo) {
 				flatbuffers::FlatBufferBuilder builder;
 				auto packet = network::GetPacket(event.packet->data);
 				auto union_type = packet->message_type();
-				if (union_type == MessageType_Chat) {
+				if (union_type == Message::Chat) {
 					auto chat = static_cast<const network::Chat*>(packet->message());
 					ss << chat->message()->str();
 				}
