@@ -11,6 +11,7 @@
 #include "starlight_glm.h"
 #include "imgui.h"
 #include "Network.h"
+#include "Noise.h"
 
 // temp
 #include <sstream>
@@ -80,6 +81,12 @@ void Init(GameInfo* gameInfo, graphics::API* graphicsApi) {
 	// Then, for every line, load that addon (or something)
 	// It's useful to have an error and output stream here
 	// Even basic gameplay can (should?) be loaded as an addon
+
+	noise::perlin::State* state = new noise::perlin::State;
+	ZERO_MEM(state, sizeof(*state));
+	noise::perlin::Initialize(state, 0);
+	float f = noise::perlin::Noise(state, 0.5f, 0.5f, 0.0f);
+	f = f;
 }
 
 #if 0
