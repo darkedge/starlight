@@ -122,6 +122,7 @@
     <ClCompile Include="starlight_input.cpp" />
     <ClCompile Include="starlight_log.cpp" />
     <ClCompile Include="starlight_d3d11.cpp" />
+    <ClCompile Include="starlight_memory.cpp" />
     <ClCompile Include="starlight_opengl.cpp" />
     <ClCompile Include="starlight_platform.cpp" />
     <ClCompile Include="starlight_graphics.cpp" />
@@ -142,6 +143,7 @@
     <ClInclude Include="starlight_d3d_shared.h" />
     <ClInclude Include="starlight_glm.h" />
     <ClInclude Include="starlight_math.h" />
+    <ClInclude Include="starlight_memory.h" />
     <ClInclude Include="starlight_opengl.h" />
     <ClInclude Include="starlight_platform.h" />
     <ClInclude Include="starlight_game.h" />
