@@ -12,6 +12,7 @@
 #include "imgui.h"
 #include "Network.h"
 #include "Noise.h"
+#include <enet/enet.h>
 
 // temp
 #include <sstream>

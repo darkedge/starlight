@@ -1,7 +1,5 @@
 #pragma once
 #include "starlight_graphics.h"
-#include <enet/enet.h>
-#include <vector>
 
 // Assumption: Block size = 1
 
@@ -50,8 +48,13 @@ struct Chunk {
 	// XZ position
 	glm::tvec2<int32_t> position;
 	uint16_t blocks[CHUNK_DIM_X * CHUNK_DIM_Y * CHUNK_DIM_Z];
-	std::vector<ComplexBlock> complexBlocks;
+	//std::vector<ComplexBlock> complexBlocks;
 };
+
+struct _ENetHost;
+typedef _ENetHost ENetHost;
+struct _ENetPeer;
+typedef _ENetPeer ENetPeer;
 
 struct GameInfo {
 	bool initialized;

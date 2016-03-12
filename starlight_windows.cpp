@@ -5,6 +5,7 @@
 #include <atomic>
 #include "starlight_thread_safe_queue.h"
 #include "starlight_log.h"
+#include <enet/enet.h>
 
 // Globals
 static std::mutex s_mutex;
