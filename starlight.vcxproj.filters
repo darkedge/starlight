@@ -19,6 +19,7 @@
     <ClCompile Include="Observer.cpp" />
     <ClCompile Include="Network.cpp" />
     <ClCompile Include="JobSystem.cpp" />
+    <ClCompile Include="WorldGen.cpp" />
     <ClCompile Include="Noise.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -44,6 +45,7 @@
     <ClInclude Include="Observer.h" />
     <ClInclude Include="Network.h" />
     <ClInclude Include="JobSystem.h" />
+    <ClInclude Include="WorldGen.h" />
     <ClInclude Include="Noise.h" />
   </ItemGroup>
   <ItemGroup>

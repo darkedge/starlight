@@ -82,6 +82,16 @@ void Init(GameInfo* gameInfo, graphics::API* graphicsApi) {
 	// It's useful to have an error and output stream here
 	// Even basic gameplay can (should?) be loaded as an addon
 
+	gameInfo->chunks = new Chunk[BUFFER_CHUNK_COUNT];
+	ZERO_MEM(gameInfo->chunks, BUFFER_CHUNK_COUNT * sizeof(Chunk));
+	for(int32_t x = 0; x < BUFFER_DIM_X; x++) {
+		for(int32_t z = 0; z < BUFFER_DIM_Z; z++) {
+			int32_t i = x * BUFFER_DIM_X + z;
+			Chunk& chunk = gameInfo->chunks[i];
+			chunk.position = { x, z };
+		}
+	}
+
 	noise::perlin::State* state = new noise::perlin::State;
 	ZERO_MEM(state, sizeof(*state));
 	noise::perlin::Initialize(state, 0);

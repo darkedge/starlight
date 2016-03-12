@@ -127,6 +127,7 @@
     <ClCompile Include="starlight_graphics.cpp" />
     <ClCompile Include="starlight_transform.cpp" />
     <ClCompile Include="starlight_windows.cpp" />
+    <ClCompile Include="WorldGen.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="JobSystem.h" />
@@ -152,6 +153,7 @@
     <ClInclude Include="starlight_transform.h" />
     <ClInclude Include="starlight_thread_safe_queue.h" />
     <ClInclude Include="starlight_windows.h" />
+    <ClInclude Include="WorldGen.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="starlight.fbs" />
