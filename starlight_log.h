@@ -6,6 +6,7 @@ namespace logger {
 	void Init();
 	void LogInfo(const std::string& str);
 	void Render();
+	void Destroy();
 }
 
 // Pulled out of the namespace for convenience

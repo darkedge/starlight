@@ -3,6 +3,9 @@
 #define GIMME SourceInfo {__FILE__, __func__, __LINE__}
 
 namespace memory {
+	inline char* Align(char* address, size_t alignment) {
+		return (char*) (((size_t) address + alignment - 1) & ~(alignment - 1));
+	}
 
 	struct SourceInfo {
 		// File name
@@ -21,12 +24,12 @@ namespace memory {
 	{
 	public:
 		template <class AreaPolicy>
-		explicit MemoryArena(const AreaPolicy& area)
-			: m_allocator(area.GetStart(), area.GetEnd())
+		explicit MemoryArena(AreaPolicy* area)
+			: m_allocator(area->GetStart(), area->GetEnd())
 		{
 		}
 
-		void* Allocate(size_t size, size_t alignment, const SourceInfo& sourceInfo)
+		void* Allocate(size_t size, size_t alignment, SourceInfo& sourceInfo)
 		{
 			m_threadGuard.Enter();
 
@@ -148,10 +151,27 @@ namespace memory {
 	class LinearAllocator
 	{
 	public:
-		explicit LinearAllocator(size_t size);
-		LinearAllocator(void* start, void* end);
+		//explicit LinearAllocator(size_t size);
+		LinearAllocator(void* start, void* end) :
+			m_start(static_cast<char*>(start)),
+			m_end(static_cast<char*>(end)),
+			m_current(m_start) {}
 
-		void* Allocate(size_t size, size_t alignment, size_t offset);
+		void* Allocate(size_t size, size_t alignment, size_t offset) {
+			// offset pointer first, align it, and offset it back
+			m_current = Align(m_current + offset, alignment) - offset;
+
+			void* userPtr = m_current;
+			m_current += size;
+
+			if (m_current >= m_end)
+			{
+				// out of memory
+				return nullptr;
+			}
+
+			return userPtr;
+		}
 
 		inline void Free(void* ptr);
 

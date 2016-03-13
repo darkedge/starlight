@@ -1,3 +1,14 @@
+//#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
+
+#ifdef _DEBUG
+#ifndef DBG_NEW
+#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
+#define new DBG_NEW
+#endif
+#endif  // _DEBUG
+
 #include "starlight_windows.h"
 #include "starlight_graphics.h"
 #include "starlight_game.h"
@@ -6,13 +17,14 @@
 #include "starlight_thread_safe_queue.h"
 #include "starlight_log.h"
 #include <enet/enet.h>
+#include "starlight_memory.h"
 
 // Globals
 static std::mutex s_mutex;
 static graphics::API* g_renderApi;
 
 static HWND s_hwnd = nullptr;
-static util::ThreadSafeQueue<WindowEvent> s_queue;
+static util::ThreadSafeQueue<WindowEvent>* s_queue;
 static std::atomic_bool s_running;
 
 static LARGE_INTEGER s_lastTime;
@@ -93,11 +105,40 @@ bool LoadRenderApiImpl(EGraphicsApi e) {
 	return false;
 }
 
+class HeapArea
+{
+public:
+	explicit HeapArea(uint64_t bytes) {
+		start = VirtualAlloc(nullptr, bytes, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+	}
+
+	~HeapArea() {
+		VirtualFree(start, 0, MEM_RELEASE);
+	}
+
+	void* GetStart() { return start; }
+	void* GetEnd() { return end; }
+
+private:
+	void* start;
+	void* end;
+};
+
+static HeapArea* heapArea;
+
+void* CALLBACK LibMalloc(size_t size) {
+	return nullptr;
+}
+
+void CALLBACK LibFree(void* ptr) {
+
+}
+
 void ParseMessages() {
 	WindowEvent message;
 	// Clear queue for now
 	// TODO: Process input
-	while (s_queue.Dequeue(&message)) {}
+	while (s_queue->Dequeue(&message)) {}
 }
 
 void MyThreadFunction() {
@@ -111,15 +152,24 @@ void MyThreadFunction() {
 	QueryPerformanceFrequency(&s_perfFreq);
 	QueryPerformanceCounter(&s_lastTime);
 
-	if (enet_initialize() != 0)
+	GameInfo gameInfo;
+	ZeroMemory(&gameInfo, sizeof(gameInfo));
+	gameInfo.graphicsApi = graphicsApi;
+	heapArea = new HeapArea(512 * 1024 * 1024);
+	memory::SimpleArena arena(heapArea);
+	gameInfo.allocator = &arena;
+
+	// ENet
+	ENetCallbacks callbacks;
+	ZERO_MEM(&callbacks, sizeof(callbacks));
+	//callbacks.malloc = &LibMalloc;
+	//callbacks.free = &LibFree;
+
+	if (enet_initialize_with_callbacks(ENET_VERSION, &callbacks) != 0)
 	{
 		s_running.store(false);
 		return;
 	}
-
-	GameInfo gameInfo;
-	ZeroMemory(&gameInfo, sizeof(gameInfo));
-	gameInfo.graphicsApi = graphicsApi;
 
 	// Main loop
 	while (s_running.load())
@@ -151,6 +201,8 @@ void MyThreadFunction() {
 	ImGui::Shutdown();
 	g_renderApi = nullptr;
 
+	delete heapArea;
+
 	enet_deinitialize();
 }
 
@@ -162,7 +214,7 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	params.wParam = wParam;
 	params.lParam = lParam;
 
-	s_queue.Enqueue(params);
+	s_queue->Enqueue(params);
 
 	if (g_renderApi && g_renderApi->ImGuiHandleEvent(&params))
 		return true;
@@ -193,6 +245,13 @@ int CALLBACK WinMain(
 	LPSTR       lpCmdLine,
 	int         nCmdShow)
 {
+	ImGuiIO& io = ImGui::GetIO();
+	io.MemAllocFn;
+	io.MemFreeFn;
+
+	//_crtBreakAlloc = 4015;
+	s_queue = new util::ThreadSafeQueue<WindowEvent>();
+
 	logger::Init();
 
 	auto className = L"StarlightClassName";
@@ -254,5 +313,13 @@ int CALLBACK WinMain(
 
 	thread.join();
 
+	logger::Destroy();
+
+	io.Fonts->Clear();
+
+	delete s_queue;
+
 	UnregisterClassW(className, GetModuleHandleW(nullptr));
+
+	_CrtDumpMemoryLeaks();
 }

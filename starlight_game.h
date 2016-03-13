@@ -1,5 +1,6 @@
 #pragma once
 #include "starlight_graphics.h"
+#include "starlight_memory.h"
 
 // Assumption: Block size = 1
 
@@ -60,9 +61,12 @@ struct GameInfo {
 	bool initialized;
 	EGraphicsApi graphicsApi;
 
+	// Maybe move this to a struct
 	ENetHost* server;
 	ENetPeer* peer;
 	ENetHost* client;
+
+	memory::SimpleArena* allocator;
 
 	// The idea is to have a ring-buffer of chunks
 	// But the problem is that we might have to wait for chunks to load
