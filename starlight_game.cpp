@@ -25,6 +25,7 @@ static Transform s_player;
 static Camera s_camera;
 static float s_deltaTime;
 
+#if 0
 int32_t s_mesh;
 
 int32_t CreateCube(graphics::API* graphicsApi) {
@@ -52,6 +53,20 @@ int32_t CreateCube(graphics::API* graphicsApi) {
 
 	return graphicsApi->UploadMesh(vertices, COUNT_OF(vertices), indices, COUNT_OF(indices));
 }
+#endif
+
+inline void SetBlock(Chunk* chunk, uint16_t block, int32_t x, int32_t y, int32_t z) {
+	// Chunk storage format: Y->Z->X
+	//  / Y
+	//  --> X
+	// |
+	// V Z
+	assert(chunk);
+	assert(x < CHUNK_DIM_XZ);
+	assert(y < CHUNK_DIM_Y);
+	assert(z < CHUNK_DIM_XZ);
+	chunk->blocks[y * CHUNK_DIM_XZ * CHUNK_DIM_XZ + z * CHUNK_DIM_XZ + x] = block;
+}
 
 void Init(GameInfo* gameInfo, graphics::API* graphicsApi) {
 	input::Init();
@@ -64,7 +79,7 @@ void Init(GameInfo* gameInfo, graphics::API* graphicsApi) {
 	s_player.SetPosition(0, 0, -10);
 
 	// Cube
-	s_mesh = CreateCube(graphicsApi);
+	//s_mesh = CreateCube(graphicsApi);
 	
 	// Timing
 	s_deltaTime = 0.0f;
@@ -80,6 +95,17 @@ void Init(GameInfo* gameInfo, graphics::API* graphicsApi) {
 	// Then, for every line, load that addon (or something)
 	// It's useful to have an error and output stream here
 	// Even basic gameplay can (should?) be loaded as an addon
+
+	// Create one chunk
+
+	gameInfo->numChunks = 1;
+	gameInfo->chunks = new Chunk;
+	ZERO_MEM(gameInfo->chunks, sizeof(Chunk));
+	for (int32_t y = 0; y < CHUNK_DIM_Y / 2; y++) {
+		for (int32_t x = 0; x < CHUNK_DIM_XZ; x++) for (int32_t z = 0; z < CHUNK_DIM_XZ; z++) {
+			SetBlock(gameInfo->chunks, 1, x, y, z);
+		}
+	}
 }
 
 #if 0
