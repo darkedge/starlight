@@ -286,3 +286,8 @@ void logger::LogInfo(const std::string& str) {
 void logger::Render() {
 	s_console->Draw("Console", &opened);
 }
+
+void logger::Destroy()
+{
+	delete s_console;
+}

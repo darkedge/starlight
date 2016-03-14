@@ -11,6 +11,8 @@
 #include "starlight_glm.h"
 #include "imgui.h"
 #include "Network.h"
+#include "Noise.h"
+#include <enet/enet.h>
 
 // temp
 #include <sstream>
@@ -106,6 +108,11 @@ void Init(GameInfo* gameInfo, graphics::API* graphicsApi) {
 			SetBlock(gameInfo->chunks, 1, x, y, z);
 		}
 	}
+	noise::perlin::State* state = new noise::perlin::State;
+	ZERO_MEM(state, sizeof(*state));
+	noise::perlin::Initialize(state, 0);
+	float f = noise::perlin::Noise(state, 0.5f, 0.5f, 0.0f);
+	f = f;
 }
 
 #if 0
@@ -198,7 +205,7 @@ void game::Update(GameInfo* gameInfo, graphics::API* graphicsApi) {
 		flatbuffers::FlatBufferBuilder builder;
 		auto str = builder.CreateString(buf);
 		auto chat = network::CreateChat(builder, str);
-		auto pkg = network::CreatePacket(builder, network::MessageType_Chat, chat.Union());
+		auto pkg = network::CreatePacket(builder, network::Message::Chat, chat.Union());
 		builder.Finish(pkg);
 		ENetPacket* packet = enet_packet_create(builder.GetBufferPointer(), builder.GetSize(),	ENET_PACKET_FLAG_RELIABLE);
 		enet_peer_send(gameInfo->peer, 0, packet);

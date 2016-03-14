@@ -65,12 +65,12 @@ table Chunk {
 // Network protocol
 // Maybe addons don't have to write network code?
 
-union MessageType {
+union Message {
   Chat,
 }
 
 table Packet {
-  message:MessageType;
+  message:Message;
 }
 root_type Packet;
 
