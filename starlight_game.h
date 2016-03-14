@@ -5,41 +5,19 @@
 // Assumption: Block size = 1
 
 // TODO: Hard-coded for now
-#define BUFFER_DIM_X 3
-#define BUFFER_DIM_Z BUFFER_DIM_X
-#define BUFFER_CHUNK_COUNT (BUFFER_DIM_X * BUFFER_DIM_Z)
-#if 0
+#define CHUNK_DIM_XZ 16
+#define CHUNK_DIM_Y 128
 
 // Idea: Prioritize to load the chunks that the player is looking at?
 
-// Different from Block for now
-// because we should save memory
-// perhaps rename Block to BlockView?
-struct SimpleBlock {
-	int32_t type;
-};
-
-// So there are two kinds of blocks.
-// Ones store extra data, and ones that don't.
-// Nomenclature?
-struct BlockExtraData {
-
-};
-
-// Big object: do not allocate on stack
-// 8B + 64kB
-#endif
-
-struct ComplexBlock {
-	uint16_t type;
-	// extra info
-	glm::tvec3<uint8_t> location;
-};
+// It might be an idea to allow for blocks to have a subtype.
+// Useful for different kinds of wood, leaves, or flowers, for example.
+// Then you don't need to check for every subtype.
 
 struct Chunk {
 	// XZ position
 	glm::tvec2<int32_t> position;
-	uint16_t blocks[CHUNK_DIM_X * CHUNK_DIM_Y * CHUNK_DIM_Z];
+	uint16_t blocks[CHUNK_DIM_XZ * CHUNK_DIM_Y * CHUNK_DIM_XZ];
 	//std::vector<ComplexBlock> complexBlocks;
 	// Minecraft has 4 bits extra per block, stored as a separate array.
 	// uint8_t metadata[CHUNK_DIM_Y * CHUNK_DIM_XZ * CHUNK_DIM_XZ >> 2];
@@ -59,7 +37,9 @@ struct Chunk {
 // This should be resolved internally by the game.
 
 struct TileEntity {
-
+	uint16_t type;
+	// extra info
+	glm::tvec3<uint8_t> location;
 };
 
 struct NPC {
@@ -85,6 +65,8 @@ struct GameInfo {
 	ENetHost* client;
 
 	memory::SimpleArena* allocator;
+
+	// Below this line is all game state
 
 	// The idea is to have a ring-buffer of chunks
 	// But the problem is that we might have to wait for chunks to load
