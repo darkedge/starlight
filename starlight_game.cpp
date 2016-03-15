@@ -27,6 +27,329 @@ static Transform s_player;
 static Camera s_camera;
 static float s_deltaTime;
 
+static glm::ivec3 Offsets[ESide::Count] = {
+	{ -1, 0, 0 },	// West
+	{ 0, -1, 0 },	// Bottom
+	{ 0, 0, -1 },	// North
+	{ 1, 0, 0 },	// East
+	{ 0, 1, 0 },	// Top
+	{ 0, 0, 1 },	// South
+};
+
+// Currently returns by value... maybe we want to return by pointer when Block becomes a struct?
+inline Block GetBlock(Chunk* chunk, int32_t x, int32_t y, int32_t z) {
+	assert(chunk);
+	assert(x >= 0 && x < CHUNK_DIM_XZ);
+	assert(y >= 0 && y < CHUNK_DIM_Y);
+	assert(z >= 0 && z < CHUNK_DIM_XZ);
+	return chunk->blocks[y * CHUNK_DIM_XZ * CHUNK_DIM_XZ + z * CHUNK_DIM_XZ + x];
+}
+
+inline void SetBlock(Chunk* chunk, Block block, int32_t x, int32_t y, int32_t z) {
+	// Chunk storage format: Y->Z->X
+	//  / Y
+	//  --> X
+	// |
+	// V Z
+	assert(chunk);
+	assert(x >= 0 && x < CHUNK_DIM_XZ);
+	assert(y >= 0 && y < CHUNK_DIM_Y);
+	assert(z >= 0 && z < CHUNK_DIM_XZ);
+	chunk->blocks[y * CHUNK_DIM_XZ * CHUNK_DIM_XZ + z * CHUNK_DIM_XZ + x] = block;
+}
+
+static void UpdateChunkMesh(Chunk* chunk) {
+	TempMesh mesh;
+
+	/*
+	* These are just working variables for the algorithm - almost all taken
+	* directly from Mikola Lysenko's javascript implementation.
+	*/
+	glm::tvec3<int32_t> x{ 0, 0, 0 };
+	glm::tvec3<int32_t> q{ 0, 0, 0 };
+	glm::tvec3<int32_t> du{ 0, 0, 0 };
+	glm::tvec3<int32_t> dv{ 0, 0, 0 };
+
+	/*
+	* We create a mask - this will contain the groups of matching voxel faces
+	* as we proceed through the chunk in 6 directions - once for each face.
+	*/
+	Block mask[CHUNK_DIM_XZ * CHUNK_DIM_Y] = { 0 };
+
+	/*
+	We start with the lesser-spotted bool for-loop (also known as the old flippy floppy).
+
+	The variable backFace will be TRUE on the first iteration and FALSE on the second - this allows
+	us to track which direction the indices should run during creation of the quad.
+
+	This loop runs twice, and the inner loop 3 times - totally 6 iterations - one for each
+	voxel face.
+	*/
+
+	// Which way the quad is facing
+	glm::tvec3<int32_t> sides[6] = {
+		{ -1, 0, 0 },	// West
+		{ 0, -1, 0 },	// Bottom
+		{ 0, 0, -1 },	// North
+		{ 1, 0, 0 },	// East
+		{ 0, 1, 0 },	// Top
+		{ 0, 0, 1 },	// South
+	};
+
+	glm::tvec3<int32_t> side;
+
+	for (int32_t p = 0; p < 6; p++)
+	{
+		int32_t d = p % 3;
+		bool backFace = p < 3;
+
+		// 0 1 2 3 4 5
+		int32_t u = (d + 1) % 3; // 1 2 0
+		int32_t v = (d + 2) % 3; // 2 0 1
+
+		x[0] = 0;
+		x[1] = 0;
+		x[2] = 0;
+
+		q[0] = 0;
+		q[1] = 0;
+		q[2] = 0;
+		q[d] = 1;
+
+		// Here we're keeping track of the side that we're meshing.
+		side = sides[p];
+
+		// We move through the dimension from front to back
+		for (x[d] = -1; x[d] < CHUNK_DIM_XZ;)
+		{
+			// We compute the mask
+			int32_t n = 0;
+
+			for (x[v] = 0; x[v] < CHUNK_DIM_Y; x[v]++)
+			{
+				for (x[u] = 0; x[u] < CHUNK_DIM_XZ; x[u]++)
+				{
+					// Here we retrieve two voxel faces for comparison.
+					Block block0 = 0;
+					Block block1 = 0;
+					if (x[d] >= 0)
+					{
+						auto f = x + side;
+						block0 = GetBlock(chunk, f.x, f.y, f.z);
+					}
+					if (x[d] < CHUNK_DIM_XZ - 1)
+					{
+						auto f = x + q + side;
+						block1 = GetBlock(chunk, f.x, f.y, f.z);
+					}
+
+					/*
+					* Note that we're using the equals function in the voxel face class here, which lets the faces
+					* be compared based on any number of attributes.
+					*
+					* Also, we choose the face to add to the mask depending on whether we're moving through on a backface or not.
+					*/
+					if (block0 == block1)
+					{
+						mask[n] = 0;
+					}
+					else
+					{
+						if (backFace)
+						{
+							mask[n] = block1;
+						}
+						else
+						{
+							mask[n] = block0;
+						}
+					}
+					n++;
+				} // End u loop
+			} // End v loop
+
+			x[d]++;
+
+			// Now we generate the mesh for the mask
+			n = 0;
+
+			for (int32_t j = 0; j < CHUNK_DIM_Y; j++)
+			{
+				for (int32_t i = 0; i < CHUNK_DIM_XZ;)
+				{
+					if (mask[n])
+					{
+						int32_t width = 0;
+						int32_t height = 0;
+						// Compute width
+						for (width = 1; i + width < CHUNK_DIM_XZ && mask[n + width] != 0 && mask[n + width] == mask[n]; width++) {}
+
+						// Compute height
+						bool done = false;
+						for (height = 1; j + height < CHUNK_DIM_Y; height++)
+						{
+							for (int32_t k = 0; k < width; k++)
+							{
+								if (mask[n + k + height * CHUNK_DIM_XZ] == 0 || !mask[n + k + height * CHUNK_DIM_XZ] == mask[n])
+								{
+									done = true;
+									break;
+								}
+							}
+
+							if (done)
+							{
+								break;
+							}
+						}
+
+						/*
+						* Here we check the "transparent" attribute in the Block class to ensure that we don't mesh
+						* any culled faces.
+						*/
+						if (mask[n] != 0)
+						{
+							/*
+							* Add quad
+							*/
+							x[u] = i;
+							x[v] = j;
+
+							du[0] = 0;
+							du[1] = 0;
+							du[2] = 0;
+							du[u] = width;
+
+							dv[0] = 0;
+							dv[1] = 0;
+							dv[2] = 0;
+							dv[v] = height;
+
+							/*
+							* And here we call the quad function in order to render a merged quad in the scene.
+							*
+							* We pass mask[n] to the function, which is an instance of the Block class containing
+							* all the attributes of the face - which allows for variables to be passed to shaders - for
+							* example lighting values used to create ambient occlusion.
+							*/
+							//mask[n]->side = side;
+							//AddBlockFaceTris(mesh,
+							glm::vec3 bottomLeft(x.x, x.y, x.z);
+							glm::vec3 topLeft(x.x + du.x, x.y + du.y, x.z + du.z);
+							glm::vec3 topRight(x.x + du.x + dv.x, x.y + du.y + dv.y, x.z + du.z + dv.z);
+							glm::vec3 bottomRight(x.x + dv.x, x.y + dv.y, x.z + dv.z);
+							//Block voxel = mask[n];
+
+							glm::vec3 vertices[4] = {
+								bottomLeft,
+								topLeft,
+								topRight,
+								bottomRight,
+							};
+
+							if (p == ESide::North || p == ESide::South)
+							{
+								std::swap(width, height);
+							}
+
+							// Rotate by shifting by one
+							glm::vec2 texcoords[] = {
+								glm::vec2(0.0f, float(width)),
+								glm::vec2(float(height), float(width)),
+								glm::vec2(float(height), 0.0f),
+								glm::vec2(0.0f, 0.0f),
+								glm::vec2(0.0f, float(width)),
+							};
+
+							glm::vec2 flipped[] = {
+								glm::vec2(float(height), float(width)),
+								glm::vec2(0.0f, float(width)),
+								glm::vec2(0.0f, 0.0f),
+								glm::vec2(float(height), 0.0f),
+								glm::vec2(float(height), float(width)),
+							};
+
+							glm::vec2 *texcoordptr = texcoords;
+
+							int32_t indices[6];
+							{
+								if (backFace)
+								{
+									int32_t a[6] = { 0, 3, 2, 2, 1, 0 };
+									memcpy(indices, a, sizeof(indices));
+								}
+								else
+								{
+									int32_t a[6] = { 0, 1, 2, 2, 3, 0 };
+									memcpy(indices, a, sizeof(indices));
+								}
+							}
+
+							// Offset with existing data count
+							for (int32_t k = 0; k < 6; k++)
+							{
+								indices[k] += (int32_t) mesh.indices.size();
+							}
+
+							switch (p)
+							{
+							case ESide::North:
+								texcoordptr = flipped;
+								break;
+							case ESide::East:
+								texcoordptr = texcoords + 1;
+								break;
+							case ESide::South:
+								texcoordptr = texcoords;
+								break;
+							case ESide::West:
+								texcoordptr = flipped + 1;
+								break;
+							case ESide::Top:
+								texcoordptr = texcoords + 1;
+								break;
+							case ESide::Bottom:
+								texcoordptr = flipped + 1;
+								break;
+							default:
+								break;
+							}
+
+							for (int32_t k = 0; k < 4; k++) {
+								Vertex vertex;
+								vertex.position = vertices[k];
+								vertex.texCoord = texcoordptr[k];
+								mesh.vertices.push_back(vertex);
+							}
+
+							mesh.indices.insert(mesh.indices.end(), &indices[0], indices + 6);
+						}
+
+						// We zero out the mask
+						for (int32_t l = 0; l < height; l++)
+						{
+							for (int32_t k = 0; k < width; k++)
+							{
+								mask[n + k + l * CHUNK_DIM_XZ] = 0;
+							}
+						}
+
+
+						// And then finally increment the counters and continue
+						i += width;
+						n += width;
+					}
+					else
+					{
+						i++;
+						n++;
+					}
+				}
+			} // End mesh loop
+		} // End chunk size loop
+	} // End axis loop
+}
+
 #if 0
 int32_t s_mesh;
 
@@ -56,19 +379,6 @@ int32_t CreateCube(graphics::API* graphicsApi) {
 	return graphicsApi->UploadMesh(vertices, COUNT_OF(vertices), indices, COUNT_OF(indices));
 }
 #endif
-
-inline void SetBlock(Chunk* chunk, uint16_t block, int32_t x, int32_t y, int32_t z) {
-	// Chunk storage format: Y->Z->X
-	//  / Y
-	//  --> X
-	// |
-	// V Z
-	assert(chunk);
-	assert(x < CHUNK_DIM_XZ);
-	assert(y < CHUNK_DIM_Y);
-	assert(z < CHUNK_DIM_XZ);
-	chunk->blocks[y * CHUNK_DIM_XZ * CHUNK_DIM_XZ + z * CHUNK_DIM_XZ + x] = block;
-}
 
 void Init(GameInfo* gameInfo, graphics::API* graphicsApi) {
 	input::Init();
@@ -108,6 +418,9 @@ void Init(GameInfo* gameInfo, graphics::API* graphicsApi) {
 			SetBlock(gameInfo->chunks, 1, x, y, z);
 		}
 	}
+
+	//graphicsApi->CreateMesh();
+
 	noise::perlin::State* state = new noise::perlin::State;
 	ZERO_MEM(state, sizeof(*state));
 	noise::perlin::Initialize(state, 0);

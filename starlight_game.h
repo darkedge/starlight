@@ -8,6 +8,19 @@
 #define CHUNK_DIM_XZ 16
 #define CHUNK_DIM_Y 128
 
+enum ESide {
+	West,
+	Bottom,
+	North,
+	East,
+	Top,
+	South,
+	Count,
+};
+
+// This makes it easier to change later
+typedef uint16_t Block;
+
 // Idea: Prioritize to load the chunks that the player is looking at?
 
 // It might be an idea to allow for blocks to have a subtype.
@@ -17,7 +30,7 @@
 struct Chunk {
 	// XZ position
 	glm::tvec2<int32_t> position;
-	uint16_t blocks[CHUNK_DIM_XZ * CHUNK_DIM_Y * CHUNK_DIM_XZ];
+	Block blocks[CHUNK_DIM_XZ * CHUNK_DIM_Y * CHUNK_DIM_XZ];
 	//std::vector<ComplexBlock> complexBlocks;
 	// Minecraft has 4 bits extra per block, stored as a separate array.
 	// uint8_t metadata[CHUNK_DIM_Y * CHUNK_DIM_XZ * CHUNK_DIM_XZ >> 2];
@@ -48,6 +61,13 @@ struct NPC {
 
 struct Player {
 
+};
+
+#include <vector>
+struct TempMesh {
+	// lazy
+	std::vector<int32_t> indices;
+	std::vector<Vertex> vertices;
 };
 
 struct _ENetHost;
