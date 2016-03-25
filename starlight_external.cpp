@@ -21,6 +21,10 @@
 #include "imgui.cpp"
 #include "imgui_draw.cpp"
 
+// stb
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
