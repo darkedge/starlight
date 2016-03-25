@@ -37,6 +37,7 @@ static glm::ivec3 Offsets[ESide::Count] = {
 };
 
 // Currently returns by value... maybe we want to return by pointer when Block becomes a struct?
+// Or use SoA and this keeps being an integer.
 __inline Block GetBlock(Chunk* chunk, int32_t x, int32_t y, int32_t z) {
 	assert(chunk);
 	assert(x >= 0 && x < CHUNK_DIM_XZ);
@@ -122,7 +123,7 @@ static int32_t AddCubeTriangles(TempMesh *mesh, int32_t x, int32_t y, int32_t z)
 	};
 
 	int32_t indices[6 * 2 * 3];
-	int32_t i = 0;
+	int32_t i = (int32_t) mesh->vertices.size();
 	for(int32_t j = 0; j < 6 * 2 * 3; j += 1 * 3 * 2) {
 		indices[j + 0] = i + 0;
 		indices[j + 1] = i + 1;
