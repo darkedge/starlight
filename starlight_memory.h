@@ -2,7 +2,18 @@
 #include <mutex>
 #define GIMME SourceInfo {__FILE__, __func__, __LINE__}
 
+#ifdef _WIN32
+#define MEM_CALL __cdecl
+#else
+// TODO
+#define MEM_CALL
+#endif
+
 namespace memory {
+	void* MEM_CALL slmalloc(size_t);
+	void MEM_CALL slfree(void*);
+	void* MEM_CALL slrealloc(void*, size_t);
+
 	inline char* Align(char* address, size_t alignment) {
 		return (char*) (((size_t) address + alignment - 1) & ~(alignment - 1));
 	}
