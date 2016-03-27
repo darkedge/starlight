@@ -2,6 +2,16 @@
 
 // Global memory stuff
 
+void* MEM_CALL operator new(std::size_t n) throw()
+{
+	return memory::slmalloc(n);
+}
+
+void MEM_CALL operator delete(void * p) throw()
+{
+	return memory::slfree(p);
+}
+
 void* MEM_CALL memory::slmalloc(size_t size) {
 	return malloc(size);
 }
