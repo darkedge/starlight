@@ -162,8 +162,9 @@ void MyThreadFunction() {
 	// ENet
 	ENetCallbacks callbacks;
 	ZERO_MEM(&callbacks, sizeof(callbacks));
-	callbacks.malloc = memory::slmalloc;
-	callbacks.free = memory::slfree;
+	callbacks.malloc = memory::malloc;
+	callbacks.free = memory::free;
+	callbacks.no_memory = memory::no_memory;
 
 	if (enet_initialize_with_callbacks(ENET_VERSION, &callbacks) != 0)
 	{
@@ -245,9 +246,11 @@ int CALLBACK WinMain(
 	LPSTR       lpCmdLine,
 	int         nCmdShow)
 {
+	std::set_new_handler(memory::no_memory);
+
 	ImGuiIO& io = ImGui::GetIO();
-	io.MemAllocFn = memory::slmalloc;
-	io.MemFreeFn = memory::slfree;
+	io.MemAllocFn = memory::malloc;
+	io.MemFreeFn = memory::free;
 
 	//_crtBreakAlloc = 4015;
 	s_queue = new util::ThreadSafeQueue<WindowEvent>();

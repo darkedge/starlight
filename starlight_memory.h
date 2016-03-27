@@ -10,9 +10,10 @@
 #endif
 
 namespace memory {
-	void* MEM_CALL slmalloc(size_t);
-	void MEM_CALL slfree(void*);
-	void* MEM_CALL slrealloc(void*, size_t);
+	void* MEM_CALL malloc(size_t);
+	void MEM_CALL free(void*);
+	void* MEM_CALL realloc(void*, size_t);
+	void MEM_CALL no_memory();
 
 	inline char* Align(char* address, size_t alignment) {
 		return (char*) (((size_t) address + alignment - 1) & ~(alignment - 1));

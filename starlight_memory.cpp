@@ -1,25 +1,37 @@
 #include "starlight_memory.h"
 
-// Global memory stuff
+// Global memory functions
 
-void* MEM_CALL operator new(std::size_t n) throw()
-{
-	return memory::slmalloc(n);
+void* MEM_CALL operator new(std::size_t n) throw() {
+	return memory::malloc(n);
 }
 
-void MEM_CALL operator delete(void * p) throw()
-{
-	return memory::slfree(p);
+void* MEM_CALL operator new[](std::size_t s) throw() {
+	return operator new(s);
 }
 
-void* MEM_CALL memory::slmalloc(size_t size) {
-	return malloc(size);
+void MEM_CALL operator delete(void * p) throw() {
+	return memory::free(p);
 }
 
-void MEM_CALL memory::slfree(void* ptr) {
-	return free(ptr);
+void MEM_CALL operator delete[](void *p) throw() {
+	return operator delete(p);
 }
 
-void* MEM_CALL memory::slrealloc(void* ptr, size_t size) {
-	return realloc(ptr, size);
+// Wrappers
+
+void* MEM_CALL memory::malloc(size_t size) {
+	return ::malloc(size);
+}
+
+void MEM_CALL memory::free(void* ptr) {
+	return ::free(ptr);
+}
+
+void* MEM_CALL memory::realloc(void* ptr, size_t size) {
+	return ::realloc(ptr, size);
+}
+
+void MEM_CALL memory::no_memory() {
+
 }
