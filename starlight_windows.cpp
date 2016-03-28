@@ -108,7 +108,7 @@ bool LoadRenderApiImpl(EGraphicsApi e) {
 class HeapArea
 {
 public:
-	explicit HeapArea(uint64_t bytes) {
+	explicit HeapArea(size_t bytes) {
 		start = VirtualAlloc(nullptr, bytes, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 	}
 
