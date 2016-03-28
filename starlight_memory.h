@@ -15,6 +15,28 @@ namespace memory {
 	void* MEM_CALL realloc(void*, size_t);
 	void MEM_CALL no_memory();
 
+	// Wraps a pointer to always be 64-bit
+	// for alignment purposes
+	template<typename T>
+	struct ptr64_t {
+	private:
+		uint64_t ptr;
+
+	public:
+		operator T*() {
+			return (T*) ptr;
+		}
+
+		T* operator()() {
+			return ptr;
+		}
+
+		ptr64_t<T> operator=(T* t) {
+			ptr = (uint64_t) t;
+			return *this;
+		}
+	};
+
 	inline char* Align(char* address, size_t alignment) {
 		return (char*) (((size_t) address + alignment - 1) & ~(alignment - 1));
 	}
