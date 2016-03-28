@@ -73,8 +73,8 @@ struct float3
 	}
 
 	// For things that really need array-style access.
-	VM_INLINE float operator[] (size_t i) const { return m.m128_f32[i]; };
-	VM_INLINE float& operator[] (size_t i) { return m.m128_f32[i]; };
+	VM_INLINE float operator[] (std::size_t i) const { return m.m128_f32[i]; };
+	VM_INLINE float& operator[] (std::size_t i) { return m.m128_f32[i]; };
 
 	__m128 m;
 };

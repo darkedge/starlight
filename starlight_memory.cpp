@@ -20,7 +20,7 @@ void MEM_CALL operator delete[](void *p) throw() {
 
 // Wrappers
 
-void* MEM_CALL memory::malloc(size_t size) {
+void* MEM_CALL memory::malloc(std::size_t size) {
 	return ::malloc(size);
 }
 
@@ -28,7 +28,7 @@ void MEM_CALL memory::free(void* ptr) {
 	return ::free(ptr);
 }
 
-void* MEM_CALL memory::realloc(void* ptr, size_t size) {
+void* MEM_CALL memory::realloc(void* ptr, std::size_t size) {
 	return ::realloc(ptr, size);
 }
 

@@ -10,9 +10,9 @@
 #endif
 
 namespace memory {
-	void* MEM_CALL malloc(size_t);
+	void* MEM_CALL malloc(std::size_t);
 	void MEM_CALL free(void*);
-	void* MEM_CALL realloc(void*, size_t);
+	void* MEM_CALL realloc(void*, std::size_t);
 	void MEM_CALL no_memory();
 
 	// Wraps a pointer to always be 64-bit
@@ -37,8 +37,8 @@ namespace memory {
 		}
 	};
 
-	inline char* Align(char* address, size_t alignment) {
-		return (char*) (((size_t) address + alignment - 1) & ~(alignment - 1));
+	inline char* Align(char* address, std::size_t alignment) {
+		return (char*) (((std::size_t) address + alignment - 1) & ~(alignment - 1));
 	}
 
 	struct SourceInfo {
@@ -63,12 +63,12 @@ namespace memory {
 		{
 		}
 
-		void* Allocate(size_t size, size_t alignment, SourceInfo& sourceInfo)
+		void* Allocate(std::size_t size, std::size_t alignment, SourceInfo& sourceInfo)
 		{
 			m_threadGuard.Enter();
 
-			const size_t originalSize = size;
-			const size_t newSize = size + BoundsCheckingPolicy::SIZE_FRONT + BoundsCheckingPolicy::SIZE_BACK;
+			const std::size_t originalSize = size;
+			const std::size_t newSize = size + BoundsCheckingPolicy::SIZE_FRONT + BoundsCheckingPolicy::SIZE_BACK;
 
 			char* plainMemory = static_cast<char*>(m_allocator.Allocate(newSize, alignment, BoundsCheckingPolicy::SIZE_FRONT));
 
@@ -88,7 +88,7 @@ namespace memory {
 			m_threadGuard.Enter();
 
 			char* originalMemory = static_cast<char*>(ptr) - BoundsCheckingPolicy::SIZE_FRONT;
-			const size_t allocationSize = m_allocator.GetAllocationSize(originalMemory);
+			const std::size_t allocationSize = m_allocator.GetAllocationSize(originalMemory);
 
 			m_boundsChecker.CheckFront(originalMemory);
 			m_boundsChecker.CheckBack(originalMemory + allocationSize - BoundsCheckingPolicy::SIZE_BACK);
@@ -113,8 +113,8 @@ namespace memory {
 	class NoBoundsChecking
 	{
 	public:
-		static const size_t SIZE_FRONT = 0;
-		static const size_t SIZE_BACK = 0;
+		static const std::size_t SIZE_FRONT = 0;
+		static const std::size_t SIZE_BACK = 0;
 
 		inline void GuardFront(void*) const {}
 		inline void GuardBack(void*) const {}
@@ -126,15 +126,15 @@ namespace memory {
 	class NoMemoryTracking
 	{
 	public:
-		inline void OnAllocation(void*, size_t, size_t, const SourceInfo&) const {}
+		inline void OnAllocation(void*, std::size_t, std::size_t, const SourceInfo&) const {}
 		inline void OnDeallocation(void*) const {}
 	};
 
 	class NoMemoryTagging
 	{
 	public:
-		inline void TagAllocation(void*, size_t) const {}
-		inline void TagDeallocation(void*, size_t) const {}
+		inline void TagAllocation(void*, std::size_t) const {}
+		inline void TagDeallocation(void*, std::size_t) const {}
 	};
 
 	class SingleThreadPolicy
@@ -165,7 +165,7 @@ namespace memory {
 	class RecordingArena
 	{
 	public:
-		void* Allocate(size_t size, size_t alignment, const SourceInfo& sourceInfo)
+		void* Allocate(std::size_t size, std::size_t alignment, const SourceInfo& sourceInfo)
 		{
 			// send info via TCP/IP...
 			return m_arena.Allocate(size, alignment, sourceInfo);
@@ -185,13 +185,13 @@ namespace memory {
 	class LinearAllocator
 	{
 	public:
-		//explicit LinearAllocator(size_t size);
+		//explicit LinearAllocator(std::size_t size);
 		LinearAllocator(void* start, void* end) :
 			m_start(static_cast<char*>(start)),
 			m_end(static_cast<char*>(end)),
 			m_current(m_start) {}
 
-		void* Allocate(size_t size, size_t alignment, size_t offset) {
+		void* Allocate(std::size_t size, std::size_t alignment, std::size_t offset) {
 			// offset pointer first, align it, and offset it back
 			m_current = Align(m_current + offset, alignment) - offset;
 

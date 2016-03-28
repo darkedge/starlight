@@ -108,7 +108,7 @@ bool LoadRenderApiImpl(EGraphicsApi e) {
 class HeapArea
 {
 public:
-	explicit HeapArea(size_t bytes) {
+	explicit HeapArea(std::size_t bytes) {
 		start = VirtualAlloc(nullptr, bytes, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 	}
 
@@ -126,7 +126,7 @@ private:
 
 static HeapArea* heapArea;
 
-void* CALLBACK LibMalloc(size_t size) {
+void* CALLBACK LibMalloc(std::size_t size) {
 	return nullptr;
 }
 
