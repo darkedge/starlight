@@ -279,6 +279,23 @@ void game::Update(GameInfo* gameInfo, graphics::API* graphicsApi) {
 
 	// Begin logic
 	input::BeginFrame();
+
+	static bool showMainMenuBar = true;
+	if(input::GetKeyDown(VK_F3)) {
+		showMainMenuBar = !showMainMenuBar;
+	}
+
+	if(showMainMenuBar) {
+		ImGui::BeginMainMenuBar();
+		if (ImGui::BeginMenu("File")) {
+			if (ImGui::MenuItem("Exit", nullptr, nullptr)) {
+				// TODO
+			}
+			ImGui::EndMenu();
+		}
+		ImGui::EndMainMenuBar();
+	}
+
 	//MoveCamera(); // TODO
 	input::EndFrame();
 
@@ -304,7 +321,6 @@ void game::Update(GameInfo* gameInfo, graphics::API* graphicsApi) {
 		builder.Finish(pkg);
 		ENetPacket* packet = enet_packet_create(builder.GetBufferPointer(), builder.GetSize(),	ENET_PACKET_FLAG_RELIABLE);
 		enet_peer_send(gameInfo->peer, 0, packet);
-		//enet_host_flush (host);
 		
 		logger::LogInfo(std::string(buf));
 		ZERO_MEM(buf, sizeof(buf));
