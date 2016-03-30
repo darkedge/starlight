@@ -1,5 +1,11 @@
-version: 1.0.{build}
-os: Visual Studio 2015
+version: '{build}'
+image: Visual Studio 2015
+configuration:
+- Debug
+- Release
+platform:
+- x86
+- x64
 build:
   project: starlight.sln
   verbosity: minimal
