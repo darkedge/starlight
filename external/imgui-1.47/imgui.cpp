@@ -2241,7 +2241,7 @@ static void MarkSettingsDirty()
 }
 
 // FIXME: Add a more explicit sort order in the window structure.
-static int __cdecl ChildWindowComparer(const void* lhs, const void* rhs)
+static int ChildWindowComparer(const void* lhs, const void* rhs)
 {
     const ImGuiWindow* a = *(const ImGuiWindow**)lhs;
     const ImGuiWindow* b = *(const ImGuiWindow**)rhs;
