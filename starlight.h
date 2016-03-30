@@ -20,8 +20,12 @@ int Strnicmp(const char* str1, const char* str2, int count) {
 }
 #endif
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1800)
-#define SL_CALL __vectorcall
+#ifdef _MSC_VER
+  #if _MSC_VER >= 1800
+    #define SL_CALL __vectorcall
+  #else
+    #define SL_CALL __cdecl
+  #endif
 #else
 #define SL_CALL
 #endif
