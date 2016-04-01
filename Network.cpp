@@ -1,6 +1,7 @@
 #include "Network.h"
 #include "starlight_game.h"
 #include "starlight_generated.h"
+#include "starlight.pb.h"
 #include "starlight_glm.h"
 #include <sstream>
 #include <enet/enet.h>

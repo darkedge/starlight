@@ -95,8 +95,8 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <DisableSpecificWarnings>4100;4505</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>external\imgui-1.47;external\flatbuffers-1.3.0\include;external\glm-0.9.7.2;external\nowide_standalone;external\enet-1.3.13\include</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_HAS_EXCEPTIONS=0;NOMINMAX;VC_EXTRALEAN;STRICT;WIN32_LEAN_AND_MEAN;NOGDI;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>external\protobuf-2.6.1\src;external\imgui-1.47;external\flatbuffers-1.3.0\include;external\glm-0.9.7.2;external\nowide_standalone;external\enet-1.3.13\include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_SCL_SECURE_NO_WARNINGS;_HAS_EXCEPTIONS=0;NOMINMAX;VC_EXTRALEAN;STRICT;WIN32_LEAN_AND_MEAN;NOGDI;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <TreatWarningAsError>true</TreatWarningAsError>
       <MSCompatibility>true</MSCompatibility>
       <EnablePREfast>false</EnablePREfast>
@@ -123,8 +123,8 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <DisableSpecificWarnings>4100;4505</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>external\imgui-1.47;external\flatbuffers-1.3.0\include;external\glm-0.9.7.2;external\nowide_standalone;external\enet-1.3.13\include</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_HAS_EXCEPTIONS=0;NOMINMAX;VC_EXTRALEAN;STRICT;WIN32_LEAN_AND_MEAN;NOGDI;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>external\protobuf-2.6.1\src;external\imgui-1.47;external\flatbuffers-1.3.0\include;external\glm-0.9.7.2;external\nowide_standalone;external\enet-1.3.13\include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_SCL_SECURE_NO_WARNINGS;_HAS_EXCEPTIONS=0;NOMINMAX;VC_EXTRALEAN;STRICT;WIN32_LEAN_AND_MEAN;NOGDI;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <TreatWarningAsError>true</TreatWarningAsError>
       <MSCompatibility>true</MSCompatibility>
       <EnablePREfast>false</EnablePREfast>
@@ -154,8 +154,8 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <DisableSpecificWarnings>4100;4505</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>external\imgui-1.47;external\flatbuffers-1.3.0\include;external\glm-0.9.7.2;external\nowide_standalone;external\enet-1.3.13\include</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_HAS_EXCEPTIONS=0;NOMINMAX;VC_EXTRALEAN;STRICT;WIN32_LEAN_AND_MEAN;NOGDI;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>external\protobuf-2.6.1\src;external\imgui-1.47;external\flatbuffers-1.3.0\include;external\glm-0.9.7.2;external\nowide_standalone;external\enet-1.3.13\include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_SCL_SECURE_NO_WARNINGS;_HAS_EXCEPTIONS=0;NOMINMAX;VC_EXTRALEAN;STRICT;WIN32_LEAN_AND_MEAN;NOGDI;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <TreatWarningAsError>true</TreatWarningAsError>
       <MSCompatibility>true</MSCompatibility>
       <EnablePREfast>false</EnablePREfast>
@@ -184,8 +184,8 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <DisableSpecificWarnings>4100;4505</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>external\imgui-1.47;external\flatbuffers-1.3.0\include;external\glm-0.9.7.2;external\nowide_standalone;external\enet-1.3.13\include</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_HAS_EXCEPTIONS=0;NOMINMAX;VC_EXTRALEAN;STRICT;WIN32_LEAN_AND_MEAN;NOGDI;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>external\protobuf-2.6.1\src;external\imgui-1.47;external\flatbuffers-1.3.0\include;external\glm-0.9.7.2;external\nowide_standalone;external\enet-1.3.13\include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_SCL_SECURE_NO_WARNINGS;_HAS_EXCEPTIONS=0;NOMINMAX;VC_EXTRALEAN;STRICT;WIN32_LEAN_AND_MEAN;NOGDI;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <TreatWarningAsError>true</TreatWarningAsError>
       <MSCompatibility>true</MSCompatibility>
       <EnablePREfast>false</EnablePREfast>
@@ -462,6 +462,12 @@
     <ClCompile Include="Network.cpp" />
     <ClCompile Include="Noise.cpp" />
     <ClCompile Include="Observer.cpp" />
+    <ClCompile Include="starlight.pb.cc">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
     <ClCompile Include="starlight_d3d10.cpp" />
     <ClCompile Include="starlight_d3d10_imgui.cpp" />
     <ClCompile Include="starlight_d3d11_imgui.cpp" />
@@ -484,6 +490,7 @@
     <ClInclude Include="Noise.h" />
     <ClInclude Include="Observer.h" />
     <ClInclude Include="starlight.h" />
+    <ClInclude Include="starlight.pb.h" />
     <ClInclude Include="starlight_cbuffer.h" />
     <ClInclude Include="starlight_config.h" />
     <ClInclude Include="starlight_d3d10.h" />
