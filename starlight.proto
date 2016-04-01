@@ -1,0 +1,5 @@
+package prototest;
+
+message Chat {
+	required string message = 1;
+}
