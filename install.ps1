@@ -64,6 +64,3 @@ DownloadAndExtract("http://www.lua.org/ftp/lua-5.1.5.tar.gz")
 DownloadAndExtract("http://cppcms.com/files/nowide/nowide_standalone.zip")
 DownloadAndExtract("https://github.com/google/protobuf/releases/download/v2.6.1/protobuf-2.6.1.zip")
 DownloadAndExtract("https://github.com/google/flatbuffers/archive/v1.3.0.zip")
-
-# ...missing flatbuffers!
-

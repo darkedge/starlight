@@ -145,7 +145,6 @@
     <ClCompile Include="external\imgui-1.47\imgui.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="starlight.pb.cc" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="starlight_generated.h" />
@@ -173,7 +172,6 @@
     <ClInclude Include="WorldGen.h" />
     <ClInclude Include="Noise.h" />
     <ClInclude Include="starlight_memory.h" />
-    <ClInclude Include="starlight.pb.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="starlight.fbs" />

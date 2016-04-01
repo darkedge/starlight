@@ -1,2 +1,2 @@
 // TODO: Write this myself
-#include "imgui_impl_dx10.cpp"
+#include "examples\directx10_example\imgui_impl_dx10.cpp"

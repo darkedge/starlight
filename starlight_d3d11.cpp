@@ -13,7 +13,7 @@
 #include "starlight_log.h"
 
 // Include ImGui implementation
-#include "imgui_impl_dx11.h"
+#include "examples\directx11_example\imgui_impl_dx11.h"
 
 #if 0
 
@@ -485,7 +485,7 @@ void graphics::D3D11::SetProjectionMatrix(glm::mat4 matrix) {
 #endif
 
 #include <imgui.h>
-#include "imgui_impl_dx11.h"
+#include "examples\directx11_example\imgui_impl_dx11.h"
 #include <d3d11.h>
 #include <d3dcompiler.h>
 #define DIRECTINPUT_VERSION 0x0800

@@ -6,7 +6,7 @@
 
 #include <imgui.h>
 
-#include "imgui_impl_dx10.h"
+#include "examples\directx10_example\imgui_impl_dx10.h"
 
 
 #include <d3d10_1.h>
