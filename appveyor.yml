@@ -1,11 +1,27 @@
 version: '{build}'
 image: Visual Studio 2015
 configuration:
-- Debug
-- Release
+  - Debug
+  - Release
 platform:
-- x86
-- x64
+  - x86
+  - x64
+install:
+  - cinst 7zip
+  - ps: (New-Object Net.WebClient).DownloadFile('http://enet.bespin.org/download/enet-1.3.13.tar.gz', 'enet-1.3.13.tar.gz')
+  - ps: (New-Object Net.WebClient).DownloadFile('https://github.com/g-truc/glm/releases/download/0.9.7.2/glm-0.9.7.2.zip', 'glm-0.9.7.2.zip')
+  - ps: (New-Object Net.WebClient).DownloadFile('https://github.com/ocornut/imgui/archive/v1.47.zip', 'v1.47.zip')
+  - ps: (New-Object Net.WebClient).DownloadFile('http://www.lua.org/ftp/lua-5.1.5.tar.gz', 'lua-5.1.5.tar.gz')
+  - ps: (New-Object Net.WebClient).DownloadFile('http://cppcms.com/files/nowide/nowide_standalone.zip', 'nowide_standalone.zip')
+  - ps: (New-Object Net.WebClient).DownloadFile('https://github.com/google/protobuf/releases/download/v2.6.1/protobuf-2.6.1.zip', 'protobuf-2.6.1.zip')
+  - cmd: 7z e enet-1.3.13.tar.gz && 7z x enet-1.3.13.tar -o./external
+  - cmd: 7z x glm-0.9.7.2.zip -o./external
+  - cmd: 7z x v1.47.zip -o./external
+  - cmd: 7z e lua-5.1.5.tar.gz && 7z x lua-5.1.5.tar -o./external
+  - cmd: 7z x nowide_standalone.zip -o./external
+  - cmd: 7z x protobuf-2.6.1.zip -o./external
+  - cmd: 
+  - cmd: MSBuild .\external\protobuf-2.6.1\vsprojects\libprotobuf.vcxproj /p:Configuration=Release
 build:
   project: starlight.sln
   verbosity: minimal
