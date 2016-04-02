@@ -1,9 +1,8 @@
-# Delete Visual Studio output files
+# Delete Visual Studio output folders
 Remove-Item "Win32-Debug" -Recurse -ErrorAction Ignore
-Remove-Item "Win32-Debug-Lib" -Recurse -ErrorAction Ignore
 Remove-Item "Win32-Release" -Recurse -ErrorAction Ignore
-Remove-Item "Win32-Release-Lib" -Recurse -ErrorAction Ignore
 Remove-Item "x64-Debug" -Recurse -ErrorAction Ignore
-Remove-Item "x64-Debug-Lib" -Recurse -ErrorAction Ignore
 Remove-Item "x64-Release" -Recurse -ErrorAction Ignore
-Remove-Item "x64-Release-Lib" -Recurse -ErrorAction Ignore
+
+# Delete runtime generated files (logs/configs)
+Remove-Item "imgui.ini" -ErrorAction Ignore

@@ -71,25 +71,25 @@
     <CodeAnalysisRuleSet>C:\Program Files (x86)\Microsoft Visual Studio 14.0\Team Tools\Static Analysis Tools\Rule Sets\NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
     <OutDir>$(Platform)-$(Configuration)\bin\</OutDir>
-    <IntDir>$(Platform)-$(Configuration)\obj\</IntDir>
+    <IntDir>$(Platform)-$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <CodeAnalysisRuleSet>C:\Program Files (x86)\Microsoft Visual Studio 14.0\Team Tools\Static Analysis Tools\Rule Sets\NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
     <OutDir>$(Platform)-$(Configuration)\bin\</OutDir>
-    <IntDir>$(Platform)-$(Configuration)\obj\</IntDir>
+    <IntDir>$(Platform)-$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <CodeAnalysisRuleSet>C:\Program Files (x86)\Microsoft Visual Studio 14.0\Team Tools\Static Analysis Tools\Rule Sets\NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
     <OutDir>$(Platform)-$(Configuration)\bin\</OutDir>
-    <IntDir>$(Platform)-$(Configuration)\obj\</IntDir>
+    <IntDir>$(Platform)-$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <CodeAnalysisRuleSet>C:\Program Files (x86)\Microsoft Visual Studio 14.0\Team Tools\Static Analysis Tools\Rule Sets\NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
     <OutDir>$(Platform)-$(Configuration)\bin\</OutDir>
-    <IntDir>$(Platform)-$(Configuration)\obj\</IntDir>
+    <IntDir>$(Platform)-$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -110,7 +110,7 @@
     <Link>
       <AdditionalDependencies>enet.lib;imgui.lib;winmm.lib;ws2_32.lib;d3d10.lib;d3d11.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
-      <AdditionalLibraryDirectories>$(Platform)-$(Configuration)-Lib\bin\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(Platform)-$(Configuration)\bin\</AdditionalLibraryDirectories>
     </Link>
     <FxCompile>
       <ShaderModel>4.0</ShaderModel>
@@ -139,7 +139,7 @@
     <Link>
       <AdditionalDependencies>enet.lib;imgui.lib;winmm.lib;ws2_32.lib;d3d10.lib;d3d11.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
-      <AdditionalLibraryDirectories>$(Platform)-$(Configuration)-Lib\bin\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(Platform)-$(Configuration)\bin\</AdditionalLibraryDirectories>
     </Link>
     <FxCompile>
       <ShaderModel>4.0</ShaderModel>
@@ -171,7 +171,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>enet.lib;imgui.lib;winmm.lib;ws2_32.lib;d3d10.lib;d3d11.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
-      <AdditionalLibraryDirectories>$(Platform)-$(Configuration)-Lib\bin\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(Platform)-$(Configuration)\bin\</AdditionalLibraryDirectories>
     </Link>
     <FxCompile>
       <ShaderModel>4.0</ShaderModel>
@@ -202,7 +202,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>enet.lib;imgui.lib;winmm.lib;ws2_32.lib;d3d10.lib;d3d11.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
-      <AdditionalLibraryDirectories>$(Platform)-$(Configuration)-Lib\bin\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(Platform)-$(Configuration)\bin\</AdditionalLibraryDirectories>
     </Link>
     <FxCompile>
       <ShaderModel>4.0</ShaderModel>
