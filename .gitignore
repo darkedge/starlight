@@ -233,7 +233,7 @@ _Pvt_Extensions
 .fake/
 imgui.ini
 SimplePixelShader.h
-SimplePixelShader.h
+SimpleVertexShader.h
 nsight_profiler.cfg
 flatc.exe
 7za920.zip
