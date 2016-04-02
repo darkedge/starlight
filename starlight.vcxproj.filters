@@ -7,8 +7,6 @@
     <ClCompile Include="src\Network.cpp" />
     <ClCompile Include="src\Noise.cpp" />
     <ClCompile Include="src\Observer.cpp" />
-    <ClCompile Include="src\starlight_d3d10.cpp" />
-    <ClCompile Include="src\starlight_d3d10_imgui.cpp" />
     <ClCompile Include="src\starlight_d3d11_imgui.cpp" />
     <ClCompile Include="src\starlight_external.cpp" />
     <ClCompile Include="src\starlight_game.cpp" />
@@ -31,7 +29,6 @@
     <ClInclude Include="src\starlight.h" />
     <ClInclude Include="src\starlight_cbuffer.h" />
     <ClInclude Include="src\starlight_config.h" />
-    <ClInclude Include="src\starlight_d3d10.h" />
     <ClInclude Include="src\starlight_d3d11.h" />
     <ClInclude Include="src\starlight_d3d_shared.h" />
     <ClInclude Include="src\starlight_glm.h" />

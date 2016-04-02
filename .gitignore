@@ -247,7 +247,5 @@ protobuf-2.6.1.zip
 v1.3.0.zip
 v1.47.zip
 external
-Win32-Debug
-Win32-Release
-x64-Debug
-x64-Release
+Win32
+!starlight.vcxproj.user

@@ -70,26 +70,30 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <CodeAnalysisRuleSet>C:\Program Files (x86)\Microsoft Visual Studio 14.0\Team Tools\Static Analysis Tools\Rule Sets\NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
-    <OutDir>$(Platform)-$(Configuration)\bin\</OutDir>
-    <IntDir>$(Platform)-$(Configuration)\$(ProjectName)\</IntDir>
+    <OutDir>Win32\bin\</OutDir>
+    <IntDir>Win32\$(ProjectName)\</IntDir>
+    <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <CodeAnalysisRuleSet>C:\Program Files (x86)\Microsoft Visual Studio 14.0\Team Tools\Static Analysis Tools\Rule Sets\NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
-    <OutDir>$(Platform)-$(Configuration)\bin\</OutDir>
-    <IntDir>$(Platform)-$(Configuration)\$(ProjectName)\</IntDir>
+    <OutDir>Win32\bin\</OutDir>
+    <IntDir>Win32\$(ProjectName)\</IntDir>
+    <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <CodeAnalysisRuleSet>C:\Program Files (x86)\Microsoft Visual Studio 14.0\Team Tools\Static Analysis Tools\Rule Sets\NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
-    <OutDir>$(Platform)-$(Configuration)\bin\</OutDir>
-    <IntDir>$(Platform)-$(Configuration)\$(ProjectName)\</IntDir>
+    <OutDir>Win32\bin\</OutDir>
+    <IntDir>Win32\$(ProjectName)\</IntDir>
+    <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <CodeAnalysisRuleSet>C:\Program Files (x86)\Microsoft Visual Studio 14.0\Team Tools\Static Analysis Tools\Rule Sets\NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
-    <OutDir>$(Platform)-$(Configuration)\bin\</OutDir>
-    <IntDir>$(Platform)-$(Configuration)\$(ProjectName)\</IntDir>
+    <OutDir>Win32\bin\</OutDir>
+    <IntDir>Win32\$(ProjectName)\</IntDir>
+    <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -108,9 +112,9 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>enet.lib;imgui.lib;winmm.lib;ws2_32.lib;d3d10.lib;d3d11.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>enet_$(Platform)_$(Configuration).lib;imgui_$(Platform)_$(Configuration).lib;winmm.lib;ws2_32.lib;d3d10.lib;d3d11.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
-      <AdditionalLibraryDirectories>$(Platform)-$(Configuration)\bin\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>Win32\lib\</AdditionalLibraryDirectories>
     </Link>
     <FxCompile>
       <ShaderModel>4.0</ShaderModel>
@@ -137,9 +141,9 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>enet.lib;imgui.lib;winmm.lib;ws2_32.lib;d3d10.lib;d3d11.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>enet_$(Platform)_$(Configuration).lib;imgui_$(Platform)_$(Configuration).lib;winmm.lib;ws2_32.lib;d3d10.lib;d3d11.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
-      <AdditionalLibraryDirectories>$(Platform)-$(Configuration)\bin\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>Win32\lib\</AdditionalLibraryDirectories>
     </Link>
     <FxCompile>
       <ShaderModel>4.0</ShaderModel>
@@ -169,9 +173,9 @@
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>enet.lib;imgui.lib;winmm.lib;ws2_32.lib;d3d10.lib;d3d11.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>enet_$(Platform)_$(Configuration).lib;imgui_$(Platform)_$(Configuration).lib;winmm.lib;ws2_32.lib;d3d10.lib;d3d11.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
-      <AdditionalLibraryDirectories>$(Platform)-$(Configuration)\bin\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>Win32\lib\</AdditionalLibraryDirectories>
     </Link>
     <FxCompile>
       <ShaderModel>4.0</ShaderModel>
@@ -200,9 +204,9 @@
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>enet.lib;imgui.lib;winmm.lib;ws2_32.lib;d3d10.lib;d3d11.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>enet_$(Platform)_$(Configuration).lib;imgui_$(Platform)_$(Configuration).lib;winmm.lib;ws2_32.lib;d3d10.lib;d3d11.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
-      <AdditionalLibraryDirectories>$(Platform)-$(Configuration)\bin\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>Win32\lib\</AdditionalLibraryDirectories>
     </Link>
     <FxCompile>
       <ShaderModel>4.0</ShaderModel>
@@ -220,8 +224,6 @@
     <ClCompile Include="src\Network.cpp" />
     <ClCompile Include="src\Noise.cpp" />
     <ClCompile Include="src\Observer.cpp" />
-    <ClCompile Include="src\starlight_d3d10.cpp" />
-    <ClCompile Include="src\starlight_d3d10_imgui.cpp" />
     <ClCompile Include="src\starlight_d3d11_imgui.cpp" />
     <ClCompile Include="src\starlight_external.cpp" />
     <ClCompile Include="src\starlight_game.cpp" />
@@ -244,7 +246,6 @@
     <ClInclude Include="src\starlight.h" />
     <ClInclude Include="src\starlight_cbuffer.h" />
     <ClInclude Include="src\starlight_config.h" />
-    <ClInclude Include="src\starlight_d3d10.h" />
     <ClInclude Include="src\starlight_d3d11.h" />
     <ClInclude Include="src\starlight_d3d_shared.h" />
     <ClInclude Include="src\starlight_glm.h" />
