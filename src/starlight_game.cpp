@@ -271,7 +271,7 @@ void MoveCamera() {
 
 extern "C"
 __declspec(dllexport)
-void __cdecl UpdateGame(GameInfo* gameInfo, graphics::API* graphicsApi) {
+void __cdecl game::UpdateGame(GameInfo* gameInfo, graphics::API* graphicsApi) {
 	if(!gameInfo->initialized) {
 		Init(gameInfo, graphicsApi);
 		gameInfo->initialized = true;
@@ -372,6 +372,6 @@ void __cdecl UpdateGame(GameInfo* gameInfo, graphics::API* graphicsApi) {
 
 extern "C"
 __declspec(dllexport)
-void __cdecl DestroyGame() {
+void __cdecl game::DestroyGame() {
 	// Free dynamic memory used by game here
 }

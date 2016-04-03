@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 
-// NOTE: Platform layer can't use any of these (linker errors!)
+// NOTE: Platform layer can't use exported functions in debug (linker errors!)
 namespace logger {
 	extern "C"
 	__declspec(dllexport)

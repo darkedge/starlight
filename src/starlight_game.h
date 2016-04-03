@@ -159,9 +159,13 @@ struct GameFuncs {
 	DestroyGameFunc* DestroyGame;
 };
 
-#if 0
+// NOTE: Platform layer can't use exported functions in debug (linker errors!)
 namespace game {
-	void Update(GameInfo* gameInfo, graphics::API* graphicsApi);
-	void Destroy();
+	extern "C"
+	__declspec(dllexport)
+	void __cdecl UpdateGame(GameInfo* gameInfo, graphics::API* graphicsApi);
+
+	extern "C"
+	__declspec(dllexport)
+	void __cdecl DestroyGame();
 }
-#endif

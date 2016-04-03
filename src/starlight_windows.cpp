@@ -61,6 +61,7 @@ GameFuncs LoadGameFuncs() {
 	GameFuncs gameFuncs;
 	ZERO_MEM(&gameFuncs, sizeof(GameFuncs));
 
+#if _DEBUG
 	HMODULE lib = LoadLibraryW(s_dllName);
 	if (!lib) {
 		GetLastError();
@@ -79,6 +80,14 @@ GameFuncs LoadGameFuncs() {
 			GetLastError();
 		}
 	}
+#else
+	gameFuncs.DestroyGame = game::DestroyGame;
+	gameFuncs.UpdateGame = game::UpdateGame;
+	gameFuncs.InitLogger = logger::InitLogger;
+	gameFuncs.DestroyLogger = logger::DestroyLogger;
+	gameFuncs.LogInfo = logger::LogInfo;
+#endif
+
 	return gameFuncs;
 }
 
