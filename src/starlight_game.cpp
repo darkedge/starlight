@@ -3,7 +3,6 @@
 #include "starlight_log.h"
 #include "starlight_transform.h"
 #include "starlight_graphics.h"
-#include "starlight_platform.h"
 #include "starlight_generated.h"
 //#include <process.h> // ?
 #include <cstdint>
@@ -165,6 +164,8 @@ static void UpdateMeshList(Chunk* chunks, int32_t chunkIdx, ChunkMeshList* meshL
 void Init(GameInfo* gameInfo, graphics::API* graphicsApi) {
 	input::Init();
 
+	ImGui::SetInternalState(gameInfo->imguiState);
+
 	//assert(!gameInfo->chunks);
 	//gameInfo->chunks = new Chunk[BUFFER_CHUNK_COUNT];
 	//ZERO_MEM(gameInfo->chunks, BUFFER_CHUNK_COUNT * sizeof(Chunk));
@@ -268,14 +269,16 @@ void MoveCamera() {
 }
 #endif
 
-void game::Update(GameInfo* gameInfo, graphics::API* graphicsApi) {
+extern "C"
+__declspec(dllexport)
+void __cdecl UpdateGame(GameInfo* gameInfo, graphics::API* graphicsApi) {
 	if(!gameInfo->initialized) {
 		Init(gameInfo, graphicsApi);
 		gameInfo->initialized = true;
 	}
 
 	// Timing
-	s_deltaTime = platform::CalculateDeltaTime();
+	s_deltaTime = gameInfo->CalculateDeltaTime();
 
 	// Begin logic
 	input::BeginFrame();
@@ -367,6 +370,8 @@ void game::Update(GameInfo* gameInfo, graphics::API* graphicsApi) {
 #endif
 }
 
-void game::Destroy() {
+extern "C"
+__declspec(dllexport)
+void __cdecl DestroyGame() {
 	// Free dynamic memory used by game here
 }

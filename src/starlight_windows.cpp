@@ -9,6 +9,8 @@
 #endif
 #endif  // _DEBUG
 
+#include <enet/enet.h>
+
 #include "starlight_windows.h"
 #include "starlight_graphics.h"
 #include "starlight_game.h"
@@ -16,8 +18,15 @@
 #include <atomic>
 #include "starlight_thread_safe_queue.h"
 #include "starlight_log.h"
-#include <enet/enet.h>
 #include "starlight_memory.h"
+
+#ifdef _DEBUG
+#ifdef _WIN64
+static const wchar_t* s_dllName = L"starlight_x64_Debug.dll";
+#else
+static const wchar_t* s_dllName = L"starlight_Win32_Debug.dll";
+#endif
+#endif
 
 // Globals
 static std::mutex s_mutex;
@@ -30,6 +39,8 @@ static std::atomic_bool s_running;
 static LARGE_INTEGER s_lastTime;
 static LARGE_INTEGER s_perfFreq;
 
+static GameFuncs s_gameFuncs;
+
 // This is ugly
 #ifdef STARLIGHT_D3D11
 static graphics::D3D11 d3d11;
@@ -38,12 +49,37 @@ static graphics::D3D11 d3d11;
 static graphics::D3D10 d3d10;
 #endif
 
-float platform::CalculateDeltaTime() {
+CALCULATE_DELTA_TIME(CalculateDeltaTime) {
 	LARGE_INTEGER currentTime;
 	QueryPerformanceCounter(&currentTime);
 	float deltaTime = float(currentTime.QuadPart - s_lastTime.QuadPart) / float(s_perfFreq.QuadPart);
 	s_lastTime = currentTime;
 	return deltaTime;
+}
+
+GameFuncs LoadGameFuncs() {
+	GameFuncs gameFuncs;
+	ZERO_MEM(&gameFuncs, sizeof(GameFuncs));
+
+	HMODULE lib = LoadLibraryW(s_dllName);
+	if (!lib) {
+		GetLastError();
+	}
+	else {
+		gameFuncs.DestroyGame = (DestroyGameFunc*) GetProcAddress(lib, "DestroyGame");
+		gameFuncs.UpdateGame = (UpdateGameFunc*) GetProcAddress(lib, "UpdateGame");
+		gameFuncs.InitLogger = (InitLoggerFunc*) GetProcAddress(lib, "InitLogger");
+		gameFuncs.DestroyLogger = (DestroyLoggerFunc*) GetProcAddress(lib, "DestroyLogger");
+		gameFuncs.LogInfo = (LogInfoFunc*) GetProcAddress(lib, "LogInfo");
+		if (!(gameFuncs.DestroyGame
+			&& gameFuncs.UpdateGame
+			&& gameFuncs.InitLogger
+			&& gameFuncs.DestroyLogger
+			&& gameFuncs.LogInfo)) {
+			GetLastError();
+		}
+	}
+	return gameFuncs;
 }
 
 // Try to initialize the specified rendering API.
@@ -60,12 +96,12 @@ bool LoadRenderApiImpl(EGraphicsApi e) {
 #endif
 #ifdef STARLIGHT_D3D11
 	case D3D11:
-		logger::LogInfo("Loading D3D11...");
+		s_gameFuncs.LogInfo("Loading D3D11...");
 		api = &d3d11;
 		break;
 #endif
 	default:
-		logger::LogInfo("The requested graphics API is not enabled.");
+		s_gameFuncs.LogInfo("The requested graphics API is not enabled.");
 		return false;
 	}
 
@@ -105,6 +141,7 @@ bool LoadRenderApiImpl(EGraphicsApi e) {
 	return false;
 }
 
+#if 0
 class HeapArea
 {
 public:
@@ -133,6 +170,7 @@ void* CALLBACK LibMalloc(std::size_t size) {
 void CALLBACK LibFree(void* ptr) {
 
 }
+#endif
 
 void ParseMessages() {
 	WindowEvent message;
@@ -155,11 +193,14 @@ void MyThreadFunction() {
 	GameInfo gameInfo;
 	ZeroMemory(&gameInfo, sizeof(gameInfo));
 	gameInfo.graphicsApi = graphicsApi;
-	heapArea = new HeapArea(512 * 1024 * 1024);
-	memory::SimpleArena arena(heapArea);
-	gameInfo.allocator = &arena;
+	gameInfo.imguiState = ImGui::GetInternalState();
+	//heapArea = new HeapArea(512 * 1024 * 1024);
+	//memory::SimpleArena arena(heapArea);
+	//gameInfo.allocator = &arena;
+	gameInfo.CalculateDeltaTime = CalculateDeltaTime;
 
 	// ENet
+#if 0
 	ENetCallbacks callbacks;
 	ZERO_MEM(&callbacks, sizeof(callbacks));
 	callbacks.malloc = memory::malloc;
@@ -167,6 +208,8 @@ void MyThreadFunction() {
 	callbacks.no_memory = memory::no_memory;
 
 	if (enet_initialize_with_callbacks(ENET_VERSION, &callbacks) != 0)
+#endif
+	if (enet_initialize() != 0)
 	{
 		s_running.store(false);
 		return;
@@ -188,7 +231,7 @@ void MyThreadFunction() {
 
 		g_renderApi->ImGuiNewFrame();
 
-		game::Update(&gameInfo, g_renderApi);
+		s_gameFuncs.UpdateGame(&gameInfo, g_renderApi);
 
 		// Rendering
 		if (std::try_lock(s_mutex)) {
@@ -197,12 +240,12 @@ void MyThreadFunction() {
 		}
 	}
 
-	game::Destroy();
+	s_gameFuncs.DestroyGame();
 	g_renderApi->Destroy();
 	ImGui::Shutdown();
 	g_renderApi = nullptr;
 
-	delete heapArea;
+	//delete heapArea;
 
 	enet_deinitialize();
 }
@@ -246,16 +289,18 @@ int CALLBACK WinMain(
 	LPSTR       lpCmdLine,
 	int         nCmdShow)
 {
-	std::set_new_handler(memory::no_memory);
+	//std::set_new_handler(memory::no_memory);
+
+	s_gameFuncs = LoadGameFuncs();
 
 	ImGuiIO& io = ImGui::GetIO();
-	io.MemAllocFn = memory::malloc;
-	io.MemFreeFn = memory::free;
+	//io.MemAllocFn = memory::malloc;
+	//io.MemFreeFn = memory::free;
 
 	//_crtBreakAlloc = 4015;
 	s_queue = new util::ThreadSafeQueue<WindowEvent>();
 
-	logger::Init();
+	s_gameFuncs.InitLogger();
 
 	auto className = L"StarlightClassName";
 
@@ -316,7 +361,7 @@ int CALLBACK WinMain(
 
 	thread.join();
 
-	logger::Destroy();
+	s_gameFuncs.DestroyLogger();
 
 	io.Fonts->Clear();
 
@@ -326,3 +371,42 @@ int CALLBACK WinMain(
 
 	_CrtDumpMemoryLeaks();
 }
+
+#if 0
+
+// Global memory functions
+
+void* MEM_CALL operator new(std::size_t n) throw() {
+	return memory::malloc(n);
+}
+
+void* MEM_CALL operator new[](std::size_t s) throw() {
+	return operator new(s);
+}
+
+void MEM_CALL operator delete(void * p) throw() {
+	return memory::free(p);
+}
+
+void MEM_CALL operator delete[](void *p) throw() {
+	return operator delete(p);
+}
+
+// Wrappers
+
+void* MEM_CALL memory::malloc(std::size_t size) {
+	return ::malloc(size);
+}
+
+void MEM_CALL memory::free(void* ptr) {
+	return ::free(ptr);
+}
+
+void* MEM_CALL memory::realloc(void* ptr, std::size_t size) {
+	return ::realloc(ptr, size);
+}
+
+void MEM_CALL memory::no_memory() {
+
+}
+#endif

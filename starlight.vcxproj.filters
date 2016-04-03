@@ -7,18 +7,13 @@
     <ClCompile Include="src\Network.cpp" />
     <ClCompile Include="src\Noise.cpp" />
     <ClCompile Include="src\Observer.cpp" />
-    <ClCompile Include="src\starlight_d3d11_imgui.cpp" />
     <ClCompile Include="src\starlight_external.cpp" />
     <ClCompile Include="src\starlight_game.cpp" />
     <ClCompile Include="src\starlight_input.cpp" />
     <ClCompile Include="src\starlight_log.cpp" />
-    <ClCompile Include="src\starlight_d3d11.cpp" />
-    <ClCompile Include="src\starlight_memory.cpp" />
     <ClCompile Include="src\starlight_opengl.cpp" />
-    <ClCompile Include="src\starlight_platform.cpp" />
     <ClCompile Include="src\starlight_graphics.cpp" />
     <ClCompile Include="src\starlight_transform.cpp" />
-    <ClCompile Include="src\starlight_windows.cpp" />
     <ClCompile Include="src\WorldGen.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -29,22 +24,17 @@
     <ClInclude Include="src\starlight.h" />
     <ClInclude Include="src\starlight_cbuffer.h" />
     <ClInclude Include="src\starlight_config.h" />
-    <ClInclude Include="src\starlight_d3d11.h" />
-    <ClInclude Include="src\starlight_d3d_shared.h" />
     <ClInclude Include="src\starlight_glm.h" />
     <ClInclude Include="src\starlight_math.h" />
     <ClInclude Include="src\starlight_memory.h" />
     <ClInclude Include="src\starlight_opengl.h" />
-    <ClInclude Include="src\starlight_platform.h" />
     <ClInclude Include="src\starlight_game.h" />
     <ClInclude Include="src\starlight_generated.h" />
     <ClInclude Include="src\starlight_input.h" />
     <ClInclude Include="src\starlight_log.h" />
     <ClInclude Include="src\starlight_graphics.h" />
-    <ClInclude Include="src\starlight_renderer_windows.h" />
     <ClInclude Include="src\starlight_transform.h" />
     <ClInclude Include="src\starlight_thread_safe_queue.h" />
-    <ClInclude Include="src\starlight_windows.h" />
     <ClInclude Include="src\WorldGen.h" />
   </ItemGroup>
   <ItemGroup>

@@ -75,6 +75,25 @@ typedef _ENetHost ENetHost;
 struct _ENetPeer;
 typedef _ENetPeer ENetPeer;
 
+// Functions visible to game from platform
+
+#define CALCULATE_DELTA_TIME(name) float name()
+typedef CALCULATE_DELTA_TIME(CalculateDeltaTimeFunc);
+
+#if 0
+#define MALLOC_FUNC(name) void* MEM_CALL name(std::size_t)
+typedef MALLOC_FUNC(MallocFunc);
+
+#define FREE_FUNC(name) void MEM_CALL name(void*)
+typedef FREE_FUNC(FreeFunc);
+
+#define REALLOC_FUNC(name) void* MEM_CALL name(void*, std::size_t)
+typedef REALLOC_FUNC(ReallocFunc);
+
+#define NO_MEMORY_FUNC(name) void MEM_CALL name()
+typedef NO_MEMORY_FUNC(NoMemoryFunc);
+#endif
+
 struct GameInfo {
 	bool initialized;
 	EGraphicsApi graphicsApi;
@@ -84,7 +103,17 @@ struct GameInfo {
 	ENetPeer* peer;
 	ENetHost* client;
 
-	memory::SimpleArena* allocator;
+	void* imguiState;
+
+	//memory::SimpleArena* allocator;
+
+	CalculateDeltaTimeFunc* CalculateDeltaTime;
+#if 0
+	MallocFunc* Malloc;
+	FreeFunc* Free;
+	ReallocFunc* Realloc;
+	NoMemoryFunc* NoMemory;
+#endif
 
 	// Below this line is all game state
 
@@ -104,7 +133,35 @@ struct GameInfo {
 	int32_t numPlayers;
 };
 
+// Functions visible to platform from game
+#define INIT_LOGGER(name) void name()
+typedef INIT_LOGGER(InitLoggerFunc);
+
+#define DESTROY_LOGGER(name) void name()
+typedef DESTROY_LOGGER(DestroyLoggerFunc);
+
+#define LOGGER_LOGINFO(name) void name(const std::string&)
+typedef LOGGER_LOGINFO(LogInfoFunc);
+
+#define GAME_UPDATE(name) void name(struct GameInfo *,class graphics::API *)
+typedef GAME_UPDATE(UpdateGameFunc);
+
+#define GAME_DESTROY(name) void name()
+typedef GAME_DESTROY(DestroyGameFunc);
+
+// Maybe separate struct for logger etc?
+
+struct GameFuncs {
+	InitLoggerFunc* InitLogger;
+	DestroyLoggerFunc* DestroyLogger;
+	LogInfoFunc* LogInfo;
+	UpdateGameFunc* UpdateGame;
+	DestroyGameFunc* DestroyGame;
+};
+
+#if 0
 namespace game {
 	void Update(GameInfo* gameInfo, graphics::API* graphicsApi);
 	void Destroy();
 }
+#endif

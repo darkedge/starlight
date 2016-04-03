@@ -24,26 +24,26 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
     <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
     <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
     <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
@@ -84,14 +84,14 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <CodeAnalysisRuleSet>C:\Program Files (x86)\Microsoft Visual Studio 14.0\Team Tools\Static Analysis Tools\Rule Sets\NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
-    <OutDir>Win32\bin\</OutDir>
+    <OutDir>Win32\lib\</OutDir>
     <IntDir>Win32\$(ProjectName)\</IntDir>
     <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <CodeAnalysisRuleSet>C:\Program Files (x86)\Microsoft Visual Studio 14.0\Team Tools\Static Analysis Tools\Rule Sets\NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
-    <OutDir>Win32\bin\</OutDir>
+    <OutDir>Win32\lib\</OutDir>
     <IntDir>Win32\$(ProjectName)\</IntDir>
     <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
   </PropertyGroup>
@@ -112,7 +112,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>enet_$(Platform)_$(Configuration).lib;imgui_$(Platform)_$(Configuration).lib;winmm.lib;ws2_32.lib;d3d10.lib;d3d11.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>enet_$(Platform)_$(Configuration).lib;imgui_$(Platform)_$(Configuration).lib;winmm.lib;ws2_32.lib;d3d10.lib;d3d11.lib;d3dcompiler.lib</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>Win32\lib\</AdditionalLibraryDirectories>
     </Link>
@@ -141,7 +141,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>enet_$(Platform)_$(Configuration).lib;imgui_$(Platform)_$(Configuration).lib;winmm.lib;ws2_32.lib;d3d10.lib;d3d11.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>enet_$(Platform)_$(Configuration).lib;imgui_$(Platform)_$(Configuration).lib;winmm.lib;ws2_32.lib;d3d10.lib;d3d11.lib;d3dcompiler.lib</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>Win32\lib\</AdditionalLibraryDirectories>
     </Link>
@@ -224,18 +224,13 @@
     <ClCompile Include="src\Network.cpp" />
     <ClCompile Include="src\Noise.cpp" />
     <ClCompile Include="src\Observer.cpp" />
-    <ClCompile Include="src\starlight_d3d11_imgui.cpp" />
     <ClCompile Include="src\starlight_external.cpp" />
     <ClCompile Include="src\starlight_game.cpp" />
     <ClCompile Include="src\starlight_input.cpp" />
     <ClCompile Include="src\starlight_log.cpp" />
-    <ClCompile Include="src\starlight_d3d11.cpp" />
-    <ClCompile Include="src\starlight_memory.cpp" />
     <ClCompile Include="src\starlight_opengl.cpp" />
-    <ClCompile Include="src\starlight_platform.cpp" />
     <ClCompile Include="src\starlight_graphics.cpp" />
     <ClCompile Include="src\starlight_transform.cpp" />
-    <ClCompile Include="src\starlight_windows.cpp" />
     <ClCompile Include="src\WorldGen.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -246,22 +241,17 @@
     <ClInclude Include="src\starlight.h" />
     <ClInclude Include="src\starlight_cbuffer.h" />
     <ClInclude Include="src\starlight_config.h" />
-    <ClInclude Include="src\starlight_d3d11.h" />
-    <ClInclude Include="src\starlight_d3d_shared.h" />
     <ClInclude Include="src\starlight_glm.h" />
     <ClInclude Include="src\starlight_math.h" />
     <ClInclude Include="src\starlight_memory.h" />
     <ClInclude Include="src\starlight_opengl.h" />
-    <ClInclude Include="src\starlight_platform.h" />
     <ClInclude Include="src\starlight_game.h" />
     <ClInclude Include="src\starlight_generated.h" />
     <ClInclude Include="src\starlight_input.h" />
     <ClInclude Include="src\starlight_log.h" />
     <ClInclude Include="src\starlight_graphics.h" />
-    <ClInclude Include="src\starlight_renderer_windows.h" />
     <ClInclude Include="src\starlight_transform.h" />
     <ClInclude Include="src\starlight_thread_safe_queue.h" />
-    <ClInclude Include="src\starlight_windows.h" />
     <ClInclude Include="src\WorldGen.h" />
   </ItemGroup>
   <ItemGroup>

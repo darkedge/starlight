@@ -10,11 +10,6 @@
 #endif
 
 namespace memory {
-	void* MEM_CALL malloc(std::size_t);
-	void MEM_CALL free(void*);
-	void* MEM_CALL realloc(void*, std::size_t);
-	void MEM_CALL no_memory();
-
 	// Wraps a pointer to always be 64-bit
 	// for alignment purposes
 	template<typename T>
@@ -41,6 +36,7 @@ namespace memory {
 		return (char*) (((std::size_t) address + alignment - 1) & ~(alignment - 1));
 	}
 
+#if 0
 	struct SourceInfo {
 		// File name
 		// Function name
@@ -220,5 +216,5 @@ namespace memory {
 	//typedef MemoryArena<PoolAllocator, SingleThreadPolicy, NoBoundsChecking, NoMemoryTracking, NoMemoryTagging> ST_PoolStackArena;
 	typedef MemoryArena<LinearAllocator, SingleThreadPolicy, NoBoundsChecking, NoMemoryTracking, NoMemoryTagging> SimpleArena;
 	//typedef MemoryArena<StackBasedAllocator, MultiThreadPolicy, NoBoundsChecking, NoMemoryTracking, NoMemoryTagging> MT_StackBasedArena;
-
+#endif
 }

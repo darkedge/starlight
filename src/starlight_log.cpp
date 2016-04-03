@@ -275,11 +275,15 @@ Console *s_console = nullptr;
 bool opened = false;
 bool ScrollToBottom = true;
 
-void logger::Init() {
+extern "C"
+__declspec(dllexport)
+void __cdecl logger::InitLogger() {
 	s_console = new Console();
 }
 
-void logger::LogInfo(const std::string& str) {
+extern "C"
+__declspec(dllexport)
+void __cdecl logger::LogInfo(const std::string& str) {
 	s_console->AddLog("%s\n", str.c_str());
 }
 
@@ -287,7 +291,9 @@ void logger::Render() {
 	s_console->Draw("Console", &opened);
 }
 
-void logger::Destroy()
+extern "C"
+__declspec(dllexport)
+void __cdecl logger::DestroyLogger()
 {
 	delete s_console;
 }
