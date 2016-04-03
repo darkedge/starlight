@@ -248,4 +248,4 @@ v1.3.0.zip
 v1.47.zip
 external
 Win32
-!starlight.vcxproj.user
+!starlight_win32.vcxproj.user
