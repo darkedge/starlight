@@ -123,7 +123,7 @@ bool LoadRenderApiImpl(EGraphicsApi e) {
 
 #if 1
 	// Init new -> destroy old
-	if (api->Init(&platformData)) {
+	if (api->Init(&platformData, &s_gameFuncs)) {
 		if (g_renderApi) {
 			g_renderApi->Destroy();
 		}

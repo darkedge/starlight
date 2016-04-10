@@ -72,7 +72,7 @@ struct ChunkMeshList {
 	int32_t numChunkMeshes;
 };
 
-static int32_t AddCubeTriangles(TempMesh *mesh, int32_t x, int32_t y, int32_t z) {
+static void AddCubeTriangles(TempMesh *mesh, int32_t x, int32_t y, int32_t z) {
 	static glm::vec2 uv[4] = {
 		{0,0},
 		{1,0},
@@ -133,14 +133,18 @@ static int32_t AddCubeTriangles(TempMesh *mesh, int32_t x, int32_t y, int32_t z)
 		i += 4;
 	}
 
-	mesh->vertices.resize(24);
-	mesh->vertices.insert(mesh->vertices.begin(), vertices, vertices + 24);
-	mesh->indices.resize(6 * 2 * 3);
-	mesh->indices.insert(mesh->indices.begin(), indices, indices + 6 * 2 * 3);
+	//mesh->vertices.resize(24);
+	mesh->vertices.insert(mesh->vertices.end(), vertices, vertices + 24);
+	//mesh->indices.resize(6 * 2 * 3);
+	mesh->indices.insert(mesh->indices.end(), indices, indices + 6 * 2 * 3);
 }
 
+static int32_t s_chunk;
+
 // MeshList contains all meshes related to chunks.
-static void UpdateMeshList(Chunk* chunks, int32_t chunkIdx, ChunkMeshList* meshList) {
+static void UpdateMeshList(GameInfo* gameInfo, graphics::API* graphics, int32_t chunkIdx) {
+	assert(gameInfo);
+	assert(gameInfo->chunks);
 	// Remove meshes related to this chunk
 	// Maybe this needs to be queued
 
@@ -153,12 +157,15 @@ static void UpdateMeshList(Chunk* chunks, int32_t chunkIdx, ChunkMeshList* meshL
 		for(int32_t z = 0; z < CHUNK_DIM_XZ; z++) {
 			for(int32_t x = 0; x < CHUNK_DIM_XZ; x++) {
 				// TODO: Smart meshing
-				if(GetBlock(chunks + chunkIdx, x, y, z) != 0) {
+				if(GetBlock(gameInfo->chunks + chunkIdx, x, y, z) != 0) {
 					AddCubeTriangles(&mesh, x, y, z);
 				}
 			}
 		}
 	}
+
+	//graphics
+	s_chunk = graphics->AddChunk(&mesh);
 }
 
 void Init(GameInfo* gameInfo, graphics::API* graphicsApi) {
@@ -202,13 +209,15 @@ void Init(GameInfo* gameInfo, graphics::API* graphicsApi) {
 		}
 	}
 
-	//graphicsApi->CreateMesh();
+	UpdateMeshList(gameInfo, graphicsApi, 0);
 
+#if 0
 	noise::perlin::State* state = new noise::perlin::State;
 	ZERO_MEM(state, sizeof(*state));
 	noise::perlin::Initialize(state, 0);
 	float f = noise::perlin::Noise(state, 0.5f, 0.5f, 0.0f);
 	f = f;
+#endif
 }
 
 #if 0

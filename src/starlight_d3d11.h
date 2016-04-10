@@ -30,29 +30,24 @@ struct PipelineState {
 	//int32_t id;
 };
 
-// TODO: Base vertex location, start index (assumed zero)
-struct MeshD3D11 {
-	ID3D11Buffer* vertexBuffer;
-	ID3D11Buffer* indexBuffer;
-	int32_t numIndices;
-};
-
-enum EConstantBuffer
-{
-	Frame,
-	Camera,
-	Object,
-	//Material,
-	NumConstantBuffers
+struct EConstantBuffer {
+	enum
+	{
+		Model,
+		View,
+		Projection,
+		Count,
+	};
 };
 
 struct DrawCommand {
 	uint64_t key;
-	Mesh* mesh;
+	int32_t mesh;
+	//Mesh* mesh;
 	PipelineState pipelineState;
 	//PerFrame* perFrame;
 	//PerCamera* perCamera;
-	//PerObject* perObject;
+	glm::mat4 worldMatrix;
 };
 
 struct SortKey1 {

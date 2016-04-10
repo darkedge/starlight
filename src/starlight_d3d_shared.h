@@ -20,7 +20,7 @@ do { \
 	if (FAILED( _hr )) { \
 		std::stringstream _s;\
 		_s << __FILE__ << "(" << __LINE__ << "): " << STR(_expr) << "failed\n";\
-		logger::LogInfo(_s.str());\
+		funcs->LogInfo(_s.str());\
 	} \
 } while (0)
 #else

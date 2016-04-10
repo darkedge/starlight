@@ -1,11 +1,5 @@
 #include "starlight_cbuffer.h"
 
-struct AppData
-{
-    float3 position : POSITION;
-    float3 color: COLOR;
-};
-
 struct VertexShaderOutput
 {
     float4 color : COLOR;

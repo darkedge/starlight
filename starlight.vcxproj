@@ -119,7 +119,7 @@
     <FxCompile>
       <ShaderModel>4.0</ShaderModel>
       <VariableName>g_%(Filename)</VariableName>
-      <HeaderFileOutput>%(Filename).h</HeaderFileOutput>
+      <HeaderFileOutput>src/%(Filename).h</HeaderFileOutput>
       <TreatWarningAsError>true</TreatWarningAsError>
       <ObjectFileOutput />
     </FxCompile>
@@ -148,7 +148,7 @@
     <FxCompile>
       <ShaderModel>4.0</ShaderModel>
       <VariableName>g_%(Filename)</VariableName>
-      <HeaderFileOutput>%(Filename).h</HeaderFileOutput>
+      <HeaderFileOutput>src/%(Filename).h</HeaderFileOutput>
       <TreatWarningAsError>true</TreatWarningAsError>
       <ObjectFileOutput>
       </ObjectFileOutput>
@@ -180,7 +180,7 @@
     <FxCompile>
       <ShaderModel>4.0</ShaderModel>
       <VariableName>g_%(Filename)</VariableName>
-      <HeaderFileOutput>%(Filename).h</HeaderFileOutput>
+      <HeaderFileOutput>src/%(Filename).h</HeaderFileOutput>
       <TreatWarningAsError>true</TreatWarningAsError>
       <ObjectFileOutput />
     </FxCompile>
@@ -211,7 +211,7 @@
     <FxCompile>
       <ShaderModel>4.0</ShaderModel>
       <VariableName>g_%(Filename)</VariableName>
-      <HeaderFileOutput>%(Filename).h</HeaderFileOutput>
+      <HeaderFileOutput>src/%(Filename).h</HeaderFileOutput>
       <TreatWarningAsError>true</TreatWarningAsError>
       <ObjectFileOutput>
       </ObjectFileOutput>

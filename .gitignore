@@ -249,3 +249,4 @@ v1.47.zip
 external
 Win32
 !starlight_win32.vcxproj.user
+starlight_win32.vcxproj.marco.nvuser

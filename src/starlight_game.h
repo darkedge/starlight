@@ -123,14 +123,16 @@ struct GameInfo {
 	Chunk* chunks;
 	int32_t numChunks;
 
-	TileEntity* tileEntities;
-	int32_t numTileEntities;
+	//TileEntity* tileEntities;
+	//int32_t numTileEntities;
 
-	NPC* npcs;
-	int32_t numNPCs;
+	//NPC* npcs;
+	//int32_t numNPCs;
 
-	Player* players;
-	int32_t numPlayers;
+	//Player* players;
+	//int32_t numPlayers;
+
+	void* renderData;
 };
 
 // Functions visible to platform from game

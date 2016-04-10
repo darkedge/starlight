@@ -5,17 +5,27 @@
 #include "starlight_d3d11.h"
 #include "starlight_renderer_windows.h"
 
-#include <d3d11.h>
-#include <imgui.h>
 #include <algorithm>
 
 #include <array>
 #include "starlight_log.h"
+#include "starlight_game.h"
 
-// Include ImGui implementation
-#include "examples\directx11_example\imgui_impl_dx11.h"
+#include "starlight_cbuffer.h"
 
-#if 0
+struct MeshD3D11 {
+	ID3D11Buffer* vertexBuffer;
+	ID3D11Buffer* indexBuffer;
+	int32_t numIndices;
+};
+
+#define MAX_DRAW_COMMANDS 1024
+static DrawCommand g_drawCommands[MAX_DRAW_COMMANDS];
+static int32_t g_numDrawCommands;
+
+#define MAX_MESHES 1024
+static MeshD3D11 g_meshes[MAX_MESHES];
+static int32_t g_numMeshes;
 
 // shaders (generated)
 // changed to defines to prevent visual studio hanging
@@ -24,10 +34,18 @@
 #include "SimpleVertexShader.h"
 #define VertexShaderBlob g_SimpleVertexShader
 
-static ID3D11RasterizerState* s_rasterizerState;
 static ID3D11PixelShader* s_pixelShader;
 static ID3D11VertexShader* s_vertexShader;
+static ID3D11Buffer* s_constantBuffers[EConstantBuffer::Count];
 static ID3D11InputLayout* s_inputLayout;
+static ID3D11RasterizerState* s_rasterizerState;
+
+static glm::mat4 s_view;
+static glm::mat4 s_projection;
+
+#if 0
+
+
 
 static D3D11_VIEWPORT s_viewport;
 
@@ -484,6 +502,7 @@ void graphics::D3D11::SetProjectionMatrix(glm::mat4 matrix) {
 
 #endif
 
+#include <glm/gtc/matrix_transform.hpp>
 #include <imgui.h>
 #include "examples\directx11_example\imgui_impl_dx11.h"
 #include <d3d11.h>
@@ -493,10 +512,12 @@ void graphics::D3D11::SetProjectionMatrix(glm::mat4 matrix) {
 #include <tchar.h>
 
 // Data
-static ID3D11Device*            g_pd3dDevice = NULL;
-static ID3D11DeviceContext*     g_pd3dDeviceContext = NULL;
-static IDXGISwapChain*          g_pSwapChain = NULL;
-static ID3D11RenderTargetView*  g_mainRenderTargetView = NULL;
+// It is okay for this to be file/global.
+// This stuff is volatile and can be reconstructed at any time.
+static ID3D11Device* g_pd3dDevice;
+static ID3D11DeviceContext* g_pd3dDeviceContext;
+static IDXGISwapChain* g_pSwapChain;
+static ID3D11RenderTargetView* g_mainRenderTargetView;
 
 static void CreateRenderTarget()
 {
@@ -604,7 +625,103 @@ void graphics::D3D11::Render() {
 	ImVec4 clear_col = ImColor(114, 144, 154);
 	g_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView, (float*) &clear_col);
 
-	// TODO: Game rendering here
+	//DrawCommand cmd;
+	//ZeroMemory(&cmd, sizeof(cmd));
+
+#if 0
+	cmd.mesh = &s_mesh;
+	cmd.pipelineState.inputLayout = s_inputLayout;
+	cmd.pipelineState.numViewports = 1;
+	cmd.pipelineState.viewports = &s_viewport;
+	cmd.pipelineState.pixelShader = s_pixelShader;
+	cmd.pipelineState.vertexShader = s_vertexShader;
+	cmd.pipelineState.rasterizerState = s_rasterizerState;
+	cmd.perObject = &s_perObject;
+
+	renderer::AddDrawCommand(cmd);
+#endif
+
+	// now we should do the actual rendering
+
+	// Bubble sort draw commands
+	// Currently just contains a single chunk
+	// No need to clear the buffer
+	bool sorting = true;
+	while (sorting) {
+		sorting = false;
+		for (int i = 1; i < g_numDrawCommands; i++) {
+			if (g_drawCommands[i].key < g_drawCommands[i - 1].key ) {
+				DrawCommand t = g_drawCommands[i];
+				g_drawCommands[i] = g_drawCommands[i - 1];
+				g_drawCommands[i - 1] = t;
+				sorting = true;
+			}
+		}
+	}
+
+	// For retrieving the window size
+	DXGI_SWAP_CHAIN_DESC desc;
+	g_pSwapChain->GetDesc(&desc);
+
+	// Constant Buffers
+	// TODO: z-min, z-max (optional), FOV!
+	if (desc.BufferDesc.Width > 0 && desc.BufferDesc.Height > 0) {
+		glm::mat4 projectionMatrix = glm::perspectiveFovLH(glm::radians(45.0f), (float) desc.BufferDesc.Width, (float) desc.BufferDesc.Height, 0.1f, 100.0f);
+		assert(s_constantBuffers[EConstantBuffer::Projection]);
+		g_pd3dDeviceContext->UpdateSubresource(s_constantBuffers[EConstantBuffer::Projection], 0, nullptr, &projectionMatrix, 0, 0);
+	}
+
+	assert(s_constantBuffers[EConstantBuffer::View]);
+	g_pd3dDeviceContext->UpdateSubresource(s_constantBuffers[EConstantBuffer::View], 0, nullptr, &s_view, 0, 0);
+
+	// Submit draw commands
+	for (int32_t i = 0; i < g_numDrawCommands; i++) {
+		DrawCommand* cmd = &g_drawCommands[i];
+		assert(cmd);
+
+		MeshD3D11* mesh = &g_meshes[cmd->mesh];
+		assert(mesh);
+		PipelineState* pipelineState = &cmd->pipelineState;
+
+		// Constant Buffers
+		assert(s_constantBuffers[EConstantBuffer::Model]);
+		g_pd3dDeviceContext->UpdateSubresource(s_constantBuffers[EConstantBuffer::Model], 0, nullptr, &cmd->worldMatrix, 0, 0);
+
+		// Input Assembler
+		uint32_t stride = sizeof(Vertex);
+		uint32_t offset = 0;
+		//assert(pipelineState.inputLayout);
+		//g_pd3dDeviceContext->IASetInputLayout(pipelineState.inputLayout);
+		g_pd3dDeviceContext->IASetInputLayout(s_inputLayout);
+		
+		g_pd3dDeviceContext->IASetVertexBuffers(0, 1, &mesh->vertexBuffer, &stride, &offset);
+		g_pd3dDeviceContext->IASetIndexBuffer(mesh->indexBuffer, DXGI_FORMAT_R16_UINT, 0);
+		g_pd3dDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		// Vertex Shader
+		g_pd3dDeviceContext->VSSetShader(pipelineState->vertexShader, nullptr, 0);
+		g_pd3dDeviceContext->VSSetConstantBuffers(0, EConstantBuffer::Count, s_constantBuffers);
+
+		// TODO: Hull Shader
+
+		// TODO: Domain Shader
+
+		// TODO: Geometry Shader
+
+		// Rasterizer
+		g_pd3dDeviceContext->RSSetState(s_rasterizerState);
+		//g_pd3dDeviceContext->RSSetViewports(1, viewports);
+
+		// Pixel Shader
+		g_pd3dDeviceContext->PSSetShader(pipelineState->pixelShader, nullptr, 0);
+
+		// Output Merger
+		g_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, nullptr);
+		//g_pd3dDeviceContext->OMSetDepthStencilState(s_depthStencilState, 1);
+
+		// Draw call
+		g_pd3dDeviceContext->DrawIndexed(mesh->numIndices, 0, 0);
+	}
 
 	ImGui::Render();
 
@@ -618,13 +735,52 @@ void graphics::D3D11::Resize(int32_t, int32_t) {
 	CreateRenderTarget();
 }
 
-bool graphics::D3D11::Init(PlatformData *data) {
+bool graphics::D3D11::Init(PlatformData *data, GameFuncs* funcs) {
 	// Initialize Direct3D
 	if (CreateDeviceD3D(data->hWnd) < 0)
 	{
 		CleanupDeviceD3D();
 		return false;
 	}
+
+	D3D_TRY(g_pd3dDevice->CreatePixelShader(PixelShaderBlob, sizeof(PixelShaderBlob), nullptr, &s_pixelShader));
+	D3D_TRY(g_pd3dDevice->CreateVertexShader(VertexShaderBlob, sizeof(VertexShaderBlob), nullptr, &s_vertexShader));
+	D3D_TRY(g_pd3dDevice->CreateInputLayout(g_AppData, COUNT_OF(g_AppData), VertexShaderBlob, sizeof(VertexShaderBlob), &s_inputLayout));
+
+	// Create constant buffers
+
+	// Constant buffer descriptor
+	D3D11_BUFFER_DESC constantBufferDesc;
+	ZeroMemory(&constantBufferDesc, sizeof(constantBufferDesc));
+
+	constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	constantBufferDesc.CPUAccessFlags = 0;
+	constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+
+	constantBufferDesc.ByteWidth = sizeof(CBModel);
+	D3D_TRY(g_pd3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &s_constantBuffers[EConstantBuffer::Model]));
+
+	constantBufferDesc.ByteWidth = sizeof(CBView);
+	D3D_TRY(g_pd3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &s_constantBuffers[EConstantBuffer::View]));
+
+	constantBufferDesc.ByteWidth = sizeof(CBProjection);
+	D3D_TRY(g_pd3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &s_constantBuffers[EConstantBuffer::Projection]));
+
+	// Rasterizer State
+	D3D11_RASTERIZER_DESC rasterizerDesc;
+	ZeroMemory(&rasterizerDesc, sizeof(D3D11_RASTERIZER_DESC));
+
+	rasterizerDesc.AntialiasedLineEnable = FALSE;
+	rasterizerDesc.CullMode = D3D11_CULL_BACK;
+	rasterizerDesc.DepthBias = 0;
+	rasterizerDesc.DepthBiasClamp = 0.0f;
+	rasterizerDesc.DepthClipEnable = TRUE;
+	rasterizerDesc.FillMode = D3D11_FILL_SOLID;
+	rasterizerDesc.FrontCounterClockwise = FALSE;
+	rasterizerDesc.MultisampleEnable = FALSE;
+	rasterizerDesc.ScissorEnable = FALSE;
+	rasterizerDesc.SlopeScaledDepthBias = 0.0f;
+	D3D_TRY(g_pd3dDevice->CreateRasterizerState(&rasterizerDesc, &s_rasterizerState));
 
 	// Setup ImGui binding
 	ImGui_ImplDX11_Init(data->hWnd, g_pd3dDevice, g_pd3dDeviceContext);
@@ -643,8 +799,78 @@ bool graphics::D3D11::ImGuiHandleEvent(WindowEvent* e) {
 	return (ImGui_ImplDX11_WndProcHandler(e->hWnd, e->msg, e->wParam, e->lParam) == 1);
 }
 
-int32_t graphics::D3D11::UploadMesh(Vertex *, int, int *, int) { return -1; } // TODO
-void graphics::D3D11::SetPlayerCameraViewMatrix(glm::mat4) {} // TODO
-void graphics::D3D11::SetProjectionMatrix(glm::mat4) {} // TODO
+int32_t graphics::D3D11::AddChunk(TempMesh *tempMesh) { 
+	assert(g_pd3dDevice);
+
+	MeshD3D11 mesh = {0};
+
+	Vertex* vertices = tempMesh->vertices.data();
+	int32_t numVertices = (int32_t) tempMesh->vertices.size();
+	int32_t* indices = tempMesh->indices.data();
+	int32_t numIndices = (int32_t) tempMesh->indices.size();
+
+	// Create an initialize the vertex buffer.
+	D3D11_BUFFER_DESC vertexBufferDesc;
+	ZeroMemory(&vertexBufferDesc, sizeof(D3D11_BUFFER_DESC));
+
+	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	vertexBufferDesc.ByteWidth = sizeof(Vertex) * numVertices;
+	vertexBufferDesc.CPUAccessFlags = 0;
+	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+
+	D3D11_SUBRESOURCE_DATA resourceData;
+	ZeroMemory(&resourceData, sizeof(D3D11_SUBRESOURCE_DATA));
+
+	resourceData.pSysMem = vertices;
+
+	HRESULT hr = g_pd3dDevice->CreateBuffer(&vertexBufferDesc, &resourceData, &mesh.vertexBuffer);
+	if (FAILED(hr))
+	{
+		__debugbreak();
+	}
+
+	// Create and initialize the index buffer.
+	D3D11_BUFFER_DESC indexBufferDesc;
+	ZeroMemory(&indexBufferDesc, sizeof(D3D11_BUFFER_DESC));
+
+	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	indexBufferDesc.ByteWidth = sizeof(int32_t) * numIndices;
+	indexBufferDesc.CPUAccessFlags = 0;
+	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	resourceData.pSysMem = indices;
+
+	hr = g_pd3dDevice->CreateBuffer(&indexBufferDesc, &resourceData, &mesh.indexBuffer);
+	if (FAILED(hr))
+	{
+		__debugbreak();
+	}
+
+	mesh.numIndices = numIndices;
+
+	g_meshes[g_numMeshes] = mesh;
+
+	// Add to draw calls
+
+	DrawCommand cmd = {0};
+	cmd.mesh = g_numMeshes;
+	//cmd.pipelineState.inputLayout = g_inputlayout
+	cmd.pipelineState.numViewports = 1;
+	cmd.pipelineState.pixelShader = s_pixelShader;
+	cmd.pipelineState.vertexShader = s_vertexShader;
+	//cmd.pipelineState.rasterizerState = rasterizerstate
+	cmd.worldMatrix;
+
+	g_drawCommands[g_numDrawCommands++] = cmd;
+
+	return g_numMeshes++;
+}
+
+void graphics::D3D11::SetPlayerCameraViewMatrix(glm::mat4 viewMatrix) {
+	s_view = viewMatrix;
+}
+
+void graphics::D3D11::SetProjectionMatrix(glm::mat4 projectionMatrix) {
+	s_projection = projectionMatrix;
+}
 
 #endif // defined(_WIN32) && defined(STARLIGHT_D3D11)
