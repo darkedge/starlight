@@ -35,4 +35,4 @@ int Strnicmp(const char* str1, const char* str2, int count) {
 
 // For this to work, at least one .cpp file using this macro
 // needs to be compiled on _every_ build, otherwise it is outdated.
-#define SL_BUILD_DATE __DATE__ __TIME__
+#define SL_BUILD_DATE __DATE__ " " __TIME__
