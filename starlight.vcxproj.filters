@@ -11,7 +11,6 @@
     <ClCompile Include="src\starlight_game.cpp" />
     <ClCompile Include="src\starlight_input.cpp" />
     <ClCompile Include="src\starlight_log.cpp" />
-    <ClCompile Include="src\starlight_opengl.cpp" />
     <ClCompile Include="src\starlight_graphics.cpp" />
     <ClCompile Include="src\starlight_transform.cpp" />
     <ClCompile Include="src\WorldGen.cpp" />
@@ -27,7 +26,6 @@
     <ClInclude Include="src\starlight_glm.h" />
     <ClInclude Include="src\starlight_math.h" />
     <ClInclude Include="src\starlight_memory.h" />
-    <ClInclude Include="src\starlight_opengl.h" />
     <ClInclude Include="src\starlight_game.h" />
     <ClInclude Include="src\starlight_generated.h" />
     <ClInclude Include="src\starlight_input.h" />

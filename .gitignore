@@ -250,3 +250,4 @@ external
 Win32
 !starlight_win32.vcxproj.user
 starlight_win32.vcxproj.marco.nvuser
+SimpleVertexShader.h
