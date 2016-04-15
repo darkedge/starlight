@@ -311,6 +311,8 @@ int CALLBACK WinMain(
 
 	s_gameFuncs.InitLogger();
 
+	s_gameFuncs.LogInfo(SL_BUILD_DATE);
+
 	auto className = L"StarlightClassName";
 
 	WNDCLASSEXW wndClass = { 0 };
