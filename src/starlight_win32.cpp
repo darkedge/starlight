@@ -23,9 +23,9 @@
 #ifdef SL_UB
   #ifdef _DEBUG
     #ifdef _WIN64
-      static const wchar_t* s_dllName = L"starlight_x64_UB Debug.dll";
+      static const wchar_t* s_dllName = L"starlight_ub_x64_UB Debug.dll";
     #else
-      static const wchar_t* s_dllName = L"starlight_Win32_UB Debug.dll";
+      static const wchar_t* s_dllName = L"starlight_ub_Win32_UB Debug.dll";
     #endif
   #endif
 #else
