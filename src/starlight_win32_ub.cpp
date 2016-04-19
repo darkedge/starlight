@@ -1,3 +1,4 @@
+#define SL_UB
 #include "starlight_d3d11.cpp"
 #include "starlight_d3d11_imgui.cpp"
 #include "starlight_win32.cpp"

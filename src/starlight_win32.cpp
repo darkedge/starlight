@@ -20,12 +20,22 @@
 #include "starlight_log.h"
 #include "starlight_memory.h"
 
-#ifdef _DEBUG
-#ifdef _WIN64
-static const wchar_t* s_dllName = L"starlight_x64_Debug.dll";
+#ifdef SL_UB
+  #ifdef _DEBUG
+    #ifdef _WIN64
+      static const wchar_t* s_dllName = L"starlight_x64_UB Debug.dll";
+    #else
+      static const wchar_t* s_dllName = L"starlight_Win32_UB Debug.dll";
+    #endif
+  #endif
 #else
-static const wchar_t* s_dllName = L"starlight_Win32_Debug.dll";
-#endif
+  #ifdef _DEBUG
+    #ifdef _WIN64
+      static const wchar_t* s_dllName = L"starlight_x64_Debug.dll";
+    #else
+      static const wchar_t* s_dllName = L"starlight_Win32_Debug.dll";
+    #endif
+  #endif
 #endif
 
 // Globals
