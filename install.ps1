@@ -53,6 +53,7 @@ DownloadFile("http://www.7-zip.org/a/7za920.zip")
 Write-Host Extracting 7-Zip executable...
 foreach ($item in $shell.NameSpace($($workingDir + "7za920.zip")).Items()) {
     if ($item.Name -eq "7za.exe") {
+        # 16 = "Respond with "Yes to All" for any dialog box that is displayed."
         $shell.NameSpace($workingDir).CopyHere($item, 16)
     }
 }
