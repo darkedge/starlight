@@ -1,9 +1,16 @@
+# This saves typing
 $shell = New-Object -com Shell.Application
 $webClient = New-Object Net.WebClient
+
+# Output folder
 $externalDir = "external"
 
+# -aoa: Overwrite all without prompt
+# -r: Recursive
+$7zargs = "-aoa -r *.cpp *.hpp *.c *.h *.inl *.ttf"
+
+# Get working directory
 $workingDir = $((Resolve-Path .).ToString() + "\")
-Write-Host $("Working directory: " + $workingDir)
 
 # Convenience functions
 function DownloadFile($address) {
@@ -31,16 +38,16 @@ function DownloadAndExtract($address) {
 	$extension = [System.IO.Path]::GetExtension($file)
 	Write-Host $("Extracting " + $file + "...")
 	if ($extension -eq ".zip") {
-		$cmd = ".\7za.exe x $file -o$externalDir -aos"
+		$cmd = ".\7za.exe x $file -o$externalDir $7zargs"
         Write-Host $cmd
 		Invoke-Expression $cmd
 	} elseif ($extension -eq ".gz") { # .tar.gz
-        $cmd = ".\7za.exe e $file -aos"
+        $cmd = ".\7za.exe e $file -aoa"
         Write-Host $cmd
         Invoke-Expression $cmd
 
         $tar = [System.IO.Path]::GetFileNameWithoutExtension($file)
-        $cmd = ".\7za.exe x $tar -o$externalDir -aos"
+        $cmd = ".\7za.exe x $tar -o$externalDir $7zargs"
         Write-Host $cmd
         Invoke-Expression $cmd
 	} else {
@@ -66,11 +73,15 @@ DownloadAndExtract("https://github.com/google/protobuf/releases/download/v2.6.1/
 DownloadAndExtract("https://github.com/google/flatbuffers/archive/v1.3.0.zip")
 
 # Delete downloads
-Remove-Item "7za.exe" -Recurse -ErrorAction Ignore
-Remove-Item "7za920.zip" -Recurse -ErrorAction Ignore
-Remove-Item "enet-1.3.13.tar*" -Recurse -ErrorAction Ignore
-Remove-Item "glm-0.9.7.2.zip" -Recurse -ErrorAction Ignore
-Remove-Item "lua-5.1.5.tar*" -Recurse -ErrorAction Ignore
-Remove-Item "protobuf-2.6.1.zip" -Recurse -ErrorAction Ignore
-Remove-Item "v1.3.0.zip" -Recurse -ErrorAction Ignore
-Remove-Item "v1.47.zip" -Recurse -ErrorAction Ignore
+function DeleteFile($file) {
+    Remove-Item $file -Recurse -ErrorAction Ignore
+}
+
+DeleteFile("7za.exe")
+DeleteFile("7za920.zip")
+DeleteFile("enet-1.3.13.tar*")
+DeleteFile("glm-0.9.7.2.zip")
+DeleteFile("lua-5.1.5.tar*")
+DeleteFile("protobuf-2.6.1.zip")
+DeleteFile("v1.3.0.zip")
+DeleteFile("v1.47.zip")
