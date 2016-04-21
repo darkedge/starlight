@@ -232,8 +232,6 @@ _Pvt_Extensions
 # FAKE - F# Make
 .fake/
 imgui.ini
-SimplePixelShader.h
-SimpleVertexShader.h
 nsight_profiler.cfg
 flatc.exe
 7za920.zip
@@ -249,5 +247,7 @@ v1.47.zip
 external
 Win32
 !starlight_win32.vcxproj.user
-starlight_win32.vcxproj.marco.nvuser
+!starlight_win32_ub.vcxproj.user
+# TODO: pre- or postfix generated header files
+SimplePixelShader.h
 SimpleVertexShader.h
