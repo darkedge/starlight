@@ -103,6 +103,14 @@
       <AdditionalDependencies>enet_$(Platform)_$(Configuration).lib;imgui_$(Platform)_$(Configuration).lib;winmm.lib;ws2_32.lib;d3d10.lib;d3d11.lib;d3dcompiler.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>Win32\lib\</AdditionalLibraryDirectories>
     </Link>
+    <FxCompile>
+      <ShaderModel>4.0</ShaderModel>
+      <VariableName>g_%(Filename)</VariableName>
+      <HeaderFileOutput>src/%(Filename).h</HeaderFileOutput>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <ObjectFileOutput>
+      </ObjectFileOutput>
+    </FxCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -120,6 +128,14 @@
       <AdditionalDependencies>enet_$(Platform)_$(Configuration).lib;imgui_$(Platform)_$(Configuration).lib;winmm.lib;ws2_32.lib;d3d10.lib;d3d11.lib;d3dcompiler.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>Win32\lib\</AdditionalLibraryDirectories>
     </Link>
+    <FxCompile>
+      <ShaderModel>4.0</ShaderModel>
+      <VariableName>g_%(Filename)</VariableName>
+      <HeaderFileOutput>src/%(Filename).h</HeaderFileOutput>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <ObjectFileOutput>
+      </ObjectFileOutput>
+    </FxCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -140,6 +156,14 @@
       <AdditionalLibraryDirectories>Win32\lib\</AdditionalLibraryDirectories>
       <AdditionalDependencies>enet_$(Platform)_$(Configuration).lib;imgui_$(Platform)_$(Configuration).lib;winmm.lib;ws2_32.lib;d3d10.lib;d3d11.lib;d3dcompiler.lib;starlight_$(Platform)_$(Configuration).lib</AdditionalDependencies>
     </Link>
+    <FxCompile>
+      <ShaderModel>4.0</ShaderModel>
+      <VariableName>g_%(Filename)</VariableName>
+      <HeaderFileOutput>src/%(Filename).h</HeaderFileOutput>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <ObjectFileOutput>
+      </ObjectFileOutput>
+    </FxCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -160,6 +184,14 @@
       <AdditionalLibraryDirectories>Win32\lib\</AdditionalLibraryDirectories>
       <AdditionalDependencies>enet_$(Platform)_$(Configuration).lib;imgui_$(Platform)_$(Configuration).lib;winmm.lib;ws2_32.lib;d3d10.lib;d3d11.lib;d3dcompiler.lib;starlight_$(Platform)_$(Configuration).lib</AdditionalDependencies>
     </Link>
+    <FxCompile>
+      <ShaderModel>4.0</ShaderModel>
+      <VariableName>g_%(Filename)</VariableName>
+      <HeaderFileOutput>src/%(Filename).h</HeaderFileOutput>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <ObjectFileOutput>
+      </ObjectFileOutput>
+    </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\starlight_d3d11.cpp" />
@@ -173,6 +205,20 @@
     <ClInclude Include="src\starlight_d3d_shared.h" />
     <ClInclude Include="src\starlight_renderer_windows.h" />
     <ClInclude Include="src\starlight_win32.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="src\SimplePixelShader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="src\SimpleVertexShader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+    </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

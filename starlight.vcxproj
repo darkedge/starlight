@@ -117,13 +117,6 @@
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>Win32\lib\</AdditionalLibraryDirectories>
     </Link>
-    <FxCompile>
-      <ShaderModel>4.0</ShaderModel>
-      <VariableName>g_%(Filename)</VariableName>
-      <HeaderFileOutput>src/%(Filename).h</HeaderFileOutput>
-      <TreatWarningAsError>true</TreatWarningAsError>
-      <ObjectFileOutput />
-    </FxCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -147,14 +140,6 @@
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>Win32\lib\</AdditionalLibraryDirectories>
     </Link>
-    <FxCompile>
-      <ShaderModel>4.0</ShaderModel>
-      <VariableName>g_%(Filename)</VariableName>
-      <HeaderFileOutput>src/%(Filename).h</HeaderFileOutput>
-      <TreatWarningAsError>true</TreatWarningAsError>
-      <ObjectFileOutput>
-      </ObjectFileOutput>
-    </FxCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -180,13 +165,6 @@
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>Win32\lib\</AdditionalLibraryDirectories>
     </Link>
-    <FxCompile>
-      <ShaderModel>4.0</ShaderModel>
-      <VariableName>g_%(Filename)</VariableName>
-      <HeaderFileOutput>src/%(Filename).h</HeaderFileOutput>
-      <TreatWarningAsError>true</TreatWarningAsError>
-      <ObjectFileOutput />
-    </FxCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -212,14 +190,6 @@
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>Win32\lib\</AdditionalLibraryDirectories>
     </Link>
-    <FxCompile>
-      <ShaderModel>4.0</ShaderModel>
-      <VariableName>g_%(Filename)</VariableName>
-      <HeaderFileOutput>src/%(Filename).h</HeaderFileOutput>
-      <TreatWarningAsError>true</TreatWarningAsError>
-      <ObjectFileOutput>
-      </ObjectFileOutput>
-    </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\Addon.cpp" />
@@ -258,28 +228,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="starlight.fbs" />
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="src\SimplePixelShader.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='UB Debug|x64'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='UB Debug|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='UB Release|x64'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='UB Release|Win32'">Pixel</ShaderType>
-    </FxCompile>
-    <FxCompile Include="src\SimpleVertexShader.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='UB Debug|x64'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='UB Debug|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='UB Release|x64'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='UB Release|Win32'">Vertex</ShaderType>
-    </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

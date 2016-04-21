@@ -38,8 +38,4 @@
   <ItemGroup>
     <None Include="starlight.fbs" />
   </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="src\SimplePixelShader.hlsl" />
-    <FxCompile Include="src\SimpleVertexShader.hlsl" />
-  </ItemGroup>
 </Project>
