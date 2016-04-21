@@ -61,7 +61,6 @@ DownloadAndExtract("http://enet.bespin.org/download/enet-1.3.13.tar.gz")
 DownloadAndExtract("https://github.com/g-truc/glm/releases/download/0.9.7.2/glm-0.9.7.2.zip")
 DownloadAndExtract("https://github.com/ocornut/imgui/archive/v1.47.zip")
 DownloadAndExtract("http://www.lua.org/ftp/lua-5.1.5.tar.gz")
-DownloadAndExtract("http://cppcms.com/files/nowide/nowide_standalone.zip")
 DownloadAndExtract("https://github.com/google/protobuf/releases/download/v2.6.1/protobuf-2.6.1.zip")
 DownloadAndExtract("https://github.com/google/flatbuffers/archive/v1.3.0.zip")
 
@@ -73,7 +72,6 @@ Remove-Item "enet-1.3.13.tar.gz" -Recurse -ErrorAction Ignore
 Remove-Item "glm-0.9.7.2.zip" -Recurse -ErrorAction Ignore
 Remove-Item "lua-5.1.5.tar" -Recurse -ErrorAction Ignore
 Remove-Item "lua-5.1.5.tar.gz" -Recurse -ErrorAction Ignore
-Remove-Item "nowide_standalone.zip" -Recurse -ErrorAction Ignore
 Remove-Item "protobuf-2.6.1.zip" -Recurse -ErrorAction Ignore
 Remove-Item "v1.3.0.zip" -Recurse -ErrorAction Ignore
 Remove-Item "v1.47.zip" -Recurse -ErrorAction Ignore
