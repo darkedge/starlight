@@ -251,3 +251,4 @@ Win32
 # TODO: pre- or postfix generated header files
 SimplePixelShader.h
 SimpleVertexShader.h
+*.nvuser
