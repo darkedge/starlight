@@ -67,11 +67,9 @@ DownloadAndExtract("https://github.com/google/flatbuffers/archive/v1.3.0.zip")
 # Delete downloads
 Remove-Item "7za.exe" -Recurse -ErrorAction Ignore
 Remove-Item "7za920.zip" -Recurse -ErrorAction Ignore
-Remove-Item "enet-1.3.13.tar" -Recurse -ErrorAction Ignore
-Remove-Item "enet-1.3.13.tar.gz" -Recurse -ErrorAction Ignore
+Remove-Item "enet-1.3.13.tar*" -Recurse -ErrorAction Ignore
 Remove-Item "glm-0.9.7.2.zip" -Recurse -ErrorAction Ignore
-Remove-Item "lua-5.1.5.tar" -Recurse -ErrorAction Ignore
-Remove-Item "lua-5.1.5.tar.gz" -Recurse -ErrorAction Ignore
+Remove-Item "lua-5.1.5.tar*" -Recurse -ErrorAction Ignore
 Remove-Item "protobuf-2.6.1.zip" -Recurse -ErrorAction Ignore
 Remove-Item "v1.3.0.zip" -Recurse -ErrorAction Ignore
 Remove-Item "v1.47.zip" -Recurse -ErrorAction Ignore
