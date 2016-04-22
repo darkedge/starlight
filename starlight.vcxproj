@@ -77,21 +77,18 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>Win32\lib\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>enet_$(Platform)_$(Configuration).lib;imgui_$(Platform)_$(Configuration).lib;winmm.lib;ws2_32.lib;d3d10.lib;d3d11.lib;d3dcompiler.lib;</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <ClCompile>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
-    <Link>
-      <AdditionalDependencies>enet_$(Platform)_$(Configuration).lib;imgui_$(Platform)_$(Configuration).lib;winmm.lib;ws2_32.lib;d3d10.lib;d3d11.lib;d3dcompiler.lib</AdditionalDependencies>
-    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>enet_$(Platform)_$(Configuration).lib;imgui_$(Platform)_$(Configuration).lib;winmm.lib;ws2_32.lib;d3d10.lib;d3d11.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
