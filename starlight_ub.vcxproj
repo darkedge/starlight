@@ -72,13 +72,15 @@
     <Link>
       <AdditionalLibraryDirectories>Win32\lib\</AdditionalLibraryDirectories>
       <SubSystem>Windows</SubSystem>
-      <AdditionalDependencies>enet_$(Platform)_$(Configuration).lib;imgui_$(Platform)_$(Configuration).lib;winmm.lib;ws2_32.lib;d3d10.lib;d3d11.lib;d3dcompiler.lib;</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='UB Debug'">
     <ClCompile>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>enet_$(Platform)_Debug.lib;imgui_$(Platform)_Debug.lib;winmm.lib;ws2_32.lib;d3d10.lib;d3d11.lib;d3dcompiler.lib;</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='UB Release'">
     <ClCompile>
@@ -87,6 +89,7 @@
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>enet_$(Platform)_Release.lib;imgui_$(Platform)_Release.lib;winmm.lib;ws2_32.lib;d3d10.lib;d3d11.lib;d3dcompiler.lib;</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
