@@ -1,7 +1,7 @@
 # starlight
 [![Build status](https://ci.appveyor.com/api/projects/status/nwu5skix98cb35ua?svg=true)](https://ci.appveyor.com/project/darkedge/starlight)
 
-## How to build (Windows)
+## How to build (Visual Studio 2015)
 - Run install.ps1 (This downloads and extracts the dependencies, may take a while)
 - Run cook.ps1 (Copies assets to output folder)
 - Open starlight.sln
