@@ -137,7 +137,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="external\imgui-1.47\examples\directx10_example\imgui_impl_dx10.cpp" />
     <ClCompile Include="external\imgui-1.47\examples\directx11_example\imgui_impl_dx11.cpp" />
     <ClCompile Include="external\imgui-1.47\imgui.cpp" />
     <ClCompile Include="external\imgui-1.47\imgui_demo.cpp" />

@@ -46,12 +46,12 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='UB Debug'">
     <Link>
-      <AdditionalDependencies>enet_$(Platform)_Debug.lib;imgui_$(Platform)_Debug.lib;winmm.lib;ws2_32.lib;d3d10.lib;d3d11.lib;d3dcompiler.lib;</AdditionalDependencies>
+      <AdditionalDependencies>enet_$(Platform)_Debug.lib;imgui_$(Platform)_Debug.lib;winmm.lib;ws2_32.lib;</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='UB Release'">
     <Link>
-      <AdditionalDependencies>enet_$(Platform)_Release.lib;imgui_$(Platform)_Release.lib;winmm.lib;ws2_32.lib;d3d10.lib;d3d11.lib;d3dcompiler.lib;</AdditionalDependencies>
+      <AdditionalDependencies>enet_$(Platform)_Release.lib;imgui_$(Platform)_Release.lib;winmm.lib;ws2_32.lib;</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
