@@ -206,7 +206,7 @@ void ParseMessages() {
 	while (s_queue->Dequeue(&message)) {}
 }
 
-unsigned int MyThreadFunction(void*) {
+unsigned int __stdcall MyThreadFunction(void*) {
 	EGraphicsApi graphicsApi = EGraphicsApi::D3D11;
 	if (!LoadRenderApiImpl(graphicsApi)) {
 		s_running.store(false);
