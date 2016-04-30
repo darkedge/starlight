@@ -20,20 +20,24 @@
 #include "starlight_log.h"
 #include "starlight_memory.h"
 
-#ifdef SL_UB
-  #ifdef _DEBUG
-    #ifdef _WIN64
-      static const wchar_t* s_dllName = L"starlight_ub_x64_UB Debug.dll";
-    #else
-      static const wchar_t* s_dllName = L"starlight_ub_Win32_UB Debug.dll";
-    #endif
-  #endif
+#ifdef SL_CL
+  static const wchar_t* s_dllName = L"starlight.dll";
 #else
-  #ifdef _DEBUG
-    #ifdef _WIN64
-      static const wchar_t* s_dllName = L"starlight_x64_Debug.dll";
-    #else
-      static const wchar_t* s_dllName = L"starlight_Win32_Debug.dll";
+  #ifdef SL_UB
+    #ifdef _DEBUG
+      #ifdef _WIN64
+        static const wchar_t* s_dllName = L"starlight_ub_x64_UB Debug.dll";
+      #else
+        static const wchar_t* s_dllName = L"starlight_ub_Win32_UB Debug.dll";
+      #endif
+    #endif
+  #else
+    #ifdef _DEBUG
+      #ifdef _WIN64
+        static const wchar_t* s_dllName = L"starlight_x64_Debug.dll";
+      #else
+        static const wchar_t* s_dllName = L"starlight_Win32_Debug.dll";
+      #endif
     #endif
   #endif
 #endif
@@ -74,7 +78,7 @@ GameFuncs LoadGameFuncs() {
 #if _DEBUG
 	HMODULE lib = LoadLibraryW(s_dllName);
 	if (!lib) {
-		GetLastError();
+		MessageBoxW(s_hwnd, L"Could not find game .DLL!", L"Error", MB_ICONHAND);
 	}
 	else {
 		gameFuncs.DestroyGame = (DestroyGameFunc*) GetProcAddress(lib, "DestroyGame");
@@ -82,12 +86,14 @@ GameFuncs LoadGameFuncs() {
 		gameFuncs.InitLogger = (InitLoggerFunc*) GetProcAddress(lib, "InitLogger");
 		gameFuncs.DestroyLogger = (DestroyLoggerFunc*) GetProcAddress(lib, "DestroyLogger");
 		gameFuncs.LogInfo = (LogInfoFunc*) GetProcAddress(lib, "LogInfo");
-		if (!(gameFuncs.DestroyGame
+		if (gameFuncs.DestroyGame
 			&& gameFuncs.UpdateGame
 			&& gameFuncs.InitLogger
 			&& gameFuncs.DestroyLogger
-			&& gameFuncs.LogInfo)) {
-			GetLastError();
+			&& gameFuncs.LogInfo) {
+			gameFuncs.valid = true;
+		} else {
+			MessageBoxW(s_hwnd, L"Could not load functions from .DLL!", L"Error", MB_ICONHAND);
 		}
 	}
 #else
@@ -311,6 +317,9 @@ int CALLBACK WinMain(
 	//std::set_new_handler(memory::no_memory);
 
 	s_gameFuncs = LoadGameFuncs();
+	if (!s_gameFuncs.valid) {
+		return 1;
+	}
 
 	ImGuiIO& io = ImGui::GetIO();
 	//io.MemAllocFn = memory::malloc;
@@ -391,6 +400,8 @@ int CALLBACK WinMain(
 	UnregisterClassW(className, GetModuleHandleW(nullptr));
 
 	_CrtDumpMemoryLeaks();
+
+	return 0;
 }
 
 #if 0

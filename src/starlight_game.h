@@ -159,6 +159,7 @@ struct GameFuncs {
 	LogInfoFunc* LogInfo;
 	UpdateGameFunc* UpdateGame;
 	DestroyGameFunc* DestroyGame;
+	bool valid;
 };
 
 // NOTE: Platform layer can't use exported functions in debug (linker errors!)
