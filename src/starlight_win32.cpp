@@ -102,6 +102,7 @@ GameFuncs LoadGameFuncs() {
 	gameFuncs.InitLogger = logger::InitLogger;
 	gameFuncs.DestroyLogger = logger::DestroyLogger;
 	gameFuncs.LogInfo = logger::LogInfo;
+	gameFuncs.valid = true;
 #endif
 
 	return gameFuncs;
