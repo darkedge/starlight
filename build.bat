@@ -37,7 +37,7 @@ set slLink=/time /incremental:no /LIBPATH:../lib enet.lib imgui.lib winmm.lib ws
 
 :cook
 if exist build\bin\assets goto enet
-cook build\bin\assets
+call cook build\bin\assets
 
 :enet
 if exist build\lib\enet.lib goto imgui
