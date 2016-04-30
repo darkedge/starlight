@@ -8,9 +8,9 @@
     <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release' Or '$(Configuration)'=='UB Release'">
-  	<Link>
+    <Link>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
-  	</Link>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup>
     <ClCompile>
@@ -39,6 +39,7 @@
       <TreatWarningAsError>true</TreatWarningAsError>
       <ObjectFileOutput>
       </ObjectFileOutput>
+      <AdditionalOptions>/Gfp</AdditionalOptions>
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup />
