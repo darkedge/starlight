@@ -19,6 +19,7 @@
 #include "starlight_thread_safe_queue.h"
 #include "starlight_log.h"
 #include "starlight_memory.h"
+#include <process.h>
 
 #ifdef SL_CL
   static const wchar_t* s_dllName = L"starlight.dll";
@@ -205,11 +206,11 @@ void ParseMessages() {
 	while (s_queue->Dequeue(&message)) {}
 }
 
-void MyThreadFunction() {
+unsigned int MyThreadFunction(void*) {
 	EGraphicsApi graphicsApi = EGraphicsApi::D3D11;
 	if (!LoadRenderApiImpl(graphicsApi)) {
 		s_running.store(false);
-		return;
+		return 1;
 	}
 
 	// Init time
@@ -238,7 +239,7 @@ void MyThreadFunction() {
 	if (enet_initialize() != 0)
 	{
 		s_running.store(false);
-		return;
+		return 1;
 	}
 
 	// Main loop
@@ -274,6 +275,9 @@ void MyThreadFunction() {
 	//delete heapArea;
 
 	enet_deinitialize();
+
+	_endthreadex(0);
+	return 0;
 }
 
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -379,7 +383,12 @@ int CALLBACK WinMain(
 
 	// Create thread
 	s_running.store(true);
-	std::thread thread(MyThreadFunction);
+	unsigned int threadID;
+	HANDLE thread = (HANDLE) _beginthreadex(nullptr, 0, MyThreadFunction, nullptr, 0, &threadID);
+	if (!thread) {
+		// Error creating thread
+		return 1;
+	}
 
 	// Message loop
 	MSG msg;
@@ -390,7 +399,8 @@ int CALLBACK WinMain(
 		DispatchMessageW(&msg);
 	}
 
-	thread.join();
+	WaitForSingleObject(thread, INFINITE);
+	CloseHandle(thread);
 
 	s_gameFuncs.DestroyLogger();
 
