@@ -39,6 +39,10 @@ static ID3D11VertexShader* s_vertexShader;
 static ID3D11Buffer* s_constantBuffers[EConstantBuffer::Count];
 static ID3D11InputLayout* s_inputLayout;
 static ID3D11RasterizerState* s_rasterizerState;
+static ID3D11DepthStencilState* s_depthStencilState;
+static ID3D11DepthStencilView* s_depthStencilView;
+static ID3D11Texture2D* s_depthStencilBuffer;
+static D3D11_VIEWPORT s_viewport;
 
 static glm::mat4 s_view;
 static glm::mat4 s_projection;
@@ -534,6 +538,39 @@ static void CreateRenderTarget()
 	g_pd3dDevice->CreateRenderTargetView(pBackBuffer, &render_target_view_desc, &g_mainRenderTargetView);
 	g_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, NULL);
 	pBackBuffer->Release();
+
+	// Depth Stencil
+	D3D11_TEXTURE2D_DESC depthStencilBufferDesc;
+	ZeroMemory(&depthStencilBufferDesc, sizeof(D3D11_TEXTURE2D_DESC));
+
+	depthStencilBufferDesc.ArraySize = 1;
+	depthStencilBufferDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	depthStencilBufferDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	depthStencilBufferDesc.Width = sd.BufferDesc.Width;
+	depthStencilBufferDesc.Height = sd.BufferDesc.Height;
+	depthStencilBufferDesc.MipLevels = 1;
+	depthStencilBufferDesc.SampleDesc.Count = 1;
+	depthStencilBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+
+	g_pd3dDevice->CreateTexture2D(&depthStencilBufferDesc, nullptr, &s_depthStencilBuffer);
+
+	g_pd3dDevice->CreateDepthStencilView(s_depthStencilBuffer, nullptr, &s_depthStencilView);
+
+	D3D11_DEPTH_STENCIL_DESC depthStencilStateDesc;
+	ZeroMemory(&depthStencilStateDesc, sizeof(D3D11_DEPTH_STENCIL_DESC));
+	depthStencilStateDesc.DepthEnable = TRUE;
+	depthStencilStateDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_LESS;
+	depthStencilStateDesc.StencilEnable = FALSE;
+	g_pd3dDevice->CreateDepthStencilState(&depthStencilStateDesc, &s_depthStencilState);
+
+	// Initialize the viewport to occupy the entire client area.
+	s_viewport.Width = (float) sd.BufferDesc.Width;
+	s_viewport.Height = (float) sd.BufferDesc.Height;
+	s_viewport.TopLeftX = 0.0f;
+	s_viewport.TopLeftY = 0.0f;
+	s_viewport.MinDepth = 0.0f;
+	s_viewport.MaxDepth = 1.0f;
 }
 
 static void CleanupRenderTarget()
@@ -693,7 +730,6 @@ void graphics::D3D11::Render() {
 		//assert(pipelineState.inputLayout);
 		//g_pd3dDeviceContext->IASetInputLayout(pipelineState.inputLayout);
 		g_pd3dDeviceContext->IASetInputLayout(s_inputLayout);
-		
 		g_pd3dDeviceContext->IASetVertexBuffers(0, 1, &mesh->vertexBuffer, &stride, &offset);
 		g_pd3dDeviceContext->IASetIndexBuffer(mesh->indexBuffer, DXGI_FORMAT_R16_UINT, 0);
 		g_pd3dDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -710,17 +746,17 @@ void graphics::D3D11::Render() {
 
 		// Rasterizer
 		g_pd3dDeviceContext->RSSetState(s_rasterizerState);
-		//g_pd3dDeviceContext->RSSetViewports(1, viewports);
+		g_pd3dDeviceContext->RSSetViewports(1, &s_viewport);
 
 		// Pixel Shader
 		g_pd3dDeviceContext->PSSetShader(pipelineState->pixelShader, nullptr, 0);
 
 		// Output Merger
-		g_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, nullptr);
-		//g_pd3dDeviceContext->OMSetDepthStencilState(s_depthStencilState, 1);
+		//g_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, nullptr);
+		g_pd3dDeviceContext->OMSetDepthStencilState(s_depthStencilState, 1);
 
 		// Draw call
-		g_pd3dDeviceContext->DrawIndexed(mesh->numIndices, 0, 0);
+		//g_pd3dDeviceContext->DrawIndexed(mesh->numIndices, 0, 0);
 	}
 
 	ImGui::Render();
@@ -787,6 +823,7 @@ bool graphics::D3D11::Init(PlatformData *data, GameFuncs* funcs) {
 
 	return true;
 }
+
 void graphics::D3D11::Update() {} // TODO
 
 extern void ImGui_ImplDX11_NewFrame();
