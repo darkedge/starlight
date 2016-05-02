@@ -756,7 +756,7 @@ void graphics::D3D11::Render() {
 		g_pd3dDeviceContext->OMSetDepthStencilState(s_depthStencilState, 1);
 
 		// Draw call
-		//g_pd3dDeviceContext->DrawIndexed(mesh->numIndices, 0, 0);
+		g_pd3dDeviceContext->DrawIndexed(mesh->numIndices, 0, 0);
 	}
 
 	ImGui::Render();

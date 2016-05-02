@@ -203,11 +203,15 @@ void Init(GameInfo* gameInfo, graphics::API* graphicsApi) {
 	gameInfo->numChunks = 1;
 	gameInfo->chunks = new Chunk;
 	ZERO_MEM(gameInfo->chunks, sizeof(Chunk));
+#if 0
 	for (int32_t y = 0; y < CHUNK_DIM_Y / 2; y++) {
 		for (int32_t x = 0; x < CHUNK_DIM_XZ; x++) for (int32_t z = 0; z < CHUNK_DIM_XZ; z++) {
 			SetBlock(gameInfo->chunks, 1, x, y, z);
 		}
 	}
+#else
+	SetBlock(gameInfo->chunks, 1, 0, 0, 0);
+#endif
 
 	UpdateMeshList(gameInfo, graphicsApi, 0);
 
