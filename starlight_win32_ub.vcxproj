@@ -38,12 +38,12 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='UB Debug'">
     <Link>
-      <AdditionalDependencies>winmm.lib;ws2_32.lib;d3d10.lib;d3d11.lib;d3dcompiler.lib;enet_$(Platform)_Debug.lib;imgui_$(Platform)_Debug.lib;</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;ws2_32.lib;d3d10.lib;d3d11.lib;d3dcompiler.lib;dxguid.lib;enet_$(Platform)_Debug.lib;imgui_$(Platform)_Debug.lib;</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='UB Release'">
     <Link>
-      <AdditionalDependencies>winmm.lib;ws2_32.lib;d3d10.lib;d3d11.lib;d3dcompiler.lib;enet_$(Platform)_Release.lib;imgui_$(Platform)_Release.lib;starlight_ub_$(Platform)_$(Configuration).lib</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;ws2_32.lib;d3d10.lib;d3d11.lib;d3dcompiler.lib;dxguid.lib;enet_$(Platform)_Release.lib;imgui_$(Platform)_Release.lib;starlight_ub_$(Platform)_$(Configuration).lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

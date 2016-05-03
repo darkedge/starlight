@@ -33,7 +33,7 @@ set slCompile=%slBasicCompile% %slDefinitions% %slInclude% /Ob1 /WX /W4 /wd4100 
 :: [Linker options]
 :: /time: display timings (undocumented)
 
-set slLink=/time /incremental:no /LIBPATH:../lib enet.lib imgui.lib winmm.lib ws2_32.lib
+set slLink=/time /incremental:no /LIBPATH:../lib enet.lib imgui.lib winmm.lib ws2_32.lib dxguid.lib
 
 :cook
 if exist build\bin\assets goto enet

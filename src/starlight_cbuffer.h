@@ -18,8 +18,8 @@ typedef glm::mat4 matrix;
 
 INPUT_NAME(AppData)
 {
+	VEC(2, uv, TEXCOORD)
 	VEC(3, position, POSITION)
-	VEC(3, color, COLOR)
 };
 
 CBUFFER(CBView, b0)

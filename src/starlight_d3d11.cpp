@@ -5,6 +5,8 @@
 #include "starlight_d3d11.h"
 #include "starlight_renderer_windows.h"
 
+#include <D3Dcommon.h>
+
 #include <algorithm>
 
 #include <array>
@@ -600,7 +602,8 @@ static HRESULT CreateDeviceD3D(HWND hWnd)
 	}
 
 	UINT createDeviceFlags = 0;
-	//createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
+	createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
+
 	D3D_FEATURE_LEVEL featureLevel;
 	D3D_FEATURE_LEVEL featureLevelArray[] =
 	{
@@ -865,6 +868,9 @@ int32_t graphics::D3D11::AddChunk(TempMesh *tempMesh) {
 	{
 		__debugbreak();
 	}
+
+	const char c_szName [] = "Chunk";
+	mesh.vertexBuffer->SetPrivateData(WKPDID_D3DDebugObjectName, sizeof(c_szName) - 1, c_szName);
 
 	// Create and initialize the index buffer.
 	D3D11_BUFFER_DESC indexBufferDesc;
