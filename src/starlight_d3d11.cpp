@@ -602,7 +602,9 @@ static HRESULT CreateDeviceD3D(HWND hWnd)
 	}
 
 	UINT createDeviceFlags = 0;
+#ifdef _DEBUG
 	createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
+#endif
 
 	D3D_FEATURE_LEVEL featureLevel;
 	D3D_FEATURE_LEVEL featureLevelArray[] =
@@ -616,8 +618,38 @@ static HRESULT CreateDeviceD3D(HWND hWnd)
 		D3D_FEATURE_LEVEL_9_1
 	};
 
-	if (D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, createDeviceFlags, featureLevelArray, _countof(featureLevelArray), D3D11_SDK_VERSION, &sd, &g_pSwapChain, &g_pd3dDevice, &featureLevel, &g_pd3dDeviceContext) != S_OK)
-		return E_FAIL;
+	HRESULT hr = D3D11CreateDeviceAndSwapChain(
+		NULL,
+		D3D_DRIVER_TYPE_HARDWARE,
+		NULL,
+		createDeviceFlags,
+		featureLevelArray,
+		_countof(featureLevelArray),
+		D3D11_SDK_VERSION,
+		&sd,
+		&g_pSwapChain,
+		&g_pd3dDevice,
+		&featureLevel,
+		&g_pd3dDeviceContext);
+	if (hr != S_OK) {
+		// Try without debug flag
+		hr = D3D11CreateDeviceAndSwapChain(
+			NULL,
+			D3D_DRIVER_TYPE_HARDWARE,
+			NULL,
+			0,
+			featureLevelArray,
+			_countof(featureLevelArray),
+			D3D11_SDK_VERSION,
+			&sd,
+			&g_pSwapChain,
+			&g_pd3dDevice,
+			&featureLevel,
+			&g_pd3dDeviceContext);
+		if (hr != S_OK) {
+			return E_FAIL;
+		}
+	}
 
 	// Setup rasterizer
 	{
