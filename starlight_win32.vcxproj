@@ -38,7 +38,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <Link>
-      <AdditionalDependencies>enet_$(Platform)_$(Configuration).lib;imgui_$(Platform)_$(Configuration).lib;winmm.lib;ws2_32.lib;d3d10.lib;d3d11.lib;d3dcompiler.lib</AdditionalDependencies>
+      <AdditionalDependencies>enet_$(Platform)_$(Configuration).lib;imgui_$(Platform)_$(Configuration).lib;winmm.lib;ws2_32.lib;d3d10.lib;d3d11.lib;d3dcompiler.lib;dxguid.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
