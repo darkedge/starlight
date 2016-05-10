@@ -580,7 +580,7 @@ static void CleanupRenderTarget()
 	if (g_mainRenderTargetView) { g_mainRenderTargetView->Release(); g_mainRenderTargetView = NULL; }
 }
 
-static HRESULT CreateDeviceD3D(HWND hWnd)
+static HRESULT CreateDeviceD3D(HWND hWnd, GameFuncs* funcs)
 {
 	// Setup swap chain
 	DXGI_SWAP_CHAIN_DESC sd;
@@ -650,6 +650,18 @@ static HRESULT CreateDeviceD3D(HWND hWnd)
 			return E_FAIL;
 		}
 	}
+
+	const char* level =
+		featureLevel == D3D_FEATURE_LEVEL_11_1 ? "11.1" :
+		featureLevel == D3D_FEATURE_LEVEL_11_0 ? "11.0" :
+		featureLevel == D3D_FEATURE_LEVEL_10_1 ? "10.1" :
+		featureLevel == D3D_FEATURE_LEVEL_10_0 ? "10.0" :
+		featureLevel == D3D_FEATURE_LEVEL_9_3 ? "9.3" :
+		featureLevel == D3D_FEATURE_LEVEL_9_2 ? "9.2" :
+		featureLevel == D3D_FEATURE_LEVEL_9_1 ? "9.1" : "error";
+
+	funcs->LogInfo(std::string("D3D Feature level: ") + level);
+	
 
 	// Setup rasterizer
 	{
@@ -808,7 +820,7 @@ void graphics::D3D11::Resize(int32_t, int32_t) {
 
 bool graphics::D3D11::Init(PlatformData *data, GameFuncs* funcs) {
 	// Initialize Direct3D
-	if (CreateDeviceD3D(data->hWnd) < 0)
+	if (CreateDeviceD3D(data->hWnd, funcs) < 0)
 	{
 		CleanupDeviceD3D();
 		return false;
