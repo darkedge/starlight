@@ -23,6 +23,12 @@ types["float2"] = "glm::vec2"
 types["float3"] = "glm::vec3"
 types["float4"] = "glm::vec4"
 
+format = {}
+format["float"] = "DXGI_FORMAT_R32_FLOAT"
+format["float2"] = "DXGI_FORMAT_R32G32_FLOAT"
+format["float3"] = "DXGI_FORMAT_R32G32B32_FLOAT"
+format["float4"] = "DXGI_FORMAT_R32G32B32A32_FLOAT"
+
 --
 -- Generator
 --
@@ -39,7 +45,7 @@ file:write("#include <d3d11.h>\n\n")
 file:write("D3D11_INPUT_ELEMENT_DESC g_", vertex[1], "[] =\n")
 file:write("{", "\n")
 for k,v in pairs(vertex[2]) do
-	file:write("\t{ \"", v[3], "\", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },\n")
+	file:write("\t{ \"", v[3], "\", 0, ", format[v[1]], ", 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },\n")
 end
 file:write("};", "\n\n")
 
