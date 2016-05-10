@@ -13,7 +13,7 @@
 #include "starlight_log.h"
 #include "starlight_game.h"
 
-#include "starlight_cbuffer.h"
+#include "starlight_hlsl_generated.h"
 
 struct MeshD3D11 {
 	ID3D11Buffer* vertexBuffer;

@@ -1,4 +1,4 @@
-#include "starlight_cbuffer.h"
+#include "starlight_hlsl_generated.h"
 
 struct VertexShaderOutput
 {

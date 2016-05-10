@@ -54,7 +54,6 @@
   <ItemGroup>
     <ClInclude Include="src\SimplePixelShader.h" />
     <ClInclude Include="src\SimpleVertexShader.h" />
-    <ClInclude Include="src\starlight_cbuffer.h" />
     <ClInclude Include="src\starlight_d3d11.h" />
     <ClInclude Include="src\starlight_d3d_shared.h" />
     <ClInclude Include="src\starlight_renderer_windows.h" />
