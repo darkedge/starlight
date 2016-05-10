@@ -6,14 +6,14 @@ vertex = {"AppData", {
 
 -- Constant buffers
 buffers = {}
-buffers[1] = {"CBView", "b0", {
+buffers[1] = {"CBModel", "b0", {
+	{"matrix", "worldMatrix"},
+}}
+buffers[2] = {"CBView", "b1", {
 	{"matrix", "view"},
 }}
-buffers[2] = {"CBProjection", "b1", {
+buffers[3] = {"CBProjection", "b2", {
 	{"matrix", "projection"},
-}}
-buffers[3] = {"CBModel", "b2", {
-	{"matrix", "worldMatrix"},
 }}
 
 types = {}

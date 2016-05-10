@@ -17,6 +17,11 @@ struct AppData
 	glm::vec3 position;
 };
 
+struct CBModel
+{
+	glm::mat4 worldMatrix;
+};
+
 struct CBView
 {
 	glm::mat4 view;
@@ -27,11 +32,6 @@ struct CBProjection
 	glm::mat4 projection;
 };
 
-struct CBModel
-{
-	glm::mat4 worldMatrix;
-};
-
 #else
 
 struct AppData
@@ -40,19 +40,19 @@ struct AppData
 	float3 position : POSITION;
 };
 
-cbuffer CBView : register(b0)
+cbuffer CBModel : register(b0)
+{
+	matrix worldMatrix;
+};
+
+cbuffer CBView : register(b1)
 {
 	matrix view;
 };
 
-cbuffer CBProjection : register(b1)
+cbuffer CBProjection : register(b2)
 {
 	matrix projection;
-};
-
-cbuffer CBModel : register(b2)
-{
-	matrix worldMatrix;
 };
 
 #endif
