@@ -16,9 +16,9 @@ static bool mouseDown[NUM_MOUSE_BUTTONS];
 static bool mouseUp[NUM_MOUSE_BUTTONS];
 
 static bool isMouseGrabbed;
-static glm::vec2 lastMousePos;
-static glm::vec2 mouseDelta;
-static glm::vec2 mousePos;
+static float2 lastMousePos;
+static float2 mouseDelta;
+static float2 mousePos;
 
 bool input::GetKey(int key)
 {
@@ -56,13 +56,13 @@ bool input::IsMouseGrabbed()
 }
 
 // In pixels. Origin is top-left
-glm::vec2 input::GetMouseDelta()
+float2 input::GetMouseDelta()
 {
 	return mouseDelta;
 }
 
 // In pixels. Origin is top-left
-glm::vec2 input::GetMousePosition()
+float2 input::GetMousePosition()
 {
 	return mousePos;
 }
@@ -77,7 +77,7 @@ void input::SetKey(int key, bool pressed)
 	keys[key] = pressed;
 }
 
-void input::SetMousePosition(const glm::vec2 pos)
+void input::SetMousePosition(float2 pos)
 {
 	mousePos = pos;
 	mouseDelta += pos - lastMousePos;

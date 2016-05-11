@@ -1,48 +1,52 @@
 #include "starlight_transform.h"
+#include "starlight.h"
 #include <cassert>
 
+using namespace Vectormath::Aos;
+
 void Transform::SetLocalPosition(float x, float y, float z) {
-	SetLocalPosition(glm::vec3(x, y, z));
+	SetLocalPosition(Vector3(x, y, z));
 }
 
-void Transform::SetLocalPosition(const glm::vec3 &_position) {
+void Transform::SetLocalPosition(const Vector3 &_position) {
 	this->m_localPosition = _position;
 	m_dirty = true;
 }
 
-void Transform::SetLocalRotation(const glm::quat &_orientation) {
+void Transform::SetLocalRotation(const Quat &_orientation) {
 	this->m_localRotation = _orientation;
 	m_dirty = true;
 }
 
 // Degrees
 void Transform::SetLocalRotation(float pitch, float yaw, float roll) {
-	SetLocalRotation(glm::vec3(pitch, yaw, roll));
+	SetLocalRotation(Vector3(pitch, yaw, roll));
 }
 
 // Degrees
-void Transform::SetLocalRotation(const glm::vec3 &degrees) {
-	SetLocalRotation(glm::quat(glm::radians(degrees)));
+void Transform::SetLocalRotation(const Vector3 &degrees) {
+	assert(false);
+	//SetLocalRotation(Quat(degrees * DEG2RAD));
 }
 
 void Transform::SetLocalScale(float xyz) {
-	SetLocalScale(glm::vec3(xyz));
+	SetLocalScale(Vector3(xyz));
 }
 
 void Transform::SetLocalScale(float x, float y, float z) {
-	SetLocalScale(glm::vec3(x, y, z));
+	SetLocalScale(Vector3(x, y, z));
 }
 
-void Transform::SetLocalScale(const glm::vec3 &_scale) {
+void Transform::SetLocalScale(const Vector3 &_scale) {
 	this->m_localScale = _scale;
 	m_dirty = true;
 }
 
-glm::mat4 Transform::GetLocalToWorldMatrix() {
+Matrix4 Transform::GetLocalToWorldMatrix() {
 	if (m_dirty) {
-		m_localMatrix = glm::translate(m_localPosition)
-			*	glm::mat4(m_localRotation)
-			*	glm::scale(m_localScale);
+		m_localMatrix = Matrix4::translation(m_localPosition)
+			*	Matrix4(m_localRotation, Vector3(0.0f))
+			*	Matrix4::scale(m_localScale);
 		m_dirty = false;
 	}
 
@@ -54,41 +58,41 @@ glm::mat4 Transform::GetLocalToWorldMatrix() {
 	}
 }
 
-glm::mat4 Transform::GetWorldToLocalMatrix() {
-	return glm::inverse(GetLocalToWorldMatrix());
+Matrix4 Transform::GetWorldToLocalMatrix() {
+	return inverse(GetLocalToWorldMatrix());
 }
 
-glm::mat4 Transform::GetViewMatrix()
+Matrix4 Transform::GetViewMatrix()
 {
-	glm::mat4 translate = glm::translate(-GetPosition());
-	glm::mat4 rotate = glm::transpose(glm::mat4(GetRotation()));
+	Matrix4 translate = Matrix4::translation(-GetPosition());
+	Matrix4 rotate = transpose(Matrix4(GetRotation(), Vector3(0.0f)));
 	return rotate * translate;
 }
 
-glm::vec3 Transform::TransformPoint(const glm::vec3 &point) {
-	return glm::vec3(GetLocalToWorldMatrix() * glm::vec4(point, 1));
+Vector3 Transform::TransformPoint(const Vector3 &point) {
+	return (GetLocalToWorldMatrix() * Vector4(point, 1)).getXYZ();
 }
 
-glm::vec3 Transform::TransformDirection(const glm::vec3 &direction) const {
-	return glm::normalize(GetRotation() * direction);
+Vector3 Transform::TransformDirection(const Vector3 &direction) const {
+	return normalize(rotate(GetRotation(), direction));
 }
 
-glm::vec3 Transform::TransformVector(const glm::vec3 &vector) {
-	return glm::vec3(GetLocalToWorldMatrix() * glm::vec4(vector, 0));
+Vector3 Transform::TransformVector(const Vector3 &vector) {
+	return (GetLocalToWorldMatrix() * Vector4(vector, 0)).getXYZ();
 }
 
-glm::vec3 Transform::GetPosition() const {
+Vector3 Transform::GetPosition() const {
 	if (m_parent) {
-		return glm::vec3(m_parent->GetLocalToWorldMatrix() * glm::vec4(m_localPosition, 1));
+		return (m_parent->GetLocalToWorldMatrix() * Vector4(m_localPosition, 1)).getXYZ();
 	}
 	else {
 		return m_localPosition;
 	}
 }
 
-void Transform::SetPosition(const glm::vec3 &_position) {
+void Transform::SetPosition(const Vector3 &_position) {
 	if (m_parent) {
-		m_localPosition = glm::vec3(m_parent->GetWorldToLocalMatrix() * glm::vec4(_position, 1));
+		m_localPosition = (m_parent->GetWorldToLocalMatrix() * Vector4(_position, 1)).getXYZ();
 	}
 	else {
 		m_localPosition = _position;
@@ -97,10 +101,10 @@ void Transform::SetPosition(const glm::vec3 &_position) {
 }
 
 void Transform::SetPosition(float x, float y, float z) {
-	SetPosition(glm::vec3(x, y, z));
+	SetPosition(Vector3(x, y, z));
 }
 
-glm::quat Transform::GetRotation() const {
+Quat Transform::GetRotation() const {
 	if (m_parent) {
 		return m_parent->GetRotation() * m_localRotation;
 	}
@@ -109,9 +113,10 @@ glm::quat Transform::GetRotation() const {
 	}
 }
 
-void Transform::SetRotation(const glm::quat &_orientation) {
+void Transform::SetRotation(const Quat &_orientation) {
 	if (m_parent) {
-		m_localRotation = glm::inverse(m_parent->GetRotation()) * _orientation;
+		assert(false);
+		//m_localRotation = glm::inverse(m_parent->GetRotation()) * _orientation;
 	}
 	else {
 		m_localRotation = _orientation;
@@ -119,12 +124,13 @@ void Transform::SetRotation(const glm::quat &_orientation) {
 	m_dirty = true;
 }
 
-void Transform::SetRotation(const glm::vec3 &degrees) {
-	SetRotation(glm::quat(glm::radians(degrees)));
+void Transform::SetRotation(const Vector3 &degrees) {
+	assert(false);
+	//SetRotation(Quat(degrees * DEG2RAD));
 }
 
 void Transform::SetRotation(float pitch, float yaw, float roll) {
-	SetRotation(glm::vec3(pitch, yaw, roll));
+	SetRotation(Vector3(pitch, yaw, roll));
 }
 
 // TODO: Scale
@@ -137,8 +143,8 @@ void Transform::SetParent(Transform *parent, bool worldPositionStays) {
 		if (parent) {
 			parent->RemoveChild(this);
 		}
-		glm::vec3 pos = GetPosition();
-		glm::quat rot = GetRotation();
+		Vector3 pos = GetPosition();
+		Quat rot = GetRotation();
 		this->m_parent = parent;
 		parent->AddChild(this);
 		SetPosition(pos);

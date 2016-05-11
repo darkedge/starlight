@@ -1,24 +1,46 @@
 #pragma once
-#include <string>
+#include <stdint.h>
 
-#if 0
-int Stricmp(const char* str1, const char* str2) {
-	int d;
-	while ((d = toupper(*str2) - toupper(*str1)) == 0 && *str1) {
-		str1++;
-		str2++;
-	}
-	return d;
-}
+#define DEG2RAD 0.0174532925199433f
+#define RAD2DEG 57.2957795130824f
 
-int Strnicmp(const char* str1, const char* str2, int count) {
-	int d = 0;
-	while (count > 0 && (d = toupper(*str2) - toupper(*str1)) == 0 && *str1) {
-		str1++; str2++; count--;
+struct float2 {
+	float x;
+	float y;
+
+	inline float2 operator-(float2 vec) {
+		return float2 {
+			(x - vec.x),
+			(y - vec.y)};
 	}
-	return d;
-}
-#endif
+
+	inline float2& operator-=(float2 vec) {
+		*this = *this - vec;
+		return *this;
+	}
+
+	inline float2 operator+(float2 vec) {
+		return float2{
+			(x + vec.x),
+			(y + vec.y) };
+	}
+
+	inline float2& operator+=(float2 vec) {
+		*this = *this + vec;
+		return *this;
+	}
+};
+
+struct int2 {
+	int x;
+	int y;
+};
+
+struct byte3 {
+	uint8_t x;
+	uint8_t y;
+	uint8_t z;
+};
 
 #ifdef _MSC_VER
   #if _MSC_VER >= 1800

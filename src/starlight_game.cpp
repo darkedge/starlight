@@ -4,10 +4,9 @@
 #include "starlight_transform.h"
 #include "starlight_graphics.h"
 #include "starlight_generated.h"
+#include <vectormath/scalar/cpp/vectormath_aos.h>
 //#include <process.h> // ?
 #include <cstdint>
-#include <glm/gtc/matrix_transform.hpp>
-#include "starlight_glm.h"
 #include "imgui.h"
 #include "Network.h"
 #include "Noise.h"
@@ -16,8 +15,10 @@
 // temp
 #include <sstream>
 
+using namespace Vectormath::Aos;
+
 struct Camera {
-	float m_fieldOfView = glm::radians(60.0f); // Field of view angle (radians)
+	float m_fieldOfView = 60.0f * DEG2RAD; // Field of view angle (radians)
 	float m_zNear = 0.3f;
 	float m_zFar = 1000.0f;
 };
@@ -26,7 +27,8 @@ static Transform s_player;
 static Camera s_camera;
 static float s_deltaTime;
 
-static glm::ivec3 Offsets[ESide::Count] = {
+#if 0
+static byte3 Offsets[ESide::Count] = {
 	{ -1, 0, 0 },	// West
 	{ 0, -1, 0 },	// Bottom
 	{ 0, 0, -1 },	// North
@@ -34,6 +36,7 @@ static glm::ivec3 Offsets[ESide::Count] = {
 	{ 0, 1, 0 },	// Top
 	{ 0, 0, 1 },	// South
 };
+#endif
 
 // Currently returns by value... maybe we want to return by pointer when Block becomes a struct?
 // Or use SoA and this keeps being an integer.
@@ -73,14 +76,14 @@ struct ChunkMeshList {
 };
 
 static void AddCubeTriangles(TempMesh *mesh, int32_t x, int32_t y, int32_t z) {
-	static glm::vec2 uv[4] = {
+	static float2 uv[4] = {
 		{0,0},
 		{1,0},
 		{1,1},
 		{0,1},
 	};
 
-	glm::vec3 v { x, y, z };
+	Vector3 v { (float) x, (float) y, (float) z };
 
 	/*
 	2--3
@@ -90,35 +93,35 @@ static void AddCubeTriangles(TempMesh *mesh, int32_t x, int32_t y, int32_t z) {
 	*/
 	Vertex vertices[24] = {
 		// -X
-		{ uv[0], v + glm::vec3{ (0), 0, 0 } },
-		{ uv[1], v + glm::vec3{ (0), 0, 1 } },
-		{ uv[2], v + glm::vec3{ (0), 1, 0 } },
-		{ uv[3], v + glm::vec3{ (0), 1, 1 } },
+		{ uv[0], v + Vector3{ (0.0f), 0.0f, 0.0f } },
+		{ uv[1], v + Vector3{ (0.0f), 0.0f, 1.0f } },
+		{ uv[2], v + Vector3{ (0.0f), 1.0f, 0.0f } },
+		{ uv[3], v + Vector3{ (0.0f), 1.0f, 1.0f } },
 		// -Y
-		{ uv[0], v + glm::vec3{ 1, (0), 0 } },
-		{ uv[1], v + glm::vec3{ 1, (0), 1 } },
-		{ uv[2], v + glm::vec3{ 0, (0), 0 } },
-		{ uv[3], v + glm::vec3{ 0, (0), 1 } },
+		{ uv[0], v + Vector3{ 1.0f, (0.0f), 0.0f } },
+		{ uv[1], v + Vector3{ 1.0f, (0.0f), 1.0f } },
+		{ uv[2], v + Vector3{ 0.0f, (0.0f), 0.0f } },
+		{ uv[3], v + Vector3{ 0.0f, (0.0f), 1.0f } },
 		// -Z
-		{ uv[0], v + glm::vec3{ 1, 0, (0) } },
-		{ uv[1], v + glm::vec3{ 0, 0, (0) } },
-		{ uv[2], v + glm::vec3{ 1, 1, (0) } },
-		{ uv[3], v + glm::vec3{ 0, 1, (0) } },
+		{ uv[0], v + Vector3{ 1.0f, 0.0f, (0.0f) } },
+		{ uv[1], v + Vector3{ 0.0f, 0.0f, (0.0f) } },
+		{ uv[2], v + Vector3{ 1.0f, 1.0f, (0.0f) } },
+		{ uv[3], v + Vector3{ 0.0f, 1.0f, (0.0f) } },
 		// +X
-		{ uv[0], v + glm::vec3{ (1), 0, 1 } },
-		{ uv[1], v + glm::vec3{ (1), 0, 0 } },
-		{ uv[2], v + glm::vec3{ (1), 1, 1 } },
-		{ uv[3], v + glm::vec3{ (1), 1, 0 } },
+		{ uv[0], v + Vector3{ (1.0f), 0.0f, 1.0f } },
+		{ uv[1], v + Vector3{ (1.0f), 0.0f, 0.0f } },
+		{ uv[2], v + Vector3{ (1.0f), 1.0f, 1.0f } },
+		{ uv[3], v + Vector3{ (1.0f), 1.0f, 0.0f } },
 		// +Y
-		{ uv[0], v + glm::vec3{ 0, (1), 0 } },
-		{ uv[1], v + glm::vec3{ 0, (1), 1 } },
-		{ uv[2], v + glm::vec3{ 1, (1), 0 } },
-		{ uv[3], v + glm::vec3{ 1, (1), 1 } },
+		{ uv[0], v + Vector3{ 0.0f, (1.0f), 0.0f } },
+		{ uv[1], v + Vector3{ 0.0f, (1.0f), 1.0f } },
+		{ uv[2], v + Vector3{ 1.0f, (1.0f), 0.0f } },
+		{ uv[3], v + Vector3{ 1.0f, (1.0f), 1.0f } },
 		// +Z
-		{ uv[0], v + glm::vec3{ 0, 0, (1) } },
-		{ uv[1], v + glm::vec3{ 1, 0, (1) } },
-		{ uv[2], v + glm::vec3{ 0, 1, (1) } },
-		{ uv[3], v + glm::vec3{ 1, 1, (1) } },
+		{ uv[0], v + Vector3{ 0.0f, 0.0f, (1.0f) } },
+		{ uv[1], v + Vector3{ 1.0f, 0.0f, (1.0f) } },
+		{ uv[2], v + Vector3{ 0.0f, 1.0f, (1.0f) } },
+		{ uv[3], v + Vector3{ 1.0f, 1.0f, (1.0f) } },
 	};
 
 	int32_t indices[6 * 2 * 3];
@@ -227,8 +230,8 @@ void Init(GameInfo* gameInfo, graphics::API* graphicsApi) {
 #if 0
 void MoveCamera() {
 	// TODO: probably need to check if i'm typing something in ImGui or not
-	static glm::vec2 lastRotation;
-	static glm::vec2 currentRotation;
+	static Vector2 lastRotation;
+	static Vector2 currentRotation;
 
 	if (input::GetKeyDown('M'))
 	{
@@ -239,7 +242,7 @@ void MoveCamera() {
 	if (input::GetKeyDown('R'))
 	{
 		currentRotation = lastRotation = { 0, 0 };
-		s_player.SetPosition(glm::vec3(0, 0, 0));
+		s_player.SetPosition(Vector3(0, 0, 0));
 		s_player.SetRotation(glm::quat(1, 0, 0, 0));
 	}
 
@@ -258,23 +261,23 @@ void MoveCamera() {
 		}
 		if (currentRotation.x != lastRotation.x || currentRotation.y != lastRotation.y)
 		{
-			s_player.SetRotation(glm::quat(glm::vec3(currentRotation.y, currentRotation.x, 0.0f)));
+			s_player.SetRotation(glm::quat(Vector3(currentRotation.y, currentRotation.x, 0.0f)));
 			lastRotation = currentRotation;
 		}
 	}
 
 	// Translation
 	const float SPEED = 20.0f;
-	glm::vec3 translation(0, 0, 0);
+	Vector3 translation(0, 0, 0);
 	if (input::GetKey('W'))		translation += s_player.Forward();
 	if (input::GetKey('A'))		translation -= s_player.Right();
 	if (input::GetKey('S'))		translation -= s_player.Forward();
 	if (input::GetKey('D'))		translation += s_player.Right();
-	if (input::GetKey(VK_LCONTROL) || input::GetKey('C') || input::GetKey(VK_LSHIFT)) translation -= glm::vec3(0, 1, 0);
-	if (input::GetKey(VK_SPACE)) translation += glm::vec3(0, 1, 0);
-	if (translation != glm::vec3(0, 0, 0))
+	if (input::GetKey(VK_LCONTROL) || input::GetKey('C') || input::GetKey(VK_LSHIFT)) translation -= Vector3(0, 1, 0);
+	if (input::GetKey(VK_SPACE)) translation += Vector3(0, 1, 0);
+	if (translation != Vector3(0, 0, 0))
 	{
-		glm::vec3 pos = s_player.GetPosition();
+		Vector3 pos = s_player.GetPosition();
 		pos += glm::normalize(translation) * SPEED * s_deltaTime;
 		s_player.SetPosition(pos);
 		//printf("pos: %.1f, %.1f, %.1f\n", m_player.GetPosition().x, m_player.GetPosition().y, m_player.GetPosition().z);
@@ -379,7 +382,7 @@ void __cdecl game::UpdateGame(GameInfo* gameInfo, graphics::API* graphicsApi) {
 	}
 
 	//s_perObject.worldMatrix = glm::mat4();
-	s_perObject.worldMatrix = glm::translate(glm::vec3(0, 0, 10.0f));
+	s_perObject.worldMatrix = glm::translate(Vector3(0, 0, 10.0f));
 #endif
 }
 

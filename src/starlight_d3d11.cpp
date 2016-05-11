@@ -15,6 +15,8 @@
 
 #include "starlight_hlsl_generated.h"
 
+using namespace Vectormath::Aos;
+
 struct MeshD3D11 {
 	ID3D11Buffer* vertexBuffer;
 	ID3D11Buffer* indexBuffer;
@@ -46,8 +48,8 @@ static ID3D11DepthStencilView* s_depthStencilView;
 static ID3D11Texture2D* s_depthStencilBuffer;
 static D3D11_VIEWPORT s_viewport;
 
-static glm::mat4 s_view;
-static glm::mat4 s_projection;
+static Matrix4 s_view;
+static Matrix4 s_projection;
 
 #if 0
 
@@ -508,7 +510,6 @@ void graphics::D3D11::SetProjectionMatrix(glm::mat4 matrix) {
 
 #endif
 
-#include <glm/gtc/matrix_transform.hpp>
 #include <imgui.h>
 #include "examples\directx11_example\imgui_impl_dx11.h"
 #include <d3d11.h>
@@ -750,7 +751,7 @@ void graphics::D3D11::Render() {
 	// Constant Buffers
 	// TODO: z-min, z-max (optional), FOV!
 	if (desc.BufferDesc.Width > 0 && desc.BufferDesc.Height > 0) {
-		glm::mat4 projectionMatrix = glm::perspectiveFovLH(glm::radians(45.0f), (float) desc.BufferDesc.Width, (float) desc.BufferDesc.Height, 0.1f, 100.0f);
+		Matrix4 projectionMatrix = Matrix4::perspective(45.0f * DEG2RAD, (float) desc.BufferDesc.Width / (float) desc.BufferDesc.Height, 0.1f, 100.0f);
 		assert(s_constantBuffers[EConstantBuffer::Projection]);
 		g_pd3dDeviceContext->UpdateSubresource(s_constantBuffers[EConstantBuffer::Projection], 0, nullptr, &projectionMatrix, 0, 0);
 	}
@@ -952,11 +953,11 @@ int32_t graphics::D3D11::AddChunk(TempMesh *tempMesh) {
 	return g_numMeshes++;
 }
 
-void graphics::D3D11::SetPlayerCameraViewMatrix(glm::mat4 viewMatrix) {
+void graphics::D3D11::SetPlayerCameraViewMatrix(Matrix4 viewMatrix) {
 	s_view = viewMatrix;
 }
 
-void graphics::D3D11::SetProjectionMatrix(glm::mat4 projectionMatrix) {
+void graphics::D3D11::SetProjectionMatrix(Matrix4 projectionMatrix) {
 	s_projection = projectionMatrix;
 }
 

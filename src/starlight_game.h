@@ -30,7 +30,7 @@ typedef uint16_t Block;
 
 struct Chunk {
 	// XZ position
-	glm::tvec2<int32_t> position;
+	int2 position;
 	Block blocks[CHUNK_DIM_XZ * CHUNK_DIM_Y * CHUNK_DIM_XZ];
 	//std::vector<ComplexBlock> complexBlocks;
 	// Minecraft has 4 bits extra per block, stored as a separate array.
@@ -53,7 +53,7 @@ struct Chunk {
 struct TileEntity {
 	uint16_t type;
 	// extra info
-	glm::tvec3<uint8_t> location;
+	byte3 location;
 };
 
 struct NPC {

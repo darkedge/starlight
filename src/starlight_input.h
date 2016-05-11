@@ -1,5 +1,5 @@
 #pragma once
-#include "starlight_glm.h"
+#include "starlight.h"
 
 namespace input {
 	bool GetKey(int key);
@@ -17,16 +17,16 @@ namespace input {
 	bool IsMouseGrabbed();
 
 	// In pixels. Origin is top-left
-	glm::vec2 GetMouseDelta();
+	float2 GetMouseDelta();
 
 	// In pixels. Origin is top-left
-	glm::vec2 GetMousePosition();
+	float2 GetMousePosition();
 
 	void SetMouseButton(int button, bool pressed);
 
 	void SetKey(int key, bool pressed);
 
-	void SetMousePosition(const glm::vec2 pos);
+	void SetMousePosition(float2 pos);
 
 	void Init();
 

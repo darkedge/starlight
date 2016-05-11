@@ -2,7 +2,7 @@
 
 #ifdef __cplusplus
 
-#include "starlight_glm.h"
+#include <vectormath/scalar/cpp/vectormath_aos.h>
 #include <d3d11.h>
 
 D3D11_INPUT_ELEMENT_DESC g_Vertex[] =
@@ -13,17 +13,17 @@ D3D11_INPUT_ELEMENT_DESC g_Vertex[] =
 
 struct CBModel
 {
-	glm::mat4 worldMatrix;
+	Vectormath::Aos::Matrix4 worldMatrix;
 };
 
 struct CBView
 {
-	glm::mat4 view;
+	Vectormath::Aos::Matrix4 view;
 };
 
 struct CBProjection
 {
-	glm::mat4 projection;
+	Vectormath::Aos::Matrix4 projection;
 };
 
 #else

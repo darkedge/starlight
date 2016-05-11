@@ -22,7 +22,6 @@
     <ClInclude Include="src\Observer.h" />
     <ClInclude Include="src\starlight.h" />
     <ClInclude Include="src\starlight_config.h" />
-    <ClInclude Include="src\starlight_glm.h" />
     <ClInclude Include="src\starlight_math.h" />
     <ClInclude Include="src\starlight_memory.h" />
     <ClInclude Include="src\starlight_game.h" />

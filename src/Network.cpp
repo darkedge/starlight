@@ -2,7 +2,7 @@
 #include "starlight_game.h"
 #include "starlight_generated.h"
 #include "starlight.pb.h"
-#include "starlight_glm.h"
+#include <vectormath/scalar/cpp/vectormath_aos.h>
 #include <sstream>
 #include <enet/enet.h>
 #include "starlight_log.h"

@@ -31,7 +31,7 @@ function DownloadAndExtract($address) {
 	if ((Test-Path $dest)) {
 		Write-Host $("Found " + $file)
 	} else {
-		Write-Host $("Downloading " + $file + "...")
+		Write-Host $("Downloading " + $address + "...")
 		$webClient.DownloadFile($address, $dest)
 	}
 
@@ -66,11 +66,12 @@ foreach ($item in $shell.NameSpace($($workingDir + "7za920.zip")).Items()) {
 }
 
 DownloadAndExtract("http://enet.bespin.org/download/enet-1.3.13.tar.gz")
-DownloadAndExtract("https://github.com/g-truc/glm/releases/download/0.9.7.2/glm-0.9.7.2.zip")
+#DownloadAndExtract("https://github.com/g-truc/glm/releases/download/0.9.7.2/glm-0.9.7.2.zip")
 DownloadAndExtract("https://github.com/ocornut/imgui/archive/v1.47.zip")
 DownloadAndExtract("http://www.lua.org/ftp/lua-5.1.5.tar.gz")
 DownloadAndExtract("https://github.com/google/protobuf/releases/download/v2.6.1/protobuf-2.6.1.zip")
 DownloadAndExtract("https://github.com/google/flatbuffers/archive/v1.3.0.zip")
+DownloadAndExtract("https://github.com/erwincoumans/sce_vectormath/archive/master.zip")
 
 # Delete downloads
 function DeleteFile($file) {
@@ -80,8 +81,9 @@ function DeleteFile($file) {
 DeleteFile("7za.exe")
 DeleteFile("7za920.zip")
 DeleteFile("enet-1.3.13.tar*")
-DeleteFile("glm-0.9.7.2.zip")
+#DeleteFile("glm-0.9.7.2.zip")
 DeleteFile("lua-5.1.5.tar*")
 DeleteFile("protobuf-2.6.1.zip")
 DeleteFile("v1.3.0.zip")
 DeleteFile("v1.47.zip")
+DeleteFile("master.zip")

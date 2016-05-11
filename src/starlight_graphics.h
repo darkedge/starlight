@@ -1,6 +1,6 @@
 #pragma once
 #include "starlight.h"
-#include "starlight_glm.h"
+#include <vectormath/scalar/cpp/vectormath_aos.h>
 #include "starlight_config.h"
 #include <cstdint>
 
@@ -28,8 +28,8 @@ enum EGraphicsApi {
 #define FUNC_05 void SL_CALL ImGuiNewFrame()
 #define FUNC_06 bool SL_CALL ImGuiHandleEvent(WindowEvent* event)
 #define FUNC_07 int32_t SL_CALL AddChunk(TempMesh* mesh)
-#define FUNC_08 void SL_CALL SetPlayerCameraViewMatrix(glm::mat4 mat)
-#define FUNC_09 void SL_CALL SetProjectionMatrix(glm::mat4 mat)
+#define FUNC_08 void SL_CALL SetPlayerCameraViewMatrix(Vectormath::Aos::Matrix4 mat)
+#define FUNC_09 void SL_CALL SetProjectionMatrix(Vectormath::Aos::Matrix4 mat)
 
 #define PURE_VIRTUAL(_f) virtual _f = 0
 #define OVERRIDE_FINAL(_f) virtual _f override final

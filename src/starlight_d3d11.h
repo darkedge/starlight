@@ -47,7 +47,7 @@ struct DrawCommand {
 	PipelineState pipelineState;
 	//PerFrame* perFrame;
 	//PerCamera* perCamera;
-	glm::mat4 worldMatrix;
+	Vectormath::Aos::Matrix4 worldMatrix;
 };
 
 struct SortKey1 {
