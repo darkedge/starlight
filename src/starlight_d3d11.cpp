@@ -828,7 +828,7 @@ bool graphics::D3D11::Init(PlatformData *data, GameFuncs* funcs) {
 
 	D3D_TRY(g_pd3dDevice->CreatePixelShader(PixelShaderBlob, sizeof(PixelShaderBlob), nullptr, &s_pixelShader));
 	D3D_TRY(g_pd3dDevice->CreateVertexShader(VertexShaderBlob, sizeof(VertexShaderBlob), nullptr, &s_vertexShader));
-	D3D_TRY(g_pd3dDevice->CreateInputLayout(g_AppData, COUNT_OF(g_AppData), VertexShaderBlob, sizeof(VertexShaderBlob), &s_inputLayout));
+	D3D_TRY(g_pd3dDevice->CreateInputLayout(g_Vertex, COUNT_OF(g_Vertex), VertexShaderBlob, sizeof(VertexShaderBlob), &s_inputLayout));
 
 	// Create constant buffers
 

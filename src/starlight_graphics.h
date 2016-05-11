@@ -19,14 +19,6 @@ enum EGraphicsApi {
 	Metal,
 };
 
-struct Vertex {
-	glm::vec2 texCoord;
-	glm::vec3 position;
-	// glm::vec3 color;
-	// glm::vec3 normal;
-	// glm::vec3 tangent;
-};
-
 // Note: #undef these at the bottom of this file
 #define FUNC_00 void SL_CALL Destroy()
 #define FUNC_01 void SL_CALL Render()
