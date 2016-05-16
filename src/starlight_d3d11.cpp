@@ -843,12 +843,24 @@ bool graphics::D3D11::Init(PlatformData *data, GameFuncs* funcs) {
 
 	constantBufferDesc.ByteWidth = sizeof(CBModel);
 	D3D_TRY(g_pd3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &s_constantBuffers[EConstantBuffer::Model]));
+	{
+		const char c_szName [] = "CBModel";
+		s_constantBuffers[EConstantBuffer::Model]->SetPrivateData(WKPDID_D3DDebugObjectName, sizeof(c_szName) - 1, c_szName);
+	}
 
 	constantBufferDesc.ByteWidth = sizeof(CBView);
 	D3D_TRY(g_pd3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &s_constantBuffers[EConstantBuffer::View]));
+	{
+		const char c_szName [] = "CBView";
+		s_constantBuffers[EConstantBuffer::View]->SetPrivateData(WKPDID_D3DDebugObjectName, sizeof(c_szName) - 1, c_szName);
+	}
 
 	constantBufferDesc.ByteWidth = sizeof(CBProjection);
 	D3D_TRY(g_pd3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &s_constantBuffers[EConstantBuffer::Projection]));
+	{
+		const char c_szName [] = "CBProjection";
+		s_constantBuffers[EConstantBuffer::Projection]->SetPrivateData(WKPDID_D3DDebugObjectName, sizeof(c_szName) - 1, c_szName);
+	}
 
 	// Rasterizer State
 	D3D11_RASTERIZER_DESC rasterizerDesc;
