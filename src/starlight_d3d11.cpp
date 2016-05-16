@@ -895,17 +895,12 @@ int32_t graphics::D3D11::AddChunk(TempMesh *tempMesh) {
 	int32_t numIndices = (int32_t) tempMesh->indices.size();
 
 	// Create an initialize the vertex buffer.
-	D3D11_BUFFER_DESC vertexBufferDesc;
-	ZeroMemory(&vertexBufferDesc, sizeof(D3D11_BUFFER_DESC));
-
+	D3D11_BUFFER_DESC vertexBufferDesc = {0};
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vertexBufferDesc.ByteWidth = sizeof(Vertex) * numVertices;
-	vertexBufferDesc.CPUAccessFlags = 0;
 	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 
-	D3D11_SUBRESOURCE_DATA resourceData;
-	ZeroMemory(&resourceData, sizeof(D3D11_SUBRESOURCE_DATA));
-
+	D3D11_SUBRESOURCE_DATA resourceData = {0};
 	resourceData.pSysMem = vertices;
 
 	HRESULT hr = g_pd3dDevice->CreateBuffer(&vertexBufferDesc, &resourceData, &mesh.vertexBuffer);
@@ -920,12 +915,9 @@ int32_t graphics::D3D11::AddChunk(TempMesh *tempMesh) {
 	}
 
 	// Create and initialize the index buffer.
-	D3D11_BUFFER_DESC indexBufferDesc;
-	ZeroMemory(&indexBufferDesc, sizeof(D3D11_BUFFER_DESC));
-
+	D3D11_BUFFER_DESC indexBufferDesc = {0};
 	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	indexBufferDesc.ByteWidth = sizeof(int32_t) * numIndices;
-	indexBufferDesc.CPUAccessFlags = 0;
 	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 	resourceData.pSysMem = indices;
 
