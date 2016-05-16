@@ -20,7 +20,7 @@ types = {}
 types["matrix"] = "Vectormath::Aos::Matrix4"
 types["float"] = "float"
 types["float2"] = "float2"
-types["float3"] = "Vectormath::Aos::Vector3"
+types["float3"] = "float3"
 types["float4"] = "Vectormath::Aos::Vector4"
 
 format = {}

@@ -83,7 +83,7 @@ static void AddCubeTriangles(TempMesh *mesh, int32_t x, int32_t y, int32_t z) {
 		{0,1},
 	};
 
-	Vector3 v { (float) x, (float) y, (float) z };
+	float3 v { (float) x, (float) y, (float) z };
 
 	/*
 	2--3
@@ -91,7 +91,9 @@ static void AddCubeTriangles(TempMesh *mesh, int32_t x, int32_t y, int32_t z) {
 	| \|
 	0--1
 	*/
-	Vertex vertices[24] = {
+	//Vertex vertices[] = {
+	mesh->vertices = {
+#if 0
 		// -X
 		{ uv[0], v + Vector3{ (0.0f), 0.0f, 0.0f } },
 		{ uv[1], v + Vector3{ (0.0f), 0.0f, 1.0f } },
@@ -117,11 +119,12 @@ static void AddCubeTriangles(TempMesh *mesh, int32_t x, int32_t y, int32_t z) {
 		{ uv[1], v + Vector3{ 0.0f, (1.0f), 1.0f } },
 		{ uv[2], v + Vector3{ 1.0f, (1.0f), 0.0f } },
 		{ uv[3], v + Vector3{ 1.0f, (1.0f), 1.0f } },
+#endif
 		// +Z
-		{ uv[0], v + Vector3{ 0.0f, 0.0f, (1.0f) } },
-		{ uv[1], v + Vector3{ 1.0f, 0.0f, (1.0f) } },
-		{ uv[2], v + Vector3{ 0.0f, 1.0f, (1.0f) } },
-		{ uv[3], v + Vector3{ 1.0f, 1.0f, (1.0f) } },
+		{ uv[0], v + float3{ 0.0f, 0.0f, (1.0f) } },
+		{ uv[1], v + float3{ 1.0f, 0.0f, (1.0f) } },
+		{ uv[2], v + float3{ 0.0f, 1.0f, (1.0f) } },
+		{ uv[3], v + float3{ 1.0f, 1.0f, (1.0f) } },
 	};
 
 	int32_t indices[6 * 2 * 3];
@@ -136,10 +139,9 @@ static void AddCubeTriangles(TempMesh *mesh, int32_t x, int32_t y, int32_t z) {
 		i += 4;
 	}
 
-	//mesh->vertices.resize(24);
-	mesh->vertices.insert(mesh->vertices.end(), vertices, vertices + 24);
-	//mesh->indices.resize(6 * 2 * 3);
-	mesh->indices.insert(mesh->indices.end(), indices, indices + 6 * 2 * 3);
+	//mesh->vertices.insert(mesh->vertices.end(), vertices, vertices + 24);
+	//mesh->indices.insert(mesh->indices.end(), indices, indices + 6 * 2 * 3);
+	mesh->indices = { 0, 1, 2, 2, 1, 3 };
 }
 
 static int32_t s_chunk;

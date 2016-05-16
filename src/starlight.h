@@ -4,6 +4,37 @@
 #define DEG2RAD 0.0174532925199433f
 #define RAD2DEG 57.2957795130824f
 
+// sse_vectormath does not have explicit 8-byte and 12-byte vectors
+struct float3 {
+	float x;
+	float y;
+	float z;
+
+	inline float3 operator-(float3 vec) {
+		return float3{
+			(x - vec.x),
+			(y - vec.y),
+			(z - vec.z) };
+	}
+
+	inline float3& operator-=(float3 vec) {
+		*this = *this - vec;
+		return *this;
+	}
+
+	inline float3 operator+(float3 vec) {
+		return float3{
+			(x + vec.x),
+			(y + vec.y),
+			(z + vec.z) };
+	}
+
+	inline float3& operator+=(float3 vec) {
+		*this = *this + vec;
+		return *this;
+	}
+};
+
 struct float2 {
 	float x;
 	float y;

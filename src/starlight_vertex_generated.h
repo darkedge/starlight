@@ -5,5 +5,5 @@
 struct Vertex
 {
 	float2 uv;
-	Vectormath::Aos::Vector3 position;
+	float3 position;
 };
