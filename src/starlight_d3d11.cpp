@@ -933,6 +933,11 @@ int32_t graphics::D3D11::AddChunk(TempMesh *tempMesh) {
 		__debugbreak();
 	}
 
+	{
+		const char c_szName [] = "Mesh Index Buffer";
+		mesh.indexBuffer->SetPrivateData(WKPDID_D3DDebugObjectName, sizeof(c_szName) - 1, c_szName);
+	}
+
 	mesh.numIndices = numIndices;
 
 	g_meshes[g_numMeshes] = mesh;
