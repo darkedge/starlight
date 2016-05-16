@@ -946,7 +946,7 @@ int32_t graphics::D3D11::AddChunk(TempMesh *tempMesh) {
 	cmd.pipelineState.pixelShader = s_pixelShader;
 	cmd.pipelineState.vertexShader = s_vertexShader;
 	//cmd.pipelineState.rasterizerState = rasterizerstate
-	cmd.worldMatrix;
+	cmd.worldMatrix = Matrix4::identity();
 
 	g_drawCommands[g_numDrawCommands++] = cmd;
 
