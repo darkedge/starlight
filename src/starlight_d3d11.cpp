@@ -914,8 +914,10 @@ int32_t graphics::D3D11::AddChunk(TempMesh *tempMesh) {
 		__debugbreak();
 	}
 
-	const char c_szName [] = "Chunk";
-	mesh.vertexBuffer->SetPrivateData(WKPDID_D3DDebugObjectName, sizeof(c_szName) - 1, c_szName);
+	{
+		const char c_szName [] = "Mesh Vertex Buffer";
+		mesh.vertexBuffer->SetPrivateData(WKPDID_D3DDebugObjectName, sizeof(c_szName) - 1, c_szName);
+	}
 
 	// Create and initialize the index buffer.
 	D3D11_BUFFER_DESC indexBufferDesc;
