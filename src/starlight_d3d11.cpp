@@ -779,7 +779,7 @@ void graphics::D3D11::Render() {
 		//g_pd3dDeviceContext->IASetInputLayout(pipelineState.inputLayout);
 		g_pd3dDeviceContext->IASetInputLayout(s_inputLayout);
 		g_pd3dDeviceContext->IASetVertexBuffers(0, 1, &mesh->vertexBuffer, &stride, &offset);
-		g_pd3dDeviceContext->IASetIndexBuffer(mesh->indexBuffer, DXGI_FORMAT_R16_UINT, 0);
+		g_pd3dDeviceContext->IASetIndexBuffer(mesh->indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 		g_pd3dDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		// Vertex Shader
