@@ -309,6 +309,18 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		s_running.store(false);
 		PostQuitMessage(0);
 		return 0;
+	case WM_SYSKEYDOWN:
+
+		break;
+	case WM_SYSKEYUP:
+
+		break;
+	case WM_KEYDOWN:
+
+		break;
+	case WM_KEYUP:
+
+		break;
 	}
 	return DefWindowProcW(hWnd, msg, wParam, lParam);
 }

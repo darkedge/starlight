@@ -91,35 +91,32 @@ static void AddCubeTriangles(TempMesh *mesh, int32_t x, int32_t y, int32_t z) {
 	| \|
 	0--1
 	*/
-	//Vertex vertices[] = {
-	mesh->vertices = {
-#if 0
+	Vertex vertices[] = {
 		// -X
-		{ uv[0], v + Vector3{ (0.0f), 0.0f, 0.0f } },
-		{ uv[1], v + Vector3{ (0.0f), 0.0f, 1.0f } },
-		{ uv[2], v + Vector3{ (0.0f), 1.0f, 0.0f } },
-		{ uv[3], v + Vector3{ (0.0f), 1.0f, 1.0f } },
+		{ uv[0], v + float3{ (0.0f), 0.0f, 0.0f } },
+		{ uv[1], v + float3{ (0.0f), 0.0f, 1.0f } },
+		{ uv[2], v + float3{ (0.0f), 1.0f, 0.0f } },
+		{ uv[3], v + float3{ (0.0f), 1.0f, 1.0f } },
 		// -Y
-		{ uv[0], v + Vector3{ 1.0f, (0.0f), 0.0f } },
-		{ uv[1], v + Vector3{ 1.0f, (0.0f), 1.0f } },
-		{ uv[2], v + Vector3{ 0.0f, (0.0f), 0.0f } },
-		{ uv[3], v + Vector3{ 0.0f, (0.0f), 1.0f } },
+		{ uv[0], v + float3{ 1.0f, (0.0f), 0.0f } },
+		{ uv[1], v + float3{ 1.0f, (0.0f), 1.0f } },
+		{ uv[2], v + float3{ 0.0f, (0.0f), 0.0f } },
+		{ uv[3], v + float3{ 0.0f, (0.0f), 1.0f } },
 		// -Z
-		{ uv[0], v + Vector3{ 1.0f, 0.0f, (0.0f) } },
-		{ uv[1], v + Vector3{ 0.0f, 0.0f, (0.0f) } },
-		{ uv[2], v + Vector3{ 1.0f, 1.0f, (0.0f) } },
-		{ uv[3], v + Vector3{ 0.0f, 1.0f, (0.0f) } },
+		{ uv[0], v + float3{ 1.0f, 0.0f, (0.0f) } },
+		{ uv[1], v + float3{ 0.0f, 0.0f, (0.0f) } },
+		{ uv[2], v + float3{ 1.0f, 1.0f, (0.0f) } },
+		{ uv[3], v + float3{ 0.0f, 1.0f, (0.0f) } },
 		// +X
-		{ uv[0], v + Vector3{ (1.0f), 0.0f, 1.0f } },
-		{ uv[1], v + Vector3{ (1.0f), 0.0f, 0.0f } },
-		{ uv[2], v + Vector3{ (1.0f), 1.0f, 1.0f } },
-		{ uv[3], v + Vector3{ (1.0f), 1.0f, 0.0f } },
+		{ uv[0], v + float3{ (1.0f), 0.0f, 1.0f } },
+		{ uv[1], v + float3{ (1.0f), 0.0f, 0.0f } },
+		{ uv[2], v + float3{ (1.0f), 1.0f, 1.0f } },
+		{ uv[3], v + float3{ (1.0f), 1.0f, 0.0f } },
 		// +Y
-		{ uv[0], v + Vector3{ 0.0f, (1.0f), 0.0f } },
-		{ uv[1], v + Vector3{ 0.0f, (1.0f), 1.0f } },
-		{ uv[2], v + Vector3{ 1.0f, (1.0f), 0.0f } },
-		{ uv[3], v + Vector3{ 1.0f, (1.0f), 1.0f } },
-#endif
+		{ uv[0], v + float3{ 0.0f, (1.0f), 0.0f } },
+		{ uv[1], v + float3{ 0.0f, (1.0f), 1.0f } },
+		{ uv[2], v + float3{ 1.0f, (1.0f), 0.0f } },
+		{ uv[3], v + float3{ 1.0f, (1.0f), 1.0f } },
 		// +Z
 		{ uv[0], v + float3{ 0.0f, 0.0f, (1.0f) } },
 		{ uv[1], v + float3{ 1.0f, 0.0f, (1.0f) } },
@@ -127,9 +124,9 @@ static void AddCubeTriangles(TempMesh *mesh, int32_t x, int32_t y, int32_t z) {
 		{ uv[3], v + float3{ 1.0f, 1.0f, (1.0f) } },
 	};
 
-	int32_t indices[6 * 2 * 3];
+	int32_t indices[36];
 	int32_t i = (int32_t) mesh->vertices.size();
-	for(int32_t j = 0; j < 6 * 2 * 3; j += 1 * 3 * 2) {
+	for(int32_t j = 0; j < 36; j += 6) {
 		indices[j + 0] = i + 0;
 		indices[j + 1] = i + 1;
 		indices[j + 2] = i + 2;
@@ -139,9 +136,8 @@ static void AddCubeTriangles(TempMesh *mesh, int32_t x, int32_t y, int32_t z) {
 		i += 4;
 	}
 
-	//mesh->vertices.insert(mesh->vertices.end(), vertices, vertices + 24);
-	//mesh->indices.insert(mesh->indices.end(), indices, indices + 6 * 2 * 3);
-	mesh->indices = { 0, 1, 2, 2, 1, 3 };
+	mesh->vertices.insert(mesh->vertices.end(), vertices, vertices + _countof(vertices));
+	mesh->indices.insert(mesh->indices.end(), indices, indices + _countof(indices));
 }
 
 static int32_t s_chunk;
@@ -229,11 +225,10 @@ void Init(GameInfo* gameInfo, graphics::API* graphicsApi) {
 #endif
 }
 
-#if 0
 void MoveCamera() {
 	// TODO: probably need to check if i'm typing something in ImGui or not
-	static Vector2 lastRotation;
-	static Vector2 currentRotation;
+	static float2 lastRotation;
+	static float2 currentRotation;
 
 	if (input::GetKeyDown('M'))
 	{
@@ -245,7 +240,7 @@ void MoveCamera() {
 	{
 		currentRotation = lastRotation = { 0, 0 };
 		s_player.SetPosition(Vector3(0, 0, 0));
-		s_player.SetRotation(glm::quat(1, 0, 0, 0));
+		s_player.SetRotation(Quat(1, 0, 0, 0));
 	}
 
 	if (input::IsMouseGrabbed())
@@ -253,17 +248,17 @@ void MoveCamera() {
 		// Rotation
 		const float ROT_SPEED = 0.0025f;
 		currentRotation -= ROT_SPEED * input::GetMouseDelta();
-		if (currentRotation.y < glm::radians(-89.0f))
+		if (currentRotation.y < -89.0f * DEG2RAD)
 		{
-			currentRotation.y = glm::radians(-89.0f);
+			currentRotation.y = -89.0f * DEG2RAD;
 		}
-		if (currentRotation.y > glm::radians(89.0f))
+		if (currentRotation.y > 89.0f * DEG2RAD)
 		{
-			currentRotation.y = glm::radians(89.0f);
+			currentRotation.y = 89.0f * DEG2RAD;
 		}
 		if (currentRotation.x != lastRotation.x || currentRotation.y != lastRotation.y)
 		{
-			s_player.SetRotation(glm::quat(Vector3(currentRotation.y, currentRotation.x, 0.0f)));
+			s_player.SetRotation(Quat(Vector3(currentRotation.y, currentRotation.x, 0.0f), 0.0f));
 			lastRotation = currentRotation;
 		}
 	}
@@ -277,15 +272,14 @@ void MoveCamera() {
 	if (input::GetKey('D'))		translation += s_player.Right();
 	if (input::GetKey(VK_LCONTROL) || input::GetKey('C') || input::GetKey(VK_LSHIFT)) translation -= Vector3(0, 1, 0);
 	if (input::GetKey(VK_SPACE)) translation += Vector3(0, 1, 0);
-	if (translation != Vector3(0, 0, 0))
+	if (lengthSqr(translation) != 0.0f)
 	{
 		Vector3 pos = s_player.GetPosition();
-		pos += glm::normalize(translation) * SPEED * s_deltaTime;
+		pos += normalize(translation) * SPEED * s_deltaTime;
 		s_player.SetPosition(pos);
 		//printf("pos: %.1f, %.1f, %.1f\n", m_player.GetPosition().x, m_player.GetPosition().y, m_player.GetPosition().z);
 	}
 }
-#endif
 
 extern "C"
 __declspec(dllexport)
@@ -317,7 +311,7 @@ void __cdecl game::UpdateGame(GameInfo* gameInfo, graphics::API* graphicsApi) {
 		ImGui::EndMainMenuBar();
 	}
 
-	//MoveCamera(); // TODO
+	MoveCamera();
 	input::EndFrame();
 
 	network::Update(gameInfo);

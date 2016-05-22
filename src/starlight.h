@@ -62,6 +62,18 @@ struct float2 {
 	}
 };
 
+inline float2 operator*(float2 vec, float f) {
+	return float2{
+		(vec.x * f),
+		(vec.y * f) };
+}
+
+inline float2 operator*(float f, float2 vec) {
+	return float2{
+		(f * vec.x),
+		(f * vec.y) };
+}
+
 struct int2 {
 	int x;
 	int y;
