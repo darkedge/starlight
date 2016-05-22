@@ -337,6 +337,36 @@ int CALLBACK WinMain(
 
 	s_gameFuncs.LogInfo(SL_BUILD_DATE);
 
+	// Log CPU features
+	{
+		struct CPUInfo {
+			union {
+				int i[4];
+			};
+		} info = { 0 };
+
+		// Get number of functions
+		__cpuid(info.i, 0);
+		int nIds_ = info.i[0];
+
+		// Dump info
+		std::vector<CPUInfo> data;
+		for (int i = 0; i <= nIds_; ++i)
+		{
+			__cpuidex(info.i, i, 0);
+			data.push_back(info);
+		}
+
+		// Vendor
+		if(data.size() >= 0) {
+			char vendor[13] = {0};
+			memcpy(vendor + 0, data[0].i + 1, 4);
+			memcpy(vendor + 4, data[0].i + 3, 4);
+			memcpy(vendor + 8, data[0].i + 2, 4);
+			s_gameFuncs.LogInfo("CPU Vendor: " + std::string(vendor));
+		}
+	}
+
 	auto className = L"StarlightClassName";
 
 	WNDCLASSEXW wndClass = { 0 };
