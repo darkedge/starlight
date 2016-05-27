@@ -99,11 +99,10 @@ GameFuncs LoadGameFuncs() {
 		}
 	}
 #else
+	g_LogInfo = logger::LogInfo;
 	gameFuncs.DestroyGame = game::DestroyGame;
 	gameFuncs.UpdateGame = game::UpdateGame;
-	gameFuncs.InitLogger = logger::InitLogger;
 	gameFuncs.DestroyLogger = logger::DestroyLogger;
-	gameFuncs.LogInfo = logger::LogInfo;
 	gameFuncs.valid = true;
 #endif
 

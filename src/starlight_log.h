@@ -14,9 +14,6 @@ namespace logger {
 	void __cdecl DestroyLogger();
 }
 
-// Pulled out of the namespace for convenience
-using logger::LogInfo;
-
 #define LOGGER_LOGINFO(name) void name(const std::string&)
 typedef LOGGER_LOGINFO(LogInfoFunc);
 
