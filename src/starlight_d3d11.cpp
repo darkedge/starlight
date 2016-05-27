@@ -661,7 +661,7 @@ static HRESULT CreateDeviceD3D(HWND hWnd, GameFuncs* funcs)
 		featureLevel == D3D_FEATURE_LEVEL_9_2 ? "9.2" :
 		featureLevel == D3D_FEATURE_LEVEL_9_1 ? "9.1" : "error";
 
-	funcs->LogInfo(std::string("D3D Feature level: ") + level);
+	g_LogInfo(std::string("D3D Feature level: ") + level);
 	
 
 	// Setup rasterizer

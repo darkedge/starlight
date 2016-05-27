@@ -5,10 +5,6 @@
 namespace logger {
 	extern "C"
 	__declspec(dllexport)
-	void __cdecl InitLogger();
-
-	extern "C"
-	__declspec(dllexport)
 	void __cdecl LogInfo(const std::string& str);
 
 	void Render();
@@ -20,3 +16,12 @@ namespace logger {
 
 // Pulled out of the namespace for convenience
 using logger::LogInfo;
+
+#define LOGGER_LOGINFO(name) void name(const std::string&)
+typedef LOGGER_LOGINFO(LogInfoFunc);
+
+#ifdef SL_IMPL
+LogInfoFunc* g_LogInfo;
+#else 
+extern LogInfoFunc* g_LogInfo;
+#endif

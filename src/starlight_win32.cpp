@@ -11,6 +11,8 @@
 
 #include <enet/enet.h>
 
+#define SL_IMPL
+
 #include "starlight_win32.h"
 #include "starlight_graphics.h"
 #include "starlight_game.h"
@@ -84,14 +86,13 @@ GameFuncs LoadGameFuncs() {
 	else {
 		gameFuncs.DestroyGame = (DestroyGameFunc*) GetProcAddress(lib, "DestroyGame");
 		gameFuncs.UpdateGame = (UpdateGameFunc*) GetProcAddress(lib, "UpdateGame");
-		gameFuncs.InitLogger = (InitLoggerFunc*) GetProcAddress(lib, "InitLogger");
 		gameFuncs.DestroyLogger = (DestroyLoggerFunc*) GetProcAddress(lib, "DestroyLogger");
-		gameFuncs.LogInfo = (LogInfoFunc*) GetProcAddress(lib, "LogInfo");
+		g_LogInfo = (LogInfoFunc*) GetProcAddress(lib, "LogInfo");
 		if (gameFuncs.DestroyGame
 			&& gameFuncs.UpdateGame
-			&& gameFuncs.InitLogger
 			&& gameFuncs.DestroyLogger
-			&& gameFuncs.LogInfo) {
+			&& g_LogInfo
+			) {
 			gameFuncs.valid = true;
 		} else {
 			MessageBoxW(s_hwnd, L"Could not load functions from .DLL!", L"Error", MB_ICONHAND);
@@ -123,12 +124,12 @@ bool LoadRenderApiImpl(EGraphicsApi e) {
 #endif
 #ifdef STARLIGHT_D3D11
 	case D3D11:
-		s_gameFuncs.LogInfo("Loading D3D11...");
+		g_LogInfo("Loading D3D11...");
 		api = &d3d11;
 		break;
 #endif
 	default:
-		s_gameFuncs.LogInfo("The requested graphics API is not enabled.");
+		g_LogInfo("The requested graphics API is not enabled.");
 		return false;
 	}
 
@@ -345,9 +346,7 @@ int CALLBACK WinMain(
 	//_crtBreakAlloc = 4015;
 	s_queue = new util::ThreadSafeQueue<WindowEvent>();
 
-	s_gameFuncs.InitLogger();
-
-	s_gameFuncs.LogInfo(SL_BUILD_DATE);
+	g_LogInfo(SL_BUILD_DATE);
 
 	// Log CPU features
 	{
@@ -375,7 +374,7 @@ int CALLBACK WinMain(
 			memcpy(vendor + 0, data[0].i + 1, 4);
 			memcpy(vendor + 4, data[0].i + 3, 4);
 			memcpy(vendor + 8, data[0].i + 2, 4);
-			s_gameFuncs.LogInfo("CPU Vendor: " + std::string(vendor));
+			g_LogInfo("CPU Vendor: " + std::string(vendor));
 		}
 	}
 

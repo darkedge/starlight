@@ -270,20 +270,17 @@ struct Console
 	}
 };
 
-Console *s_console = nullptr;
+Console *s_console;
 
-bool opened = false;
+bool opened;
 bool ScrollToBottom = true;
 
 extern "C"
 __declspec(dllexport)
-void __cdecl logger::InitLogger() {
-	s_console = new Console();
-}
-
-extern "C"
-__declspec(dllexport)
 void __cdecl logger::LogInfo(const std::string& str) {
+	if (!s_console) {
+		s_console = new Console();
+	}
 	s_console->AddLog("%s\n", str.c_str());
 }
 
@@ -297,3 +294,5 @@ void __cdecl logger::DestroyLogger()
 {
 	delete s_console;
 }
+
+LogInfoFunc* g_LogInfo;

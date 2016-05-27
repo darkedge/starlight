@@ -137,14 +137,8 @@ struct GameInfo {
 };
 
 // Functions visible to platform from game
-#define INIT_LOGGER(name) void name()
-typedef INIT_LOGGER(InitLoggerFunc);
-
 #define DESTROY_LOGGER(name) void name()
 typedef DESTROY_LOGGER(DestroyLoggerFunc);
-
-#define LOGGER_LOGINFO(name) void name(const std::string&)
-typedef LOGGER_LOGINFO(LogInfoFunc);
 
 #define GAME_UPDATE(name) void name(struct GameInfo *,class graphics::API *)
 typedef GAME_UPDATE(UpdateGameFunc);
@@ -155,9 +149,7 @@ typedef GAME_DESTROY(DestroyGameFunc);
 // Maybe separate struct for logger etc?
 
 struct GameFuncs {
-	InitLoggerFunc* InitLogger;
 	DestroyLoggerFunc* DestroyLogger;
-	LogInfoFunc* LogInfo;
 	UpdateGameFunc* UpdateGame;
 	DestroyGameFunc* DestroyGame;
 	bool valid;
