@@ -294,5 +294,3 @@ void __cdecl logger::DestroyLogger()
 {
 	delete s_console;
 }
-
-LogInfoFunc* g_LogInfo;
