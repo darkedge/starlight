@@ -252,3 +252,4 @@ Win32
 SimplePixelShader.h
 SimpleVertexShader.h
 *.nvuser
+*.VC.db
