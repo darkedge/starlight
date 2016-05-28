@@ -26,7 +26,7 @@ if not exist build\bin mkdir build\bin
 
 set slBasicCompile=/nologo /Gm- /MDd /GR- /EHs-c- /fp:fast /fp:except- /Oi
 set slDefinitions=-DSL_CL -D_DEBUG -DUNICODE -D_UNICODE -D_SCL_SECURE_NO_WARNINGS -D_HAS_EXCEPTIONS=0 -DNOMINMAX -DVC_EXTRALEAN -DSTRICT -DWIN32_LEAN_AND_MEAN -DNOGDI -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS -D_WINSOCK_DEPRECATED_NO_WARNINGS
-set slInclude=/I..\..\src /I..\..\external\glm /I..\..\external\flatbuffers-1.3.0\include /I..\..\external\protobuf-2.6.1\src /I..\..\external\enet-1.3.13\include /I..\..\external\imgui-1.47
+set slInclude=/I..\..\src /I..\..\external\sce_vectormath-master\include /I..\..\external\flatbuffers-1.3.0\include /I..\..\external\protobuf-2.6.1\src /I..\..\external\enet-1.3.13\include /I..\..\external\imgui-1.47
 set slCompile=%slBasicCompile% %slDefinitions% %slInclude% /Ob1 /WX /W4 /wd4100 /wd4505 /Z7 /Bt
 ::set slFxCompile=/Zi /E"main" /Od /Vn"g_%(Filename)" /WX /Fh"src/%(Filename).h" /nologo
 
