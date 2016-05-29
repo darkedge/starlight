@@ -132,7 +132,7 @@ static void AddCubeTriangles(TempMesh *mesh, int32_t x, int32_t y, int32_t z) {
 		indices[j + 2] = i + 2;
 		indices[j + 3] = i + 2;
 		indices[j + 4] = i + 1;
-		indices[j + 5] = 1 + 3;
+		indices[j + 5] = i + 3;
 		i += 4;
 	}
 
