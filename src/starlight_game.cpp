@@ -266,12 +266,12 @@ void MoveCamera() {
 	// Translation
 	const float SPEED = 20.0f;
 	Vector3 translation(0, 0, 0);
-	if (input::GetKey('W'))		translation += s_player.Forward();
-	if (input::GetKey('A'))		translation -= s_player.Right();
-	if (input::GetKey('S'))		translation -= s_player.Forward();
-	if (input::GetKey('D'))		translation += s_player.Right();
-	if (input::GetKey(VK_LCONTROL) || input::GetKey('C') || input::GetKey(VK_LSHIFT)) translation -= Vector3(0, 1, 0);
-	if (input::GetKey(VK_SPACE)) translation += Vector3(0, 1, 0);
+	if (ImGui::GetIO().KeysDown['W'])		translation += s_player.Forward();
+	if (ImGui::GetIO().KeysDown['A'])		translation -= s_player.Right();
+	if (ImGui::GetIO().KeysDown['S'])		translation -= s_player.Forward();
+	if (ImGui::GetIO().KeysDown['D'])		translation += s_player.Right();
+	if (ImGui::GetIO().KeysDown[VK_LCONTROL] || ImGui::GetIO().KeysDown['C'] || ImGui::GetIO().KeysDown[VK_LSHIFT]) translation -= Vector3(0, 1, 0);
+	if (ImGui::GetIO().KeysDown[VK_SPACE]) translation += Vector3(0, 1, 0);
 	if (lengthSqr(translation) != 0.0f)
 	{
 		Vector3 pos = s_player.GetPosition();
