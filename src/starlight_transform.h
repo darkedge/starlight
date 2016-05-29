@@ -37,8 +37,9 @@ public:
 	// Returns the rotation as Euler angles in radians relative to the parent transform's rotation.
 	//Vectormath::Aos::Vector3 GetLocalEulerAngles() const { return glm::eulerAngles(m_localRotation); }
 
+	// Right-handed: -1; Left-handed: 1
 	Vectormath::Aos::Vector3 Forward() const {
-		return Vectormath::Aos::rotate(m_localRotation, Vectormath::Aos::Vector3(0, 0, 1));
+		return Vectormath::Aos::rotate(m_localRotation, Vectormath::Aos::Vector3(0, 0, -1));
 	}
 
 	Vectormath::Aos::Vector3 Up() const {
@@ -86,7 +87,7 @@ protected:
 
 	Vectormath::Aos::Matrix4 m_localMatrix;
 	Vectormath::Aos::Vector3 m_localPosition = Vectormath::Aos::Vector3(0);
-	Vectormath::Aos::Quat m_localRotation = Vectormath::Aos::Quat(1, 0, 0, 0); // ctor = wxyz; layout = xyzw
+	Vectormath::Aos::Quat m_localRotation = Vectormath::Aos::Quat(0, 0, 0, 1);
 	Vectormath::Aos::Vector3 m_localScale = Vectormath::Aos::Vector3(1);
 
 	bool m_dirty = true;

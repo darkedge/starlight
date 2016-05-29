@@ -179,7 +179,7 @@ void Init(GameInfo* gameInfo, graphics::API* graphicsApi) {
 	//ZERO_MEM(gameInfo->chunks, BUFFER_CHUNK_COUNT * sizeof(Chunk));
 	
 	// TODO: Move this stuff after a main menu etc.
-	s_player.SetPosition(0, 0, -10);
+	s_player.SetPosition(0, 0, 10);
 
 	// Cube
 	//s_mesh = CreateCube(graphicsApi);
