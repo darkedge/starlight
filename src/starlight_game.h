@@ -95,6 +95,8 @@ typedef REALLOC_FUNC(ReallocFunc);
 typedef NO_MEMORY_FUNC(NoMemoryFunc);
 #endif
 
+struct ImGuiContext;
+
 struct GameInfo {
 	bool initialized;
 	EGraphicsApi graphicsApi;
@@ -104,7 +106,7 @@ struct GameInfo {
 	ENetPeer* peer;
 	ENetHost* client;
 
-	void* imguiState;
+	ImGuiContext* imguiState;
 
 	//memory::SimpleArena* allocator;
 

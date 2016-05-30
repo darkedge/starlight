@@ -388,7 +388,7 @@ bool graphics::D3D11::Init(PlatformData *data)
 	{
 		// Load Fonts (TODO: Hardcoded!)
 		ImGuiIO& io = ImGui::GetIO();
-		io.Fonts->AddFontFromFileTTF("external/imgui-1.47/extra_fonts/DroidSans.ttf", 16.0f, nullptr, io.Fonts->GetGlyphRangesCyrillic());
+		io.Fonts->AddFontFromFileTTF("external/imgui-1.49/extra_fonts/DroidSans.ttf", 16.0f, nullptr, io.Fonts->GetGlyphRangesCyrillic());
 	}
 
 	return true;
@@ -521,8 +521,8 @@ void graphics::D3D11::SetProjectionMatrix(glm::mat4 matrix) {
 // Data
 // It is okay for this to be file/global.
 // This stuff is volatile and can be reconstructed at any time.
-static ID3D11Device* g_pd3dDevice;
-static ID3D11DeviceContext* g_pd3dDeviceContext;
+static ID3D11Device* sl_pd3dDevice;
+static ID3D11DeviceContext* sl_pd3dDeviceContext;
 static IDXGISwapChain* g_pSwapChain;
 static ID3D11RenderTargetView* g_mainRenderTargetView;
 
@@ -538,8 +538,8 @@ static void CreateRenderTarget()
 	render_target_view_desc.Format = sd.BufferDesc.Format;
 	render_target_view_desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 	g_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*) &pBackBuffer);
-	g_pd3dDevice->CreateRenderTargetView(pBackBuffer, &render_target_view_desc, &g_mainRenderTargetView);
-	g_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, NULL);
+	sl_pd3dDevice->CreateRenderTargetView(pBackBuffer, &render_target_view_desc, &g_mainRenderTargetView);
+	sl_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, NULL);
 	pBackBuffer->Release();
 
 	// Depth Stencil
@@ -555,9 +555,9 @@ static void CreateRenderTarget()
 	depthStencilBufferDesc.SampleDesc.Count = 1;
 	depthStencilBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 
-	g_pd3dDevice->CreateTexture2D(&depthStencilBufferDesc, nullptr, &s_depthStencilBuffer);
+	sl_pd3dDevice->CreateTexture2D(&depthStencilBufferDesc, nullptr, &s_depthStencilBuffer);
 
-	g_pd3dDevice->CreateDepthStencilView(s_depthStencilBuffer, nullptr, &s_depthStencilView);
+	sl_pd3dDevice->CreateDepthStencilView(s_depthStencilBuffer, nullptr, &s_depthStencilView);
 
 	D3D11_DEPTH_STENCIL_DESC depthStencilStateDesc;
 	ZeroMemory(&depthStencilStateDesc, sizeof(D3D11_DEPTH_STENCIL_DESC));
@@ -565,7 +565,7 @@ static void CreateRenderTarget()
 	depthStencilStateDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
 	depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_LESS;
 	depthStencilStateDesc.StencilEnable = FALSE;
-	g_pd3dDevice->CreateDepthStencilState(&depthStencilStateDesc, &s_depthStencilState);
+	sl_pd3dDevice->CreateDepthStencilState(&depthStencilStateDesc, &s_depthStencilState);
 
 	// Initialize the viewport to occupy the entire client area.
 	s_viewport.Width = (float) sd.BufferDesc.Width;
@@ -629,9 +629,9 @@ static HRESULT CreateDeviceD3D(HWND hWnd, GameFuncs* funcs)
 		D3D11_SDK_VERSION,
 		&sd,
 		&g_pSwapChain,
-		&g_pd3dDevice,
+		&sl_pd3dDevice,
 		&featureLevel,
-		&g_pd3dDeviceContext);
+		&sl_pd3dDeviceContext);
 	if (hr != S_OK) {
 		// Try without debug flag
 		hr = D3D11CreateDeviceAndSwapChain(
@@ -644,9 +644,9 @@ static HRESULT CreateDeviceD3D(HWND hWnd, GameFuncs* funcs)
 			D3D11_SDK_VERSION,
 			&sd,
 			&g_pSwapChain,
-			&g_pd3dDevice,
+			&sl_pd3dDevice,
 			&featureLevel,
-			&g_pd3dDeviceContext);
+			&sl_pd3dDeviceContext);
 		if (hr != S_OK) {
 			return E_FAIL;
 		}
@@ -680,8 +680,8 @@ static HRESULT CreateDeviceD3D(HWND hWnd, GameFuncs* funcs)
 		RSDesc.MultisampleEnable = (sd.SampleDesc.Count > 1) ? TRUE : FALSE;
 
 		ID3D11RasterizerState* pRState = NULL;
-		g_pd3dDevice->CreateRasterizerState(&RSDesc, &pRState);
-		g_pd3dDeviceContext->RSSetState(pRState);
+		sl_pd3dDevice->CreateRasterizerState(&RSDesc, &pRState);
+		sl_pd3dDeviceContext->RSSetState(pRState);
 		pRState->Release();
 	}
 
@@ -694,8 +694,8 @@ static void CleanupDeviceD3D()
 {
 	CleanupRenderTarget();
 	if (g_pSwapChain) { g_pSwapChain->Release(); g_pSwapChain = NULL; }
-	if (g_pd3dDeviceContext) { g_pd3dDeviceContext->Release(); g_pd3dDeviceContext = NULL; }
-	if (g_pd3dDevice) { g_pd3dDevice->Release(); g_pd3dDevice = NULL; }
+	if (sl_pd3dDeviceContext) { sl_pd3dDeviceContext->Release(); sl_pd3dDeviceContext = NULL; }
+	if (sl_pd3dDevice) { sl_pd3dDevice->Release(); sl_pd3dDevice = NULL; }
 }
 
 // graphics::API implementation
@@ -708,8 +708,8 @@ void graphics::D3D11::Destroy() {
 void graphics::D3D11::Render() {
 	// Clear
 	ImVec4 clear_col = ImColor(114, 144, 154);
-	g_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView, (float*) &clear_col);
-	g_pd3dDeviceContext->ClearDepthStencilView(s_depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+	sl_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView, (float*) &clear_col);
+	sl_pd3dDeviceContext->ClearDepthStencilView(s_depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 	//DrawCommand cmd;
 	//ZeroMemory(&cmd, sizeof(cmd));
@@ -754,11 +754,11 @@ void graphics::D3D11::Render() {
 	if (desc.BufferDesc.Width > 0 && desc.BufferDesc.Height > 0) {
 		Matrix4 projectionMatrix = Matrix4::perspective(45.0f * DEG2RAD, (float) desc.BufferDesc.Width / (float) desc.BufferDesc.Height, 0.1f, 100.0f);
 		assert(s_constantBuffers[EConstantBuffer::Projection]);
-		g_pd3dDeviceContext->UpdateSubresource(s_constantBuffers[EConstantBuffer::Projection], 0, nullptr, &projectionMatrix, 0, 0);
+		sl_pd3dDeviceContext->UpdateSubresource(s_constantBuffers[EConstantBuffer::Projection], 0, nullptr, &projectionMatrix, 0, 0);
 	}
 
 	assert(s_constantBuffers[EConstantBuffer::View]);
-	g_pd3dDeviceContext->UpdateSubresource(s_constantBuffers[EConstantBuffer::View], 0, nullptr, &s_view, 0, 0);
+	sl_pd3dDeviceContext->UpdateSubresource(s_constantBuffers[EConstantBuffer::View], 0, nullptr, &s_view, 0, 0);
 
 	// Submit draw commands
 	for (int32_t i = 0; i < g_numDrawCommands; i++) {
@@ -771,21 +771,21 @@ void graphics::D3D11::Render() {
 
 		// Constant Buffers
 		assert(s_constantBuffers[EConstantBuffer::Model]);
-		g_pd3dDeviceContext->UpdateSubresource(s_constantBuffers[EConstantBuffer::Model], 0, nullptr, &cmd->worldMatrix, 0, 0);
+		sl_pd3dDeviceContext->UpdateSubresource(s_constantBuffers[EConstantBuffer::Model], 0, nullptr, &cmd->worldMatrix, 0, 0);
 
 		// Input Assembler
 		uint32_t stride = sizeof(Vertex);
 		uint32_t offset = 0;
 		//assert(pipelineState.inputLayout);
-		//g_pd3dDeviceContext->IASetInputLayout(pipelineState.inputLayout);
-		g_pd3dDeviceContext->IASetInputLayout(s_inputLayout);
-		g_pd3dDeviceContext->IASetVertexBuffers(0, 1, &mesh->vertexBuffer, &stride, &offset);
-		g_pd3dDeviceContext->IASetIndexBuffer(mesh->indexBuffer, DXGI_FORMAT_R32_UINT, 0);
-		g_pd3dDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		//sl_pd3dDeviceContext->IASetInputLayout(pipelineState.inputLayout);
+		sl_pd3dDeviceContext->IASetInputLayout(s_inputLayout);
+		sl_pd3dDeviceContext->IASetVertexBuffers(0, 1, &mesh->vertexBuffer, &stride, &offset);
+		sl_pd3dDeviceContext->IASetIndexBuffer(mesh->indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+		sl_pd3dDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		// Vertex Shader
-		g_pd3dDeviceContext->VSSetShader(pipelineState->vertexShader, nullptr, 0);
-		g_pd3dDeviceContext->VSSetConstantBuffers(0, EConstantBuffer::Count, s_constantBuffers);
+		sl_pd3dDeviceContext->VSSetShader(pipelineState->vertexShader, nullptr, 0);
+		sl_pd3dDeviceContext->VSSetConstantBuffers(0, EConstantBuffer::Count, s_constantBuffers);
 
 		// TODO: Hull Shader
 
@@ -794,18 +794,18 @@ void graphics::D3D11::Render() {
 		// TODO: Geometry Shader
 
 		// Rasterizer
-		g_pd3dDeviceContext->RSSetState(s_rasterizerState);
-		g_pd3dDeviceContext->RSSetViewports(1, &s_viewport);
+		sl_pd3dDeviceContext->RSSetState(s_rasterizerState);
+		sl_pd3dDeviceContext->RSSetViewports(1, &s_viewport);
 
 		// Pixel Shader
-		g_pd3dDeviceContext->PSSetShader(pipelineState->pixelShader, nullptr, 0);
+		sl_pd3dDeviceContext->PSSetShader(pipelineState->pixelShader, nullptr, 0);
 
 		// Output Merger
-		g_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, s_depthStencilView);
-		g_pd3dDeviceContext->OMSetDepthStencilState(s_depthStencilState, 1);
+		sl_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, s_depthStencilView);
+		sl_pd3dDeviceContext->OMSetDepthStencilState(s_depthStencilState, 1);
 
 		// Draw call
-		g_pd3dDeviceContext->DrawIndexed(mesh->numIndices, 0, 0);
+		sl_pd3dDeviceContext->DrawIndexed(mesh->numIndices, 0, 0);
 	}
 
 	ImGui::Render();
@@ -828,9 +828,9 @@ bool graphics::D3D11::Init(PlatformData *data, GameFuncs* funcs) {
 		return false;
 	}
 
-	D3D_TRY(g_pd3dDevice->CreatePixelShader(PixelShaderBlob, sizeof(PixelShaderBlob), nullptr, &s_pixelShader));
-	D3D_TRY(g_pd3dDevice->CreateVertexShader(VertexShaderBlob, sizeof(VertexShaderBlob), nullptr, &s_vertexShader));
-	D3D_TRY(g_pd3dDevice->CreateInputLayout(g_Vertex, COUNT_OF(g_Vertex), VertexShaderBlob, sizeof(VertexShaderBlob), &s_inputLayout));
+	D3D_TRY(sl_pd3dDevice->CreatePixelShader(PixelShaderBlob, sizeof(PixelShaderBlob), nullptr, &s_pixelShader));
+	D3D_TRY(sl_pd3dDevice->CreateVertexShader(VertexShaderBlob, sizeof(VertexShaderBlob), nullptr, &s_vertexShader));
+	D3D_TRY(sl_pd3dDevice->CreateInputLayout(g_Vertex, COUNT_OF(g_Vertex), VertexShaderBlob, sizeof(VertexShaderBlob), &s_inputLayout));
 
 	// Create constant buffers
 
@@ -843,21 +843,21 @@ bool graphics::D3D11::Init(PlatformData *data, GameFuncs* funcs) {
 	constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 
 	constantBufferDesc.ByteWidth = sizeof(CBModel);
-	D3D_TRY(g_pd3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &s_constantBuffers[EConstantBuffer::Model]));
+	D3D_TRY(sl_pd3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &s_constantBuffers[EConstantBuffer::Model]));
 	{
 		const char c_szName [] = "CBModel";
 		s_constantBuffers[EConstantBuffer::Model]->SetPrivateData(WKPDID_D3DDebugObjectName, sizeof(c_szName) - 1, c_szName);
 	}
 
 	constantBufferDesc.ByteWidth = sizeof(CBView);
-	D3D_TRY(g_pd3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &s_constantBuffers[EConstantBuffer::View]));
+	D3D_TRY(sl_pd3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &s_constantBuffers[EConstantBuffer::View]));
 	{
 		const char c_szName [] = "CBView";
 		s_constantBuffers[EConstantBuffer::View]->SetPrivateData(WKPDID_D3DDebugObjectName, sizeof(c_szName) - 1, c_szName);
 	}
 
 	constantBufferDesc.ByteWidth = sizeof(CBProjection);
-	D3D_TRY(g_pd3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &s_constantBuffers[EConstantBuffer::Projection]));
+	D3D_TRY(sl_pd3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &s_constantBuffers[EConstantBuffer::Projection]));
 	{
 		const char c_szName [] = "CBProjection";
 		s_constantBuffers[EConstantBuffer::Projection]->SetPrivateData(WKPDID_D3DDebugObjectName, sizeof(c_szName) - 1, c_szName);
@@ -877,10 +877,10 @@ bool graphics::D3D11::Init(PlatformData *data, GameFuncs* funcs) {
 	rasterizerDesc.MultisampleEnable = FALSE;
 	rasterizerDesc.ScissorEnable = FALSE;
 	rasterizerDesc.SlopeScaledDepthBias = 0.0f;
-	D3D_TRY(g_pd3dDevice->CreateRasterizerState(&rasterizerDesc, &s_rasterizerState));
+	D3D_TRY(sl_pd3dDevice->CreateRasterizerState(&rasterizerDesc, &s_rasterizerState));
 
 	// Setup ImGui binding
-	ImGui_ImplDX11_Init(data->hWnd, g_pd3dDevice, g_pd3dDeviceContext);
+	ImGui_ImplDX11_Init(data->hWnd, sl_pd3dDevice, sl_pd3dDeviceContext);
 
 	return true;
 }
@@ -898,7 +898,7 @@ bool graphics::D3D11::ImGuiHandleEvent(WindowEvent* e) {
 }
 
 int32_t graphics::D3D11::AddChunk(TempMesh *tempMesh) { 
-	assert(g_pd3dDevice);
+	assert(sl_pd3dDevice);
 
 	MeshD3D11 mesh = {0};
 
@@ -916,7 +916,7 @@ int32_t graphics::D3D11::AddChunk(TempMesh *tempMesh) {
 	D3D11_SUBRESOURCE_DATA resourceData = {0};
 	resourceData.pSysMem = vertices;
 
-	HRESULT hr = g_pd3dDevice->CreateBuffer(&vertexBufferDesc, &resourceData, &mesh.vertexBuffer);
+	HRESULT hr = sl_pd3dDevice->CreateBuffer(&vertexBufferDesc, &resourceData, &mesh.vertexBuffer);
 	if (FAILED(hr))
 	{
 		__debugbreak();
@@ -934,7 +934,7 @@ int32_t graphics::D3D11::AddChunk(TempMesh *tempMesh) {
 	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 	resourceData.pSysMem = indices;
 
-	hr = g_pd3dDevice->CreateBuffer(&indexBufferDesc, &resourceData, &mesh.indexBuffer);
+	hr = sl_pd3dDevice->CreateBuffer(&indexBufferDesc, &resourceData, &mesh.indexBuffer);
 	if (FAILED(hr))
 	{
 		__debugbreak();

@@ -26,7 +26,7 @@ if not exist build\bin mkdir build\bin
 
 set slBasicCompile=/nologo /Gm- /MDd /GR- /EHs-c- /fp:fast /fp:except- /Oi
 set slDefinitions=-DSL_CL -D_DEBUG -DUNICODE -D_UNICODE -D_SCL_SECURE_NO_WARNINGS -D_HAS_EXCEPTIONS=0 -DNOMINMAX -DVC_EXTRALEAN -DSTRICT -DWIN32_LEAN_AND_MEAN -DNOGDI -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS -D_WINSOCK_DEPRECATED_NO_WARNINGS
-set slInclude=/I..\..\src /I..\..\external\sce_vectormath-master\include /I..\..\external\flatbuffers-1.3.0\include /I..\..\external\protobuf-2.6.1\src /I..\..\external\enet-1.3.13\include /I..\..\external\imgui-1.47
+set slInclude=/I..\..\src /I..\..\external\sce_vectormath-master\include /I..\..\external\flatbuffers-1.3.0\include /I..\..\external\protobuf-2.6.1\src /I..\..\external\enet-1.3.13\include /I..\..\external\imgui-1.49
 set slCompile=%slBasicCompile% %slDefinitions% %slInclude% /Ob1 /WX /W4 /wd4100 /wd4505 /Z7 /Bt
 ::set slFxCompile=/Zi /E"main" /Od /Vn"g_%(Filename)" /WX /Fh"src/%(Filename).h" /nologo
 
@@ -52,7 +52,7 @@ popd
 :imgui
 if exist build\lib\imgui.lib goto starlight
 echo. && echo [ImGui]
-pushd external\imgui-1.47
+pushd external\imgui-1.49
 cl /c %slBasicCompile% /Fo..\..\build\imgui\ /I. imgui.cpp imgui_demo.cpp imgui_draw.cpp examples\directx11_example\imgui_impl_dx11.cpp
 popd
 pushd build\imgui
@@ -68,6 +68,6 @@ cl %slCompile% /LD /Festarlight.dll ..\..\src\starlight_ub.cpp /link %slLink% /P
 echo. && echo [starlight_win32_ub]
 fxc /Zi /E"main" /Od /Vn"g_SimplePixelShader" /WX /T ps_4_0 /Fh"..\..\src/SimplePixelShader.h" /nologo ..\..\src/SimplePixelShader.hlsl
 fxc /Zi /E"main" /Od /Vn"g_SimpleVertexShader" /WX /T vs_4_0 /Fh"..\..\src/SimpleVertexShader.h" /nologo ..\..\src/SimpleVertexShader.hlsl
-cl %slCompile% /Festarlight.exe /I..\..\external\imgui-1.47\examples\directx11_example ..\..\src\starlight_win32_ub.cpp /link %slLink% d3dcompiler.lib d3d11.lib
+cl %slCompile% /Festarlight.exe /I..\..\external\imgui-1.49\examples\directx11_example ..\..\src\starlight_win32_ub.cpp /link %slLink% d3dcompiler.lib d3d11.lib
 popd
 popd

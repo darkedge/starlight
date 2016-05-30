@@ -172,7 +172,7 @@ static void UpdateMeshList(GameInfo* gameInfo, graphics::API* graphics, int32_t 
 void Init(GameInfo* gameInfo, graphics::API* graphicsApi) {
 	input::Init();
 
-	ImGui::SetInternalState(gameInfo->imguiState);
+	ImGui::SetCurrentContext(gameInfo->imguiState);
 
 	//assert(!gameInfo->chunks);
 	//gameInfo->chunks = new Chunk[BUFFER_CHUNK_COUNT];

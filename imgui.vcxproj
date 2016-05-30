@@ -93,7 +93,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>external\imgui-1.47</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>external\imgui-1.49</AdditionalIncludeDirectories>
       <AdditionalOptions>/Bt %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
   </ItemDefinitionGroup>
@@ -102,7 +102,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>external\imgui-1.47</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>external\imgui-1.49</AdditionalIncludeDirectories>
       <AdditionalOptions>/Bt %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
   </ItemDefinitionGroup>
@@ -113,7 +113,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>external\imgui-1.47</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>external\imgui-1.49</AdditionalIncludeDirectories>
       <AdditionalOptions>/Bt %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -128,7 +128,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>external\imgui-1.47</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>external\imgui-1.49</AdditionalIncludeDirectories>
       <AdditionalOptions>/Bt %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -137,10 +137,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="external\imgui-1.47\examples\directx11_example\imgui_impl_dx11.cpp" />
-    <ClCompile Include="external\imgui-1.47\imgui.cpp" />
-    <ClCompile Include="external\imgui-1.47\imgui_demo.cpp" />
-    <ClCompile Include="external\imgui-1.47\imgui_draw.cpp" />
+    <ClCompile Include="external\imgui-1.49\examples\directx11_example\imgui_impl_dx11.cpp" />
+    <ClCompile Include="external\imgui-1.49\imgui.cpp" />
+    <ClCompile Include="external\imgui-1.49\imgui_demo.cpp" />
+    <ClCompile Include="external\imgui-1.49\imgui_draw.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

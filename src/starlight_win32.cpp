@@ -220,7 +220,7 @@ unsigned int __stdcall MyThreadFunction(void*) {
 	GameInfo gameInfo;
 	ZeroMemory(&gameInfo, sizeof(gameInfo));
 	gameInfo.graphicsApi = graphicsApi;
-	gameInfo.imguiState = ImGui::GetInternalState();
+	gameInfo.imguiState = ImGui::GetCurrentContext();
 	//heapArea = new HeapArea(512 * 1024 * 1024);
 	//memory::SimpleArena arena(heapArea);
 	//gameInfo.allocator = &arena;
