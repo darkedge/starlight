@@ -709,6 +709,7 @@ void graphics::D3D11::Render() {
 	// Clear
 	ImVec4 clear_col = ImColor(114, 144, 154);
 	g_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView, (float*) &clear_col);
+	g_pd3dDeviceContext->ClearDepthStencilView(s_depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 	//DrawCommand cmd;
 	//ZeroMemory(&cmd, sizeof(cmd));
@@ -800,7 +801,7 @@ void graphics::D3D11::Render() {
 		g_pd3dDeviceContext->PSSetShader(pipelineState->pixelShader, nullptr, 0);
 
 		// Output Merger
-		//g_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, nullptr);
+		g_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, s_depthStencilView);
 		g_pd3dDeviceContext->OMSetDepthStencilState(s_depthStencilState, 1);
 
 		// Draw call
