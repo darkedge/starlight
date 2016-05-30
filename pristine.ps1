@@ -1,4 +1,4 @@
-.\clean.ps1
+.\clean.bat
 
 # Add git to path
 if ((Test-Path $($env:ProgramFiles + "\Git\bin"))) {
