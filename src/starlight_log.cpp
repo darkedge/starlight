@@ -3,6 +3,23 @@
 #include <imgui.h>
 #include <sstream>
 
+// http://stackoverflow.com/questions/37132549/implementation-of-strdup-in-c-programming
+char *ft_strdup(char *src)
+{
+	char *str;
+	char *p;
+	int len = 0;
+
+	while (src[len])
+		len++;
+	str = (char*) malloc(len + 1);
+	p = str;
+	while (*src)
+		*p++ = *src++;
+	*p = '\0';
+	return str;
+}
+
 struct Console
 {
 	char                  InputBuf[256]{};
@@ -44,7 +61,7 @@ struct Console
 		vsnprintf(buf, COUNT_OF(buf), fmt, args);
 		buf[COUNT_OF(buf) - 1] = 0;
 		va_end(args);
-		Items.push_back(strdup(buf));
+		Items.push_back(ft_strdup(buf));
 		ScrollToBottom = true;
 	}
 
@@ -125,7 +142,7 @@ struct Console
 	static int Stricmp(const char* str1, const char* str2) { int d; while ((d = toupper(*str2) - toupper(*str1)) == 0 && *str1) { str1++; str2++; } return d; }
 	static int Strnicmp(const char* str1, const char* str2, int count) { int d = 0; while (count > 0 && (d = toupper(*str2) - toupper(*str1)) == 0 && *str1) { str1++; str2++; count--; } return d; }
 
-	void    ExecCommand(const char* command_line)
+	void    ExecCommand(char* command_line)
 	{
 		AddLog("] %s\n", command_line);
 
@@ -138,7 +155,7 @@ struct Console
 				History.erase(History.begin() + i);
 				break;
 			}
-		History.push_back(strdup(command_line));
+		History.push_back(ft_strdup(command_line));
 
 #if 0
 		// Process command

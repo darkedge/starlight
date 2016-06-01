@@ -1,6 +1,5 @@
 #include "Network.h"
 #include "starlight_game.h"
-#include "starlight_generated.h"
 #include "starlight.pb.h"
 #include <vectormath/scalar/cpp/vectormath_aos.h>
 #include <sstream>
@@ -43,7 +42,7 @@ void network::Update(GameInfo* gameInfo) {
 				ss << "[SERVER] A new client connected from " << event.peer->address.host << ':' << event.peer->address.port << '.';
 				logger::LogInfo(ss.str());
 				/* Store any relevant client information here. */
-				event.peer->data = "Client information";
+				event.peer->data = (void*) "Client information";
 				break;
 
 			case ENET_EVENT_TYPE_RECEIVE:
@@ -53,6 +52,8 @@ void network::Update(GameInfo* gameInfo) {
 				ss.str("");
 				ss.clear();
 
+				// TODO: protobuf version
+#if 0
 				ss << "Contents: ";
 				flatbuffers::FlatBufferBuilder builder;
 				auto packet = network::GetPacket(event.packet->data);
@@ -65,7 +66,7 @@ void network::Update(GameInfo* gameInfo) {
 					ss << " Unknown!";
 				}
 				logger::LogInfo(ss.str());
-
+#endif
 				enet_packet_destroy(event.packet);
 			}
 				break;
@@ -97,7 +98,7 @@ void network::Update(GameInfo* gameInfo) {
 				ss << "[CLIENT] Connected to " << event.peer->address.host << ':' << event.peer->address.port << '.';
 				logger::LogInfo(ss.str());
 				/* Store any relevant client information here. */
-				event.peer->data = "Client information";
+				event.peer->data = (void*) "Client information";
 				break;
 
 			case ENET_EVENT_TYPE_RECEIVE:

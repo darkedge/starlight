@@ -3,7 +3,6 @@
 #include "starlight_log.h"
 #include "starlight_transform.h"
 #include "starlight_graphics.h"
-#include "starlight_generated.h"
 #include <vectormath/scalar/cpp/vectormath_aos.h>
 //#include <process.h> // ?
 #include <cstdint>
@@ -24,7 +23,7 @@ struct Camera {
 };
 
 static Transform s_player;
-static Camera s_camera;
+//static Camera s_camera;
 static float s_deltaTime;
 
 #if 0
@@ -204,7 +203,7 @@ void Init(GameInfo* gameInfo, graphics::API* graphicsApi) {
 	gameInfo->numChunks = 1;
 	gameInfo->chunks = new Chunk;
 	ZERO_MEM(gameInfo->chunks, sizeof(Chunk));
-#if 0
+#if 1
 	for (int32_t y = 0; y < CHUNK_DIM_Y / 2; y++) {
 		for (int32_t x = 0; x < CHUNK_DIM_XZ; x++) for (int32_t z = 0; z < CHUNK_DIM_XZ; z++) {
 			SetBlock(gameInfo->chunks, 1, x, y, z);
@@ -266,11 +265,11 @@ void MoveCamera() {
 	// Translation
 	const float SPEED = 20.0f;
 	Vector3 translation(0, 0, 0);
-	if (ImGui::GetIO().KeysDown['W'])		translation += s_player.Forward();
-	if (ImGui::GetIO().KeysDown['A'])		translation -= s_player.Right();
-	if (ImGui::GetIO().KeysDown['S'])		translation -= s_player.Forward();
-	if (ImGui::GetIO().KeysDown['D'])		translation += s_player.Right();
-	if (ImGui::GetIO().KeysDown[VK_LCONTROL] || ImGui::GetIO().KeysDown['C'] || ImGui::GetIO().KeysDown[VK_LSHIFT]) translation -= Vector3(0, 1, 0);
+	if (ImGui::GetIO().KeysDown[(intptr_t)'W'])		translation += s_player.Forward();
+	if (ImGui::GetIO().KeysDown[(intptr_t)'A'])		translation -= s_player.Right();
+	if (ImGui::GetIO().KeysDown[(intptr_t)'S'])		translation -= s_player.Forward();
+	if (ImGui::GetIO().KeysDown[(intptr_t)'D'])		translation += s_player.Right();
+	if (ImGui::GetIO().KeysDown[VK_LCONTROL] || ImGui::GetIO().KeysDown[(intptr_t)'C'] || ImGui::GetIO().KeysDown[VK_LSHIFT]) translation -= Vector3(0, 1, 0);
 	if (ImGui::GetIO().KeysDown[VK_SPACE]) translation += Vector3(0, 1, 0);
 	if (lengthSqr(translation) != 0.0f)
 	{
@@ -325,6 +324,7 @@ void __cdecl game::UpdateGame(GameInfo* gameInfo, graphics::API* graphicsApi) {
 	ImGui::End();
 
 	// Network chat test
+#if 0
 	static char buf[128];
 	ImGui::Begin("Chat Input");
 	if (ImGui::InputText("Chat", buf, 128, ImGuiInputTextFlags_EnterReturnsTrue))
@@ -343,6 +343,7 @@ void __cdecl game::UpdateGame(GameInfo* gameInfo, graphics::API* graphicsApi) {
 	if (ImGui::IsRootWindowOrAnyChildFocused() && !ImGui::IsAnyItemActive() && !ImGui::IsMouseClicked(0))
 		ImGui::SetKeyboardFocusHere(-1); // Auto focus
 	ImGui::End();
+#endif
 
 	// Does not render, but builds display lists
 	logger::Render();
