@@ -23,6 +23,8 @@
 #include "starlight_memory.h"
 #include <process.h>
 
+#include "Objbase.h"
+
 #ifdef SL_CL
   static const wchar_t* s_dllName = L"starlight.dll";
 #else
@@ -408,6 +410,7 @@ int CALLBACK WinMain(
 	ShowWindow(s_hwnd, SW_SHOWDEFAULT);
 	UpdateWindow(s_hwnd);
 
+	assert(CoInitializeEx(NULL, COINIT_MULTITHREADED) == S_OK);
 
 	// Create thread
 	s_running.store(true);
@@ -437,6 +440,8 @@ int CALLBACK WinMain(
 	delete s_queue;
 
 	UnregisterClassW(className, GetModuleHandleW(nullptr));
+
+	CoUninitialize();
 
 	_CrtDumpMemoryLeaks();
 

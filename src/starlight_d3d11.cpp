@@ -14,6 +14,7 @@
 #include "starlight_game.h"
 
 #include "starlight_hlsl_generated.h"
+#include "WICTextureLoader.h"
 
 using namespace Vectormath::Aos;
 
@@ -46,6 +47,9 @@ static ID3D11RasterizerState* s_rasterizerState;
 static ID3D11DepthStencilState* s_depthStencilState;
 static ID3D11DepthStencilView* s_depthStencilView;
 static ID3D11Texture2D* s_depthStencilBuffer;
+static ID3D11SamplerState* s_samplerState;
+static ID3D11ShaderResourceView* s_shaderResourceView;
+static ID3D11Resource* s_textureResource;
 static D3D11_VIEWPORT s_viewport;
 
 static Matrix4 s_view;
@@ -799,6 +803,8 @@ void graphics::D3D11::Render() {
 
 		// Pixel Shader
 		sl_pd3dDeviceContext->PSSetShader(pipelineState->pixelShader, nullptr, 0);
+		sl_pd3dDeviceContext->PSSetSamplers( 0, 1, &s_samplerState );
+		sl_pd3dDeviceContext->PSSetShaderResources( 0, 1, &s_shaderResourceView );
 
 		// Output Merger
 		sl_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, s_depthStencilView);
@@ -878,6 +884,29 @@ bool graphics::D3D11::Init(PlatformData *data, GameFuncs* funcs) {
 	rasterizerDesc.ScissorEnable = FALSE;
 	rasterizerDesc.SlopeScaledDepthBias = 0.0f;
 	D3D_TRY(sl_pd3dDevice->CreateRasterizerState(&rasterizerDesc, &s_rasterizerState));
+
+	// Create a sampler state for texture sampling in the pixel shader
+	D3D11_SAMPLER_DESC samplerDesc;
+	ZeroMemory( &samplerDesc, sizeof(D3D11_SAMPLER_DESC) );
+	 
+	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+	samplerDesc.MipLODBias = 0.0f;
+	samplerDesc.MaxAnisotropy = 1;
+	samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+	samplerDesc.BorderColor[0] = 1.0f;
+	samplerDesc.BorderColor[1] = 1.0f;
+	samplerDesc.BorderColor[2] = 1.0f;
+	samplerDesc.BorderColor[3] = 1.0f;
+	samplerDesc.MinLOD = -FLT_MAX;
+	samplerDesc.MaxLOD = FLT_MAX;
+	 
+	D3D_TRY(sl_pd3dDevice->CreateSamplerState( &samplerDesc, &s_samplerState ));
+
+	// Texture
+	CreateWICTextureFromFile(sl_pd3dDevice, sl_pd3dDeviceContext, L"assets/test.png", &s_textureResource, &s_shaderResourceView);
 
 	// Setup ImGui binding
 	ImGui_ImplDX11_Init(data->hWnd, sl_pd3dDevice, sl_pd3dDeviceContext);

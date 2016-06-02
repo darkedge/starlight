@@ -38,18 +38,19 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <Link>
-      <AdditionalDependencies>enet_$(Platform)_$(Configuration).lib;imgui_$(Platform)_$(Configuration).lib;winmm.lib;ws2_32.lib;d3d10.lib;d3d11.lib;d3dcompiler.lib;dxguid.lib</AdditionalDependencies>
+      <AdditionalDependencies>enet_$(Platform)_$(Configuration).lib;imgui_$(Platform)_$(Configuration).lib;winmm.lib;ole32.lib;ws2_32.lib;d3d10.lib;d3d11.lib;d3dcompiler.lib;dxguid.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
     <Link>
-      <AdditionalDependencies>enet_$(Platform)_$(Configuration).lib;imgui_$(Platform)_$(Configuration).lib;winmm.lib;ws2_32.lib;d3d10.lib;d3d11.lib;d3dcompiler.lib;dxguid.lib;starlight_$(Platform)_$(Configuration).lib</AdditionalDependencies>
+      <AdditionalDependencies>enet_$(Platform)_$(Configuration).lib;imgui_$(Platform)_$(Configuration).lib;winmm.lib;ole32.lib;ws2_32.lib;d3d10.lib;d3d11.lib;d3dcompiler.lib;dxguid.lib;starlight_$(Platform)_$(Configuration).lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\starlight_d3d11.cpp" />
     <ClCompile Include="src\starlight_d3d11_imgui.cpp" />
     <ClCompile Include="src\starlight_win32.cpp" />
+    <ClCompile Include="src\WICTextureLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\SimplePixelShader.h" />
@@ -58,6 +59,7 @@
     <ClInclude Include="src\starlight_d3d_shared.h" />
     <ClInclude Include="src\starlight_renderer_windows.h" />
     <ClInclude Include="src\starlight_win32.h" />
+    <ClInclude Include="src\WICTextureLoader.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="src\SimplePixelShader.hlsl">
