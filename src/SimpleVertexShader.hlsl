@@ -12,7 +12,7 @@ VertexShaderOutput main( Vertex IN )
 
     matrix mvp = mul( projection, mul( view, worldMatrix ) );
     OUT.position = mul( mvp, float4( IN.position, 1.0f ) );
-    OUT.uv = IN.uv;
+    OUT.uv = float2( IN.uv.x, 1.0f - IN.uv.y );
 
     return OUT;
 }

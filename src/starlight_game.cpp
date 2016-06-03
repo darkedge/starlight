@@ -78,8 +78,8 @@ static void AddCubeTriangles(TempMesh *mesh, int32_t x, int32_t y, int32_t z) {
 	static float2 uv[4] = {
 		{0,0},
 		{1,0},
-		{1,1},
 		{0,1},
+		{1,1},
 	};
 
 	float3 v { (float) x, (float) y, (float) z };
