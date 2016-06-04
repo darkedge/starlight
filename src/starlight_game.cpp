@@ -97,10 +97,10 @@ static void AddCubeTriangles(TempMesh *mesh, int32_t x, int32_t y, int32_t z) {
 		{ uv[2], v + float3{ (0.0f), 1.0f, 0.0f } },
 		{ uv[3], v + float3{ (0.0f), 1.0f, 1.0f } },
 		// -Y
-		{ uv[0], v + float3{ 1.0f, (0.0f), 0.0f } },
-		{ uv[1], v + float3{ 1.0f, (0.0f), 1.0f } },
-		{ uv[2], v + float3{ 0.0f, (0.0f), 0.0f } },
-		{ uv[3], v + float3{ 0.0f, (0.0f), 1.0f } },
+		{ uv[0], v + float3{ 0.0f, (0.0f), 0.0f } },
+		{ uv[1], v + float3{ 1.0f, (0.0f), 0.0f } },
+		{ uv[2], v + float3{ 0.0f, (0.0f), 1.0f } },
+		{ uv[3], v + float3{ 1.0f, (0.0f), 1.0f } },
 		// -Z
 		{ uv[0], v + float3{ 1.0f, 0.0f, (0.0f) } },
 		{ uv[1], v + float3{ 0.0f, 0.0f, (0.0f) } },
@@ -112,10 +112,10 @@ static void AddCubeTriangles(TempMesh *mesh, int32_t x, int32_t y, int32_t z) {
 		{ uv[2], v + float3{ (1.0f), 1.0f, 1.0f } },
 		{ uv[3], v + float3{ (1.0f), 1.0f, 0.0f } },
 		// +Y
-		{ uv[0], v + float3{ 0.0f, (1.0f), 0.0f } },
-		{ uv[1], v + float3{ 0.0f, (1.0f), 1.0f } },
-		{ uv[2], v + float3{ 1.0f, (1.0f), 0.0f } },
-		{ uv[3], v + float3{ 1.0f, (1.0f), 1.0f } },
+		{ uv[0], v + float3{ 0.0f, (1.0f), 1.0f } },
+		{ uv[1], v + float3{ 1.0f, (1.0f), 1.0f } },
+		{ uv[2], v + float3{ 0.0f, (1.0f), 0.0f } },
+		{ uv[3], v + float3{ 1.0f, (1.0f), 0.0f } },
 		// +Z
 		{ uv[0], v + float3{ 0.0f, 0.0f, (1.0f) } },
 		{ uv[1], v + float3{ 1.0f, 0.0f, (1.0f) } },
