@@ -248,6 +248,8 @@ void MoveCamera() {
 		//const float ROT_SPEED = 0.0025f;
 		if (ImGui::GetIO().KeysDown[(intptr_t)'Q'])		currentRotation.y += 2.0f * s_deltaTime;
 		if (ImGui::GetIO().KeysDown[(intptr_t)'E'])		currentRotation.y -= 2.0f * s_deltaTime;
+		if (ImGui::GetIO().KeysDown[(intptr_t)'Z'])		currentRotation.x += 2.0f * s_deltaTime;
+		if (ImGui::GetIO().KeysDown[(intptr_t)'X'])		currentRotation.x -= 2.0f * s_deltaTime;
 		//currentRotation -= ROT_SPEED * input::GetMouseDelta();
 		if (currentRotation.x < -89.0f * DEG2RAD)
 		{
