@@ -178,7 +178,7 @@ void Init(GameInfo* gameInfo, graphics::API* graphicsApi) {
 	//ZERO_MEM(gameInfo->chunks, BUFFER_CHUNK_COUNT * sizeof(Chunk));
 	
 	// TODO: Move this stuff after a main menu etc.
-	s_player.SetPosition(0, 0, 10);
+	s_player.SetPosition(8.5f, 65.0f, 8.5f);
 
 	// Cube
 	//s_mesh = CreateCube(graphicsApi);
@@ -229,41 +229,43 @@ void MoveCamera() {
 	static float2 lastRotation;
 	static float2 currentRotation;
 
-	if (input::GetKeyDown('M'))
+	if (ImGui::GetIO().KeysDown[(intptr_t)'M'])
 	{
 		input::SetMouseGrabbed(!input::IsMouseGrabbed());
 	}
 
 	// Reset
-	if (input::GetKeyDown('R'))
+	if (ImGui::GetIO().KeysDown[(intptr_t)'R'])
 	{
 		currentRotation = lastRotation = { 0, 0 };
-		s_player.SetPosition(Vector3(0, 0, 0));
-		s_player.SetRotation(Quat(1, 0, 0, 0));
+		s_player.SetPosition(8.5f, 65.0f, 8.5f);
+		s_player.SetRotation(Quat(0, 0, 0, 1));
 	}
 
-	if (input::IsMouseGrabbed())
+	//if (input::IsMouseGrabbed())
 	{
 		// Rotation
-		const float ROT_SPEED = 0.0025f;
-		currentRotation -= ROT_SPEED * input::GetMouseDelta();
-		if (currentRotation.y < -89.0f * DEG2RAD)
+		//const float ROT_SPEED = 0.0025f;
+		if (ImGui::GetIO().KeysDown[(intptr_t)'Q'])		currentRotation.y += 2.0f * s_deltaTime;
+		if (ImGui::GetIO().KeysDown[(intptr_t)'E'])		currentRotation.y -= 2.0f * s_deltaTime;
+		//currentRotation -= ROT_SPEED * input::GetMouseDelta();
+		if (currentRotation.x < -89.0f * DEG2RAD)
 		{
-			currentRotation.y = -89.0f * DEG2RAD;
+			currentRotation.x = -89.0f * DEG2RAD;
 		}
-		if (currentRotation.y > 89.0f * DEG2RAD)
+		if (currentRotation.x > 89.0f * DEG2RAD)
 		{
-			currentRotation.y = 89.0f * DEG2RAD;
+			currentRotation.x = 89.0f * DEG2RAD;
 		}
 		if (currentRotation.x != lastRotation.x || currentRotation.y != lastRotation.y)
 		{
-			s_player.SetRotation(Quat(Vector3(currentRotation.y, currentRotation.x, 0.0f), 0.0f));
+			s_player.SetRotation(Quat::rotationY(currentRotation.y) * Quat::rotationX(currentRotation.x));
 			lastRotation = currentRotation;
 		}
 	}
 
 	// Translation
-	const float SPEED = 20.0f;
+	const float SPEED = 10.0f;
 	Vector3 translation(0, 0, 0);
 	if (ImGui::GetIO().KeysDown[(intptr_t)'W'])		translation += s_player.Forward();
 	if (ImGui::GetIO().KeysDown[(intptr_t)'A'])		translation -= s_player.Right();
@@ -295,7 +297,7 @@ void __cdecl game::UpdateGame(GameInfo* gameInfo, graphics::API* graphicsApi) {
 	input::BeginFrame();
 
 	static bool showMainMenuBar = true;
-	if(input::GetKeyDown(VK_F3)) {
+	if(ImGui::GetIO().KeysDown[VK_F3]) {
 		showMainMenuBar = !showMainMenuBar;
 	}
 
