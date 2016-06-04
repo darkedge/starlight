@@ -314,13 +314,17 @@ void __cdecl game::UpdateGame(GameInfo* gameInfo, graphics::API* graphicsApi) {
 	input::EndFrame();
 
 	network::Update(gameInfo);
-	network::DrawDebugMenu(gameInfo);
+	//network::DrawDebugMenu(gameInfo);
 
 	// Debug menu
 	bool stay = true;
-	ImGui::Begin("Debug Menu", &stay);
-	if (ImGui::Button("Load D3D10")) gameInfo->graphicsApi = EGraphicsApi::D3D10;
-	if (ImGui::Button("Load D3D11")) gameInfo->graphicsApi = EGraphicsApi::D3D11;
+	ImGui::Begin("game::UpdateGame", &stay);
+	//if (ImGui::Button("Load D3D10")) gameInfo->graphicsApi = EGraphicsApi::D3D10;
+	//if (ImGui::Button("Load D3D11")) gameInfo->graphicsApi = EGraphicsApi::D3D11;
+	Vector3 pos = s_player.GetPosition();
+	ImGui::InputFloat3("Position", (float*) &pos);
+	Quat rot = s_player.GetRotation();
+	ImGui::InputFloat4("Rotation", (float*)&rot);
 	ImGui::End();
 
 	// Network chat test
@@ -346,7 +350,7 @@ void __cdecl game::UpdateGame(GameInfo* gameInfo, graphics::API* graphicsApi) {
 #endif
 
 	// Does not render, but builds display lists
-	logger::Render();
+	//logger::Render();
 
 	graphicsApi->SetPlayerCameraViewMatrix(s_player.GetViewMatrix());
 
