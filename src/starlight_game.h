@@ -6,8 +6,12 @@
 // Assumption: Block size = 1
 
 // TODO: Hard-coded for now
-#define CHUNK_DIM_XZ 16
+#define CHUNK_DIM_XZ 4
 #define CHUNK_DIM_Y 128
+
+#define CHUNK_RADIUS 2
+#define CHUNK_DIAMETER (CHUNK_RADIUS + 1 + CHUNK_RADIUS)
+#define NUM_CHUNKS (CHUNK_DIAMETER * CHUNK_DIAMETER)
 
 enum ESide {
 	West,
@@ -29,6 +33,7 @@ typedef uint16_t Block;
 // Then you don't need to check for every subtype.
 
 struct Chunk {
+	bool active;
 	// XZ position
 	int2 position;
 	Block blocks[CHUNK_DIM_XZ * CHUNK_DIM_Y * CHUNK_DIM_XZ];
@@ -120,10 +125,11 @@ struct GameInfo {
 
 	// Below this line is all game state
 
-	// The idea is to have a ring-buffer of chunks
-	// But the problem is that we might have to wait for chunks to load
-	// So maybe we need a separate buffer?
-	Chunk* chunks;
+	// A grid of pointers to chunks in chunkPool
+	//Chunk** chunkGrid;
+	// Unordered chunk data
+	Chunk* chunkPool;
+
 	int32_t numChunks;
 
 	//TileEntity* tileEntities;

@@ -142,9 +142,10 @@ static void AddCubeTriangles(TempMesh *mesh, int32_t x, int32_t y, int32_t z) {
 static int32_t s_chunk;
 
 // MeshList contains all meshes related to chunks.
-static void UpdateMeshList(GameInfo* gameInfo, graphics::API* graphics, int32_t chunkIdx) {
+static void UpdateMeshList(GameInfo* gameInfo, graphics::API* graphics, int32_t) {
 	assert(gameInfo);
-	assert(gameInfo->chunks);
+	assert(gameInfo->chunkPool);
+	//assert(gameInfo->chunkGrid);
 	// Remove meshes related to this chunk
 	// Maybe this needs to be queued
 
@@ -153,12 +154,19 @@ static void UpdateMeshList(GameInfo* gameInfo, graphics::API* graphics, int32_t 
 	TempMesh mesh;
 
 	// Y->Z->X
-	for(int32_t y = 0; y < CHUNK_DIM_Y; y++) {
-		for(int32_t z = 0; z < CHUNK_DIM_XZ; z++) {
-			for(int32_t x = 0; x < CHUNK_DIM_XZ; x++) {
-				// TODO: Smart meshing
-				if(GetBlock(gameInfo->chunks + chunkIdx, x, y, z) != 0) {
-					AddCubeTriangles(&mesh, x, y, z);
+	for (size_t cx = 0; cx < CHUNK_DIAMETER; cx++) {
+		for (size_t cz = 0; cz < CHUNK_DIAMETER; cz++) {
+			// Blocks
+			for (int32_t y = 0; y < CHUNK_DIM_Y; y++) {
+				for (int32_t bz = 0; bz < CHUNK_DIM_XZ; bz++) {
+					for (int32_t bx = 0; bx < CHUNK_DIM_XZ; bx++) {
+						if (GetBlock(&gameInfo->chunkPool[cx * CHUNK_DIM_XZ + cz], bx, y, bz) != 0) {
+							AddCubeTriangles(&mesh,
+								(int32_t) (cx * CHUNK_DIM_XZ + bx),
+								y,
+								(int32_t) (cz * CHUNK_DIM_XZ + bz));
+						}
+					}
 				}
 			}
 		}
@@ -200,28 +208,63 @@ void Init(GameInfo* gameInfo, graphics::API* graphicsApi) {
 
 	// Create one chunk
 
-	gameInfo->numChunks = 1;
-	gameInfo->chunks = new Chunk;
-	ZERO_MEM(gameInfo->chunks, sizeof(Chunk));
-#if 1
-	for (int32_t y = 0; y < CHUNK_DIM_Y / 2; y++) {
-		for (int32_t x = 0; x < CHUNK_DIM_XZ; x++) for (int32_t z = 0; z < CHUNK_DIM_XZ; z++) {
-			SetBlock(gameInfo->chunks, 1, x, y, z);
-		}
-	}
-#else
-	SetBlock(gameInfo->chunks, 1, 0, 0, 0);
-#endif
+	gameInfo->numChunks = NUM_CHUNKS;
 
-	UpdateMeshList(gameInfo, graphicsApi, 0);
-
-#if 0
 	noise::perlin::State* state = new noise::perlin::State;
 	ZERO_MEM(state, sizeof(*state));
 	noise::perlin::Initialize(state, 0);
-	float f = noise::perlin::Noise(state, 0.5f, 0.5f, 0.0f);
-	f = f;
+
+	//gameInfo->chunkGrid = new Chunk*[NUM_CHUNKS];
+	//ZERO_MEM(gameInfo->chunkGrid, sizeof(Chunk*) * NUM_CHUNKS);
+	gameInfo->chunkPool = new Chunk[NUM_CHUNKS];
+	ZERO_MEM(gameInfo->chunkPool, sizeof(Chunk) * NUM_CHUNKS);
+
+
+	// Initialize chunk grid
+#if 0
+	for (size_t cx = 0; cx < CHUNK_DIAMETER; cx++) {
+		for (size_t cz = 0; cz < CHUNK_DIAMETER; cz++) {
+			gameInfo->chunkGrid[cx * CHUNK_DIAMETER + cz] = &gameInfo->chunkPool[cx * CHUNK_DIAMETER + cz];
+		}
+	}
 #endif
+
+	// Initialize chunk pool
+	for (size_t cx = 0; cx < CHUNK_DIAMETER; cx++) {
+		for (size_t cz = 0; cz < CHUNK_DIAMETER; cz++) {
+			// Blocks
+			// Floor
+			for (int32_t bz = 0; bz < CHUNK_DIM_XZ; bz++) {
+				for (int32_t bx = 0; bx < CHUNK_DIM_XZ; bx++) {
+					SetBlock(&gameInfo->chunkPool[cx * CHUNK_DIAMETER + cz], 1, bx, 0 , bz);
+				}
+			}
+			for (int32_t x = 0; x <= cx; x++) {
+				// X
+				SetBlock(&gameInfo->chunkPool[cx * CHUNK_DIAMETER + cz], 1, 1, x + 1, 0);
+			}
+			for (int32_t z = 0; z <= cz; z++) {
+				// Z
+				SetBlock(&gameInfo->chunkPool[cx * CHUNK_DIAMETER + cz], 1, 0, z + 1, 1);
+			}
+#if 0
+			for (int32_t bz = 0; bz < CHUNK_DIM_XZ; bz++) {
+				for (int32_t bx = 0; bx < CHUNK_DIM_XZ; bx++) {
+					// Get height from noise
+					float sample = noise::perlin::Noise(state, 0.01f * (float)(cx * CHUNK_DIM_XZ + bx), 0.01f * (float)(cz * CHUNK_DIM_XZ + bz), 0.0f);
+					size_t height = (size_t)(sample * 64) + 32;
+					if (height < 0) height = 0;
+					if (height >= CHUNK_DIM_Y) height = CHUNK_DIM_Y - 1;
+					//for (int32_t y = 0; y < height; y++) {
+					SetBlock(&gameInfo->chunkPool[cx * CHUNK_DIAMETER + cz], 1, bx, (int32_t)height, bz);
+					//}
+				}
+			}
+#endif
+		}
+	}
+
+	UpdateMeshList(gameInfo, graphicsApi, 0);
 }
 
 void MoveCamera() {
