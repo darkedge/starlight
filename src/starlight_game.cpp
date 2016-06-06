@@ -160,7 +160,7 @@ static void UpdateMeshList(GameInfo* gameInfo, graphics::API* graphics, int32_t)
 			for (int32_t y = 0; y < CHUNK_DIM_Y; y++) {
 				for (int32_t bz = 0; bz < CHUNK_DIM_XZ; bz++) {
 					for (int32_t bx = 0; bx < CHUNK_DIM_XZ; bx++) {
-						if (GetBlock(&gameInfo->chunkPool[cx * CHUNK_DIM_XZ + cz], bx, y, bz) != 0) {
+						if (GetBlock(&gameInfo->chunkPool[cx * CHUNK_DIAMETER + cz], bx, y, bz) != 0) {
 							AddCubeTriangles(&mesh,
 								(int32_t) (cx * CHUNK_DIM_XZ + bx),
 								y,
