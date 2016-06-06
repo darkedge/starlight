@@ -6,7 +6,7 @@
 // Assumption: Block size = 1
 
 // TODO: Hard-coded for now
-#define CHUNK_DIM_XZ 4
+#define CHUNK_DIM_XZ 16
 #define CHUNK_DIM_Y 128
 
 #define CHUNK_RADIUS 2

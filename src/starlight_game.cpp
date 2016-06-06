@@ -233,26 +233,11 @@ void Init(GameInfo* gameInfo, graphics::API* graphicsApi) {
 	for (size_t cx = 0; cx < CHUNK_DIAMETER; cx++) {
 		for (size_t cz = 0; cz < CHUNK_DIAMETER; cz++) {
 			// Blocks
-			// Floor
-			for (int32_t bz = 0; bz < CHUNK_DIM_XZ; bz++) {
-				for (int32_t bx = 0; bx < CHUNK_DIM_XZ; bx++) {
-					SetBlock(&gameInfo->chunkPool[cx * CHUNK_DIAMETER + cz], 1, bx, 0 , bz);
-				}
-			}
-			for (int32_t x = 0; x <= cx; x++) {
-				// X
-				SetBlock(&gameInfo->chunkPool[cx * CHUNK_DIAMETER + cz], 1, 1, x + 1, 0);
-			}
-			for (int32_t z = 0; z <= cz; z++) {
-				// Z
-				SetBlock(&gameInfo->chunkPool[cx * CHUNK_DIAMETER + cz], 1, 0, z + 1, 1);
-			}
-#if 0
 			for (int32_t bz = 0; bz < CHUNK_DIM_XZ; bz++) {
 				for (int32_t bx = 0; bx < CHUNK_DIM_XZ; bx++) {
 					// Get height from noise
 					float sample = noise::perlin::Noise(state, 0.01f * (float)(cx * CHUNK_DIM_XZ + bx), 0.01f * (float)(cz * CHUNK_DIM_XZ + bz), 0.0f);
-					size_t height = (size_t)(sample * 64) + 32;
+					size_t height = (size_t)(sample * 32) + 64;
 					if (height < 0) height = 0;
 					if (height >= CHUNK_DIM_Y) height = CHUNK_DIM_Y - 1;
 					//for (int32_t y = 0; y < height; y++) {
@@ -260,7 +245,6 @@ void Init(GameInfo* gameInfo, graphics::API* graphicsApi) {
 					//}
 				}
 			}
-#endif
 		}
 	}
 
