@@ -23,8 +23,8 @@ struct Camera {
 };
 
 static Transform s_player;
-static float s_oldX;
-static float s_oldZ;
+static int32_t s_oldX;
+static int32_t s_oldZ;
 //static Camera s_camera;
 static float s_deltaTime;
 
@@ -277,7 +277,9 @@ void UpdateChunkGrid(GameInfo* gameInfo) {
 				// Missing chunk found, find space in chunkPool
 				assert(numFreeChunks > 0);
 				Chunk* freeChunk = freeChunks[--numFreeChunks];
-				GenerateChunk(freeChunk, x, z);
+				int32_t cx = (int32_t) (x + basePos.x - CHUNK_RADIUS);
+				int32_t cz = (int32_t) (z + basePos.z - CHUNK_RADIUS);
+				GenerateChunk(freeChunk, cx, cz);
 				gameInfo->chunkGrid[x * CHUNK_DIAMETER + z] = freeChunk;
 				freeChunk->inUse = true;
 			}
@@ -292,8 +294,8 @@ void Init(GameInfo* gameInfo, graphics::API* graphicsApi) {
 
 	// TODO: Move this stuff after a main menu etc.
 	s_player.SetPosition(8.5f, 65.0f, 8.5f);
-	s_oldX = s_player.GetPosition().getX();
-	s_oldZ = s_player.GetPosition().getZ();
+	s_oldX = (int32_t) floorf(s_player.GetPosition().getX() / CHUNK_DIM_XZ);
+	s_oldZ = (int32_t) floorf(s_player.GetPosition().getZ() / CHUNK_DIM_XZ);
 
 	// Cube
 	//s_mesh = CreateCube(graphicsApi);
@@ -424,8 +426,8 @@ void __cdecl game::UpdateGame(GameInfo* gameInfo, graphics::API* graphicsApi) {
 	MoveCamera();
 	input::EndFrame();
 
-	float newX = floorf(s_player.GetPosition().getX());
-	float newZ = floorf(s_player.GetPosition().getZ());
+	int32_t newX = (int32_t) floorf(s_player.GetPosition().getX() / CHUNK_DIM_XZ);
+	int32_t newZ = (int32_t) floorf(s_player.GetPosition().getZ() / CHUNK_DIM_XZ);
 	if (newX != s_oldX || newZ != s_oldZ) {
 		UpdateChunkGrid(gameInfo);
 		s_oldX = newX;
