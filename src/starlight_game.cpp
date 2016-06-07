@@ -210,9 +210,8 @@ void Init(GameInfo* gameInfo, graphics::API* graphicsApi) {
 
 	gameInfo->numChunks = NUM_CHUNKS;
 
-	noise::perlin::State* state = new noise::perlin::State;
-	ZERO_MEM(state, sizeof(*state));
-	noise::perlin::Initialize(state, 0);
+	noise::perlin::State state = { 0 };
+	noise::perlin::Initialize(&state, 0);
 
 	//gameInfo->chunkGrid = new Chunk*[NUM_CHUNKS];
 	//ZERO_MEM(gameInfo->chunkGrid, sizeof(Chunk*) * NUM_CHUNKS);
@@ -236,7 +235,7 @@ void Init(GameInfo* gameInfo, graphics::API* graphicsApi) {
 			for (int32_t bz = 0; bz < CHUNK_DIM_XZ; bz++) {
 				for (int32_t bx = 0; bx < CHUNK_DIM_XZ; bx++) {
 					// Get height from noise
-					float sample = noise::perlin::Noise(state, 0.01f * (float)(cx * CHUNK_DIM_XZ + bx), 0.01f * (float)(cz * CHUNK_DIM_XZ + bz), 0.0f);
+					float sample = noise::perlin::Noise(&state, 0.01f * (float)(cx * CHUNK_DIM_XZ + bx), 0.01f * (float)(cz * CHUNK_DIM_XZ + bz), 0.0f);
 					size_t height = (size_t)(sample * 32) + 64;
 					if (height < 0) height = 0;
 					if (height >= CHUNK_DIM_Y) height = CHUNK_DIM_Y - 1;
