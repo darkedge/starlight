@@ -33,7 +33,8 @@ typedef uint16_t Block;
 // Then you don't need to check for every subtype.
 
 struct Chunk {
-	bool active;
+	// Need this bool because position is always a valid value
+	bool inUse;
 	// XZ position
 	int2 position;
 	Block blocks[CHUNK_DIM_XZ * CHUNK_DIM_Y * CHUNK_DIM_XZ];
@@ -126,7 +127,7 @@ struct GameInfo {
 	// Below this line is all game state
 
 	// A grid of pointers to chunks in chunkPool
-	//Chunk** chunkGrid;
+	Chunk** chunkGrid;
 	// Unordered chunk data
 	Chunk* chunkPool;
 

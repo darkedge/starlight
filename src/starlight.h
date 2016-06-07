@@ -76,8 +76,15 @@ inline float2 operator*(float f, float2 vec) {
 
 struct int2 {
 	int x;
-	int y;
+	int z;
 };
+
+inline int2 operator-(int2 a, int2 b) {
+	return int2{
+		a.x - b.x,
+		a.z - b.z,
+	};
+}
 
 struct byte3 {
 	uint8_t x;
