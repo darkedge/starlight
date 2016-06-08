@@ -72,6 +72,10 @@ CALCULATE_DELTA_TIME(CalculateDeltaTime) {
 	LARGE_INTEGER currentTime;
 	QueryPerformanceCounter(&currentTime);
 	float deltaTime = float(currentTime.QuadPart - s_lastTime.QuadPart) / float(s_perfFreq.QuadPart);
+	// Breakpoint guard
+	if (deltaTime > 1.0f) {
+		deltaTime = 1.0f / 60.0f;
+	}
 	s_lastTime = currentTime;
 	return deltaTime;
 }
