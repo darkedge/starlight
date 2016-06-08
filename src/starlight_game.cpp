@@ -179,6 +179,7 @@ static void UpdateMeshList(GameInfo* gameInfo, graphics::API* graphics, int32_t)
 
 
 void GenerateChunk(Chunk* chunk, int32_t cx, int32_t cz) {
+	logger::LogInfo(std::string("Generating chunk: ") + std::to_string(cx) + ", " + std::to_string(cz));
 	chunk->position.x = cx;
 	chunk->position.z = cz;
 
@@ -252,7 +253,7 @@ void UpdateChunkGrid(GameInfo* gameInfo, graphics::API* graphicsApi) {
 		for (size_t z = 0; z < CHUNK_DIAMETER; z++) {
 			Chunk* chunk = &gameInfo->chunkPool[x * CHUNK_DIAMETER + z];
 			int2 relativePos = chunk->position - basePos;
-			if (chunk->loaded && abs(relativePos.x) < CHUNK_RADIUS && abs(relativePos.z) < CHUNK_RADIUS) {
+			if (chunk->loaded && abs(relativePos.x) <= CHUNK_RADIUS && abs(relativePos.z) <= CHUNK_RADIUS) {
 				// Set grid pointer to this chunk
 				size_t gx = ((size_t) relativePos.x + CHUNK_RADIUS);
 				size_t gz = ((size_t) relativePos.z + CHUNK_RADIUS);
@@ -298,7 +299,7 @@ void Init(GameInfo* gameInfo, graphics::API* graphicsApi) {
 	ImGui::SetCurrentContext(gameInfo->imguiState);
 
 	// TODO: Move this stuff after a main menu etc.
-	s_player.SetPosition(8.5f, 65.0f, 8.5f);
+	s_player.SetPosition(8.5f, 2.0f, 8.5f);
 	s_oldX = (int32_t) floorf(s_player.GetPosition().getX() / CHUNK_DIM_XZ);
 	s_oldZ = (int32_t) floorf(s_player.GetPosition().getZ() / CHUNK_DIM_XZ);
 
@@ -432,6 +433,7 @@ void __cdecl game::UpdateGame(GameInfo* gameInfo, graphics::API* graphicsApi) {
 	int32_t newX = (int32_t) floorf(s_player.GetPosition().getX() / CHUNK_DIM_XZ);
 	int32_t newZ = (int32_t) floorf(s_player.GetPosition().getZ() / CHUNK_DIM_XZ);
 	if (newX != s_oldX || newZ != s_oldZ) {
+		logger::LogInfo(std::string("new position: ") + std::to_string(newX) + std::string(", ") + std::to_string(newZ));
 		UpdateChunkGrid(gameInfo, graphicsApi);
 		s_oldX = newX;
 		s_oldZ = newZ;
@@ -473,7 +475,7 @@ void __cdecl game::UpdateGame(GameInfo* gameInfo, graphics::API* graphicsApi) {
 #endif
 
 	// Does not render, but builds display lists
-	//logger::Render();
+	logger::Render();
 
 	graphicsApi->SetPlayerCameraViewMatrix(s_player.GetViewMatrix());
 
