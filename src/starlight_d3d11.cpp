@@ -945,6 +945,10 @@ int32_t graphics::D3D11::AddChunk(TempMesh *tempMesh) {
 	D3D11_SUBRESOURCE_DATA resourceData = {0};
 	resourceData.pSysMem = vertices;
 
+	if (mesh.vertexBuffer) {
+		mesh.vertexBuffer->Release();
+		mesh.vertexBuffer = nullptr;
+	}
 	HRESULT hr = sl_pd3dDevice->CreateBuffer(&vertexBufferDesc, &resourceData, &mesh.vertexBuffer);
 	if (FAILED(hr))
 	{
@@ -963,6 +967,10 @@ int32_t graphics::D3D11::AddChunk(TempMesh *tempMesh) {
 	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 	resourceData.pSysMem = indices;
 
+	if (mesh.indexBuffer) {
+		mesh.indexBuffer->Release();
+		mesh.indexBuffer = nullptr;
+	}
 	hr = sl_pd3dDevice->CreateBuffer(&indexBufferDesc, &resourceData, &mesh.indexBuffer);
 	if (FAILED(hr))
 	{
@@ -989,9 +997,12 @@ int32_t graphics::D3D11::AddChunk(TempMesh *tempMesh) {
 	//cmd.pipelineState.rasterizerState = rasterizerstate
 	cmd.worldMatrix = Matrix4::identity();
 
-	g_drawCommands[g_numDrawCommands++] = cmd;
+	//g_drawCommands[g_numDrawCommands++] = cmd;
+	//return g_numMeshes++;
 
-	return g_numMeshes++;
+	g_drawCommands[0] = cmd;
+	g_numDrawCommands = 1;
+	return 0;
 }
 
 void graphics::D3D11::SetPlayerCameraViewMatrix(Matrix4 viewMatrix) {

@@ -141,8 +141,6 @@ static void AddCubeTriangles(TempMesh *mesh, int32_t x, int32_t y, int32_t z) {
 	mesh->indices.insert(mesh->indices.end(), indices, indices + _countof(indices));
 }
 
-static int32_t s_chunk;
-
 // MeshList contains all meshes related to chunks.
 static void UpdateMeshList(GameInfo* gameInfo, graphics::API* graphics, int32_t) {
 	assert(gameInfo);
@@ -176,7 +174,7 @@ static void UpdateMeshList(GameInfo* gameInfo, graphics::API* graphics, int32_t)
 	}
 
 	//graphics
-	s_chunk = graphics->AddChunk(&mesh);
+	graphics->AddChunk(&mesh);
 }
 
 
@@ -221,7 +219,7 @@ void GenerateChunk(Chunk* chunk, int32_t cx, int32_t cz) {
 	}
 }
 
-void UpdateChunkGrid(GameInfo* gameInfo) {
+void UpdateChunkGrid(GameInfo* gameInfo, graphics::API* graphicsApi) {
 	assert(gameInfo->chunkGrid);
 	assert(gameInfo->chunkPool);
 
@@ -254,7 +252,7 @@ void UpdateChunkGrid(GameInfo* gameInfo) {
 		for (size_t z = 0; z < CHUNK_DIAMETER; z++) {
 			Chunk* chunk = &gameInfo->chunkPool[x * CHUNK_DIAMETER + z];
 			int2 relativePos = chunk->position - basePos;
-			if (chunk->inUse && abs(relativePos.x) < CHUNK_RADIUS && abs(relativePos.z) < CHUNK_RADIUS) {
+			if (chunk->loaded && abs(relativePos.x) < CHUNK_RADIUS && abs(relativePos.z) < CHUNK_RADIUS) {
 				// Set grid pointer to this chunk
 				size_t gx = ((size_t) relativePos.x + CHUNK_RADIUS);
 				size_t gz = ((size_t) relativePos.z + CHUNK_RADIUS);
@@ -263,7 +261,11 @@ void UpdateChunkGrid(GameInfo* gameInfo) {
 				gameInfo->chunkGrid[gx * CHUNK_DIAMETER + gz] = chunk;
 			}
 			else {
-				chunk->inUse = false;
+				if (chunk->loaded) {
+					// Loaded chunk is too far away, unload
+					//graphicsApi->RemoveChunk(chunk);
+					chunk->loaded = false;
+				}
 				assert(numFreeChunks < NUM_CHUNKS);
 				freeChunks[numFreeChunks++] = chunk;
 			}
@@ -281,10 +283,13 @@ void UpdateChunkGrid(GameInfo* gameInfo) {
 				int32_t cz = (int32_t) (z + basePos.z - CHUNK_RADIUS);
 				GenerateChunk(freeChunk, cx, cz);
 				gameInfo->chunkGrid[x * CHUNK_DIAMETER + z] = freeChunk;
-				freeChunk->inUse = true;
+				freeChunk->loaded = true;
+				//AddChunk(freeChunk, graphicsApi);
 			}
 		}
 	}
+
+	UpdateMeshList(gameInfo, graphicsApi, 0);
 }
 
 void Init(GameInfo* gameInfo, graphics::API* graphicsApi) {
@@ -322,15 +327,13 @@ void Init(GameInfo* gameInfo, graphics::API* graphicsApi) {
 	//noise::perlin::State state = { 0 };
 	//noise::perlin::Initialize(&state, 0);
 
-	// Chunkpool needs to be zeromem'd (set inUse flags to false)
+	// Chunkpool needs to be zeromem'd (set loaded flags to false)
 	gameInfo->chunkPool = new Chunk[NUM_CHUNKS];
 	ZERO_MEM(gameInfo->chunkPool, sizeof(Chunk) * NUM_CHUNKS);
 
 	// chunkGrid is cleared at UpdateChunkGrid
 	gameInfo->chunkGrid = new Chunk*[NUM_CHUNKS];
-	UpdateChunkGrid(gameInfo);
-
-	UpdateMeshList(gameInfo, graphicsApi, 0);
+	UpdateChunkGrid(gameInfo, graphicsApi);
 }
 
 void MoveCamera() {
@@ -429,7 +432,7 @@ void __cdecl game::UpdateGame(GameInfo* gameInfo, graphics::API* graphicsApi) {
 	int32_t newX = (int32_t) floorf(s_player.GetPosition().getX() / CHUNK_DIM_XZ);
 	int32_t newZ = (int32_t) floorf(s_player.GetPosition().getZ() / CHUNK_DIM_XZ);
 	if (newX != s_oldX || newZ != s_oldZ) {
-		UpdateChunkGrid(gameInfo);
+		UpdateChunkGrid(gameInfo, graphicsApi);
 		s_oldX = newX;
 		s_oldZ = newZ;
 	}

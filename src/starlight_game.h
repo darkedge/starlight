@@ -34,7 +34,7 @@ typedef uint16_t Block;
 
 struct Chunk {
 	// Need this bool because position is always a valid value
-	bool inUse;
+	bool loaded;
 	// XZ position
 	int2 position;
 	Block blocks[CHUNK_DIM_XZ * CHUNK_DIM_Y * CHUNK_DIM_XZ];
