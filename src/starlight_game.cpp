@@ -440,7 +440,6 @@ void __cdecl game::UpdateGame(GameInfo* gameInfo, graphics::API* graphicsApi) {
 	// Debug menu
 	bool stay = true;
 	ImGui::Begin("game::UpdateGame", &stay);
-	//if (ImGui::Button("Load D3D10")) gameInfo->graphicsApi = EGraphicsApi::D3D10;
 	//if (ImGui::Button("Load D3D11")) gameInfo->graphicsApi = EGraphicsApi::D3D11;
 	Vector3 pos = s_player.GetPosition();
 	ImGui::InputFloat3("Position", (float*) &pos);
@@ -486,25 +485,6 @@ void __cdecl game::UpdateGame(GameInfo* gameInfo, graphics::API* graphicsApi) {
 	// For this, they need to be registered
 	// Mods cannot be added at runtime (that would be overkill)
 	// So that array can be allocated once
-#endif
-
-
-#if 0
-	renderer::SetPerCamera(&s_perCamera);
-
-	auto windowSize = platform::GetWindowSize();
-	if (windowSize.x > 0 && windowSize.y > 0) {
-		glm::mat4 projectionMatrix = glm::perspectiveFovLH(glm::radians(45.0f), (float)windowSize.x, (float)windowSize.y, 0.1f, 100.0f);
-		s_perCamera.view = s_player.GetViewMatrix();
-		s_perFrame.projection = projectionMatrix;
-		renderer::SetPerFrame(&s_perFrame);
-
-		s_viewport.Width = static_cast<float>(windowSize.x);
-		s_viewport.Height = static_cast<float>(windowSize.y);
-	}
-
-	//s_perObject.worldMatrix = glm::mat4();
-	s_perObject.worldMatrix = glm::translate(Vector3(0, 0, 10.0f));
 #endif
 }
 
