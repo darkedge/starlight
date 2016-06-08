@@ -156,11 +156,11 @@ static void UpdateMeshList(GameInfo* gameInfo, graphics::API* graphics, int32_t)
 	// Y->Z->X
 	for (size_t cx = 0; cx < CHUNK_DIAMETER; cx++) {
 		for (size_t cz = 0; cz < CHUNK_DIAMETER; cz++) {
+			Chunk* chunk = gameInfo->chunkGrid[cx * CHUNK_DIAMETER + cz];
 			// Blocks
 			for (int32_t y = 0; y < CHUNK_DIM_Y; y++) {
 				for (int32_t bz = 0; bz < CHUNK_DIM_XZ; bz++) {
 					for (int32_t bx = 0; bx < CHUNK_DIM_XZ; bx++) {
-						Chunk* chunk = gameInfo->chunkGrid[cx * CHUNK_DIAMETER + cz];
 						if (GetBlock(chunk, bx, y, bz) != 0) {
 							AddCubeTriangles(&mesh,
 								chunk->position.x * CHUNK_DIM_XZ + bx,
@@ -265,7 +265,7 @@ void UpdateChunkGrid(GameInfo* gameInfo, graphics::API* graphicsApi) {
 				if (chunk->loaded) {
 					// Loaded chunk is too far away, unload
 					//graphicsApi->RemoveChunk(chunk);
-					chunk->loaded = false;
+					ZERO_MEM(chunk, sizeof(Chunk));
 				}
 				assert(numFreeChunks < NUM_CHUNKS);
 				freeChunks[numFreeChunks++] = chunk;
