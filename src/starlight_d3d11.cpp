@@ -936,6 +936,7 @@ int32_t graphics::D3D11::AddChunk(TempMesh *tempMesh) {
 	int32_t* indices = tempMesh->indices.data();
 	int32_t numIndices = (int32_t) tempMesh->indices.size();
 
+#if 0
 	// Create an initialize the vertex buffer.
 	D3D11_BUFFER_DESC vertexBufferDesc = {0};
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
@@ -981,6 +982,61 @@ int32_t graphics::D3D11::AddChunk(TempMesh *tempMesh) {
 		const char c_szName [] = "Mesh Index Buffer";
 		mesh.indexBuffer->SetPrivateData(WKPDID_D3DDebugObjectName, sizeof(c_szName) - 1, c_szName);
 	}
+#else
+	// From ImGui
+	HRESULT hr;
+	static int32_t g_VertexBufferSize, g_IndexBufferSize;
+	// Create and grow vertex/index buffers if needed
+	if (!mesh.vertexBuffer || g_VertexBufferSize < numVertices)
+	{
+		if (mesh.vertexBuffer) { mesh.vertexBuffer->Release(); mesh.vertexBuffer = nullptr; }
+		g_VertexBufferSize = numVertices + 5000; // TODO: Tweak the extra space
+		D3D11_BUFFER_DESC desc = { 0 };
+		desc.Usage = D3D11_USAGE_DYNAMIC;
+		desc.ByteWidth = g_VertexBufferSize * sizeof(Vertex);
+		desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+		hr = sl_pd3dDevice->CreateBuffer(&desc, nullptr, &mesh.vertexBuffer);
+		if (FAILED(hr))
+		{
+			__debugbreak();
+		}
+	}
+	if (!mesh.indexBuffer || g_IndexBufferSize < numIndices)
+	{
+		if (mesh.indexBuffer) { mesh.indexBuffer->Release(); mesh.indexBuffer = nullptr; }
+		g_IndexBufferSize = numIndices + 10000;
+		D3D11_BUFFER_DESC desc = { 0 };
+		desc.Usage = D3D11_USAGE_DYNAMIC;
+		desc.ByteWidth = g_IndexBufferSize * sizeof(int32_t);
+		desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+		desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+		hr = sl_pd3dDevice->CreateBuffer(&desc, nullptr, &mesh.indexBuffer);
+		if (FAILED(hr))
+		{
+			__debugbreak();
+		}
+	}
+
+	// Copy and convert all vertices into a single contiguous buffer
+	D3D11_MAPPED_SUBRESOURCE vtx_resource, idx_resource;
+	hr = sl_pd3dDeviceContext->Map(mesh.vertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &vtx_resource);
+	if (FAILED(hr))
+	{
+		__debugbreak();
+	}
+	hr = sl_pd3dDeviceContext->Map(mesh.indexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &idx_resource);
+	if (FAILED(hr))
+	{
+		__debugbreak();
+	}
+	Vertex* vtx_dst = (Vertex*)vtx_resource.pData;
+	int32_t* idx_dst = (int32_t*)idx_resource.pData;
+	memcpy(vtx_dst, vertices, numVertices * sizeof(Vertex));
+	memcpy(idx_dst, indices, numIndices * sizeof(int32_t));
+	sl_pd3dDeviceContext->Unmap(mesh.vertexBuffer, 0);
+	sl_pd3dDeviceContext->Unmap(mesh.indexBuffer, 0);
+#endif
 
 	mesh.numIndices = numIndices;
 
