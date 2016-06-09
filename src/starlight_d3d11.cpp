@@ -929,7 +929,7 @@ bool graphics::D3D11::ImGuiHandleEvent(WindowEvent* e) {
 int32_t graphics::D3D11::AddChunk(TempMesh *tempMesh) { 
 	assert(sl_pd3dDevice);
 
-	MeshD3D11 mesh = {0};
+	static MeshD3D11 mesh;
 
 	Vertex* vertices = tempMesh->vertices.data();
 	int32_t numVertices = (int32_t) tempMesh->vertices.size();
@@ -997,6 +997,7 @@ int32_t graphics::D3D11::AddChunk(TempMesh *tempMesh) {
 		desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 		desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 		hr = sl_pd3dDevice->CreateBuffer(&desc, nullptr, &mesh.vertexBuffer);
+		g_LogInfo(std::string("Resize vertex buffer: ") + std::to_string(desc.ByteWidth) + std::string(" bytes."));
 		if (FAILED(hr))
 		{
 			__debugbreak();
@@ -1012,6 +1013,7 @@ int32_t graphics::D3D11::AddChunk(TempMesh *tempMesh) {
 		desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 		desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 		hr = sl_pd3dDevice->CreateBuffer(&desc, nullptr, &mesh.indexBuffer);
+		g_LogInfo(std::string("Resize index buffer: ") + std::to_string(desc.ByteWidth) + std::string(" bytes."));
 		if (FAILED(hr))
 		{
 			__debugbreak();
