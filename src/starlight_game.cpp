@@ -183,8 +183,10 @@ void GenerateChunk(Chunk* chunk, int32_t cx, int32_t cz) {
 	chunk->position.x = cx;
 	chunk->position.z = cz;
 
+	noise::perlin::State state = { 0 };
+	noise::perlin::Initialize(&state, 0);
+
 	// Blocks
-#if 0
 	for (int32_t bz = 0; bz < CHUNK_DIM_XZ; bz++) {
 		for (int32_t bx = 0; bx < CHUNK_DIM_XZ; bx++) {
 			// Get height from noise
@@ -193,11 +195,11 @@ void GenerateChunk(Chunk* chunk, int32_t cx, int32_t cz) {
 			if (height < 0) height = 0;
 			if (height >= CHUNK_DIM_Y) height = CHUNK_DIM_Y - 1;
 			//for (int32_t y = 0; y < height; y++) {
-			SetBlock(&gameInfo->chunkPool[cx * CHUNK_DIAMETER + cz], 1, bx, (int32_t)height, bz);
+			SetBlock(chunk, 1, bx, (int32_t)height, bz);
 			//}
 		}
 	}
-#endif
+#if 0
 	// Floor
 	for (int32_t bz = 0; bz < CHUNK_DIM_XZ; bz++) {
 		for (int32_t bx = 0; bx < CHUNK_DIM_XZ; bx++) {
@@ -218,6 +220,7 @@ void GenerateChunk(Chunk* chunk, int32_t cx, int32_t cz) {
 		// Z
 		SetBlock(chunk, 1, 0, z, 1);
 	}
+#endif
 }
 
 void UpdateChunkGrid(GameInfo* gameInfo, graphics::API* graphicsApi) {
@@ -324,9 +327,6 @@ void Init(GameInfo* gameInfo, graphics::API* graphicsApi) {
 	// Create one chunk
 
 	gameInfo->numChunks = NUM_CHUNKS;
-
-	//noise::perlin::State state = { 0 };
-	//noise::perlin::Initialize(&state, 0);
 
 	// Chunkpool needs to be zeromem'd (set loaded flags to false)
 	gameInfo->chunkPool = new Chunk[NUM_CHUNKS];
