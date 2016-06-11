@@ -142,7 +142,7 @@ static void AddCubeTriangles(TempMesh *mesh, int32_t x, int32_t y, int32_t z) {
 }
 
 // MeshList contains all meshes related to chunks.
-static void UpdateMeshList(GameInfo* gameInfo, graphics::API* graphics, int32_t) {
+static void UpdateMeshList(GameInfo* gameInfo, int32_t) {
 	assert(gameInfo);
 	assert(gameInfo->chunkPool);
 	//assert(gameInfo->chunkGrid);
@@ -174,7 +174,7 @@ static void UpdateMeshList(GameInfo* gameInfo, graphics::API* graphics, int32_t)
 	}
 
 	//graphics
-	graphics->AddChunk(&mesh);
+	gameInfo->gfxFuncs->AddChunk(&mesh);
 }
 
 
@@ -223,7 +223,7 @@ void GenerateChunk(Chunk* chunk, int32_t cx, int32_t cz) {
 #endif
 }
 
-void UpdateChunkGrid(GameInfo* gameInfo, graphics::API* graphicsApi) {
+void UpdateChunkGrid(GameInfo* gameInfo) {
 	assert(gameInfo->chunkGrid);
 	assert(gameInfo->chunkPool);
 
@@ -293,10 +293,10 @@ void UpdateChunkGrid(GameInfo* gameInfo, graphics::API* graphicsApi) {
 		}
 	}
 
-	UpdateMeshList(gameInfo, graphicsApi, 0);
+	UpdateMeshList(gameInfo, 0);
 }
 
-void Init(GameInfo* gameInfo, graphics::API* graphicsApi) {
+void Init(GameInfo* gameInfo) {
 	input::Init();
 
 	ImGui::SetCurrentContext(gameInfo->imguiState);
@@ -399,9 +399,9 @@ void MoveCamera() {
 
 extern "C"
 __declspec(dllexport)
-void __cdecl game::UpdateGame(GameInfo* gameInfo, graphics::API* graphicsApi) {
+void __cdecl game::UpdateGame(GameInfo* gameInfo) {
 	if(!gameInfo->initialized) {
-		Init(gameInfo, graphicsApi);
+		Init(gameInfo);
 		gameInfo->initialized = true;
 	}
 
@@ -427,14 +427,14 @@ void __cdecl game::UpdateGame(GameInfo* gameInfo, graphics::API* graphicsApi) {
 		ImGui::EndMainMenuBar();
 	}
 
-	MoveCamera();
+	MoveCamera(gameInfo);
 	input::EndFrame();
 
 	int32_t newX = (int32_t) floorf(s_player.GetPosition().getX() / CHUNK_DIM_XZ);
 	int32_t newZ = (int32_t) floorf(s_player.GetPosition().getZ() / CHUNK_DIM_XZ);
 	if (newX != s_oldX || newZ != s_oldZ) {
 		logger::LogInfo(std::string("new position: ") + std::to_string(newX) + std::string(", ") + std::to_string(newZ));
-		UpdateChunkGrid(gameInfo, graphicsApi);
+		UpdateChunkGrid(gameInfo);
 		s_oldX = newX;
 		s_oldZ = newZ;
 	}
@@ -477,7 +477,7 @@ void __cdecl game::UpdateGame(GameInfo* gameInfo, graphics::API* graphicsApi) {
 	// Does not render, but builds display lists
 	logger::Render();
 
-	graphicsApi->SetPlayerCameraViewMatrix(s_player.GetViewMatrix());
+	gameInfo->gfxFuncs->SetPlayerCameraViewMatrix(s_player.GetViewMatrix());
 
 	// Gameplay code concept
 #if 0

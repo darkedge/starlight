@@ -231,6 +231,7 @@ unsigned int __stdcall MyThreadFunction(void*) {
 	//memory::SimpleArena arena(heapArea);
 	//gameInfo.allocator = &arena;
 	gameInfo.CalculateDeltaTime = CalculateDeltaTime;
+	gameInfo.gfxFuncs = g_renderApi;
 
 	// ENet
 #if 0
@@ -255,8 +256,10 @@ unsigned int __stdcall MyThreadFunction(void*) {
 		if (gameInfo.graphicsApi != graphicsApi) {
 			if (LoadRenderApiImpl(gameInfo.graphicsApi)) {
 				graphicsApi = gameInfo.graphicsApi;
+				g_renderApi = gameInfo.gfxFuncs;
 			} else {
 				gameInfo.graphicsApi = graphicsApi;
+				gameInfo.gfxFuncs = g_renderApi;
 			}
 		}
 
@@ -264,7 +267,7 @@ unsigned int __stdcall MyThreadFunction(void*) {
 
 		g_renderApi->ImGuiNewFrame();
 
-		s_gameFuncs.UpdateGame(&gameInfo, g_renderApi);
+		s_gameFuncs.UpdateGame(&gameInfo);
 
 		// Rendering
 		if (std::try_lock(s_mutex)) {

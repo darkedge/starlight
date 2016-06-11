@@ -106,6 +106,7 @@ struct ImGuiContext;
 struct GameInfo {
 	bool initialized;
 	EGraphicsApi graphicsApi;
+	graphics::API *gfxFuncs;
 
 	// Maybe move this to a struct
 	ENetHost* server;
@@ -149,7 +150,7 @@ struct GameInfo {
 #define DESTROY_LOGGER(name) void name()
 typedef DESTROY_LOGGER(DestroyLoggerFunc);
 
-#define GAME_UPDATE(name) void name(struct GameInfo *,class graphics::API *)
+#define GAME_UPDATE(name) void name(struct GameInfo *)
 typedef GAME_UPDATE(UpdateGameFunc);
 
 #define GAME_DESTROY(name) void name()
@@ -168,7 +169,7 @@ struct GameFuncs {
 namespace game {
 	extern "C"
 	__declspec(dllexport)
-	void __cdecl UpdateGame(GameInfo* gameInfo, graphics::API* graphicsApi);
+	void __cdecl UpdateGame(GameInfo* gameInfo);
 
 	extern "C"
 	__declspec(dllexport)
