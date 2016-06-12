@@ -41,7 +41,7 @@ static byte3 Offsets[ESide::Count] = {
 
 // Currently returns by value... maybe we want to return by pointer when Block becomes a struct?
 // Or use SoA and this keeps being an integer.
-__inline Block GetBlock(Chunk* chunk, int32_t x, int32_t y, int32_t z) {
+__inline Block GetBlock(Chunk* chunk, size_t x, size_t y, size_t z) {
 	assert(chunk);
 	assert(x >= 0 && x < CHUNK_DIM_XZ);
 	assert(y >= 0 && y < CHUNK_DIM_Y);
@@ -49,7 +49,7 @@ __inline Block GetBlock(Chunk* chunk, int32_t x, int32_t y, int32_t z) {
 	return chunk->blocks[y * CHUNK_DIM_XZ * CHUNK_DIM_XZ + z * CHUNK_DIM_XZ + x];
 }
 
-inline void SetBlock(Chunk* chunk, Block block, int32_t x, int32_t y, int32_t z) {
+inline void SetBlock(Chunk* chunk, Block block, size_t x, size_t y, size_t z) {
 	// Chunk storage format: Y->Z->X
 	//  / Y
 	//  --> X
@@ -296,15 +296,35 @@ void UpdateChunkGrid(GameInfo* gameInfo) {
 	UpdateMeshList(gameInfo, 0);
 }
 
+void ResetPosition(GameInfo* gameInfo) {
+	// Set chunk position of player
+	s_oldX = (int32_t)floorf(s_player.GetPosition().getX() / CHUNK_DIM_XZ);
+	s_oldZ = (int32_t)floorf(s_player.GetPosition().getZ() / CHUNK_DIM_XZ);
+
+	UpdateChunkGrid(gameInfo);
+
+	Chunk* chunk = gameInfo->chunkGrid[CHUNK_RADIUS * CHUNK_DIAMETER + CHUNK_RADIUS];
+
+	size_t x = CHUNK_DIM_XZ / 2;
+	size_t z = CHUNK_DIM_XZ / 2;
+	size_t y = CHUNK_DIM_Y - 1;
+	// Find first 
+	while (!GetBlock(chunk, x, y, z)) {
+		y--;
+		if (y >= CHUNK_DIM_Y) {
+			y = CHUNK_DIM_Y / 2;
+			break;
+		}
+	}
+
+	s_player.SetPosition(x + 0.5f, (float) y + 2.5f, z + 0.5f);
+	s_player.SetRotation(Quat(0, 0, 0, 1));
+}
+
 void Init(GameInfo* gameInfo) {
 	input::Init();
 
 	ImGui::SetCurrentContext(gameInfo->imguiState);
-
-	// TODO: Move this stuff after a main menu etc.
-	s_player.SetPosition(8.5f, 2.0f, 8.5f);
-	s_oldX = (int32_t) floorf(s_player.GetPosition().getX() / CHUNK_DIM_XZ);
-	s_oldZ = (int32_t) floorf(s_player.GetPosition().getZ() / CHUNK_DIM_XZ);
 
 	// Cube
 	//s_mesh = CreateCube(graphicsApi);
@@ -334,10 +354,12 @@ void Init(GameInfo* gameInfo) {
 
 	// chunkGrid is cleared at UpdateChunkGrid
 	gameInfo->chunkGrid = new Chunk*[NUM_CHUNKS];
-	UpdateChunkGrid(gameInfo, graphicsApi);
+	
+
+	ResetPosition(gameInfo);
 }
 
-void MoveCamera() {
+void MoveCamera(GameInfo* gameInfo) {
 	// TODO: probably need to check if i'm typing something in ImGui or not
 	static float2 lastRotation;
 	static float2 currentRotation;
@@ -350,9 +372,8 @@ void MoveCamera() {
 	// Reset
 	if (ImGui::GetIO().KeysDown[(intptr_t)'R'])
 	{
+		ResetPosition(gameInfo);
 		currentRotation = lastRotation = { 0, 0 };
-		s_player.SetPosition(8.5f, 65.0f, 8.5f);
-		s_player.SetRotation(Quat(0, 0, 0, 1));
 	}
 
 	//if (input::IsMouseGrabbed())
