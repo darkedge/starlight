@@ -324,8 +324,6 @@ int CALLBACK WinMain(
 	LPSTR       lpCmdLine,
 	int         nCmdShow)
 {
-	//std::set_new_handler(memory::no_memory);
-
 	s_gameFuncs = LoadGameFuncs();
 	if (!s_gameFuncs.valid) {
 		return 1;
