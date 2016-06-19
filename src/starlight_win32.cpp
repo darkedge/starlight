@@ -386,16 +386,28 @@ int CALLBACK WinMain(
 	AdjustWindowRect(&windowRect, WS_OVERLAPPEDWINDOW, FALSE);
 
 	// Calculate window dimensions
-	auto windowWidth = windowRect.right - windowRect.left;
-	auto windowHeight = windowRect.bottom - windowRect.top;
+	LONG windowWidth = windowRect.right - windowRect.left;
+	LONG windowHeight = windowRect.bottom - windowRect.top;
+	LONG x = desktopRect.right / 2 - windowWidth / 2;
+	LONG y = desktopRect.bottom / 2 - windowHeight / 2;
+
+#ifdef _DEBUG
+	// Move the screen to the right monitor on JOTARO
+	wchar_t computerName[MAX_COMPUTERNAME_LENGTH + 1];
+	DWORD dwSize = sizeof(computerName);
+	GetComputerNameW(computerName, &dwSize);
+	if (wcscmp(computerName, L"JOTARO") == 0) {
+		x += 1920;
+	}
+#endif
 
 	s_hwnd = CreateWindowExW(
 		0L,
 		className,
 		L"Starlight",
 		WS_OVERLAPPEDWINDOW,
-		desktopRect.right / 2 - windowWidth / 2,
-		desktopRect.bottom / 2 - windowHeight / 2,
+		x,
+		y,
 		windowWidth,
 		windowHeight,
 		nullptr,
@@ -405,7 +417,7 @@ int CALLBACK WinMain(
 		);
 
 	// Show the window
-	ShowWindow(s_hwnd, SW_SHOWDEFAULT);
+	ShowWindow(s_hwnd, SW_MAXIMIZE);
 	UpdateWindow(s_hwnd);
 
 	assert(CoInitializeEx(NULL, COINIT_MULTITHREADED) == S_OK);
