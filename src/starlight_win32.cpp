@@ -77,6 +77,10 @@ CALCULATE_DELTA_TIME(CalculateDeltaTime) {
 	return deltaTime;
 }
 
+CREATE_THREAD(mjCreateThread) {
+
+}
+
 GameFuncs LoadGameFuncs() {
 	GameFuncs gameFuncs;
 	ZERO_MEM(&gameFuncs, sizeof(GameFuncs));
@@ -223,6 +227,7 @@ unsigned int __stdcall MyThreadFunction(void*) {
 	//gameInfo.allocator = &arena;
 	gameInfo.CalculateDeltaTime = CalculateDeltaTime;
 	gameInfo.gfxFuncs = g_renderApi;
+	gameInfo.CreateThread = mjCreateThread;
 
 	// ENet
 #if 0

@@ -4,7 +4,6 @@
 #include "starlight_transform.h"
 #include "starlight_graphics.h"
 #include <vectormath/scalar/cpp/vectormath_aos.h>
-//#include <process.h> // ?
 #include <cstdint>
 #include "imgui.h"
 #include "Network.h"
@@ -357,6 +356,9 @@ void Init(GameInfo* gameInfo) {
 	
 
 	ResetPosition(gameInfo);
+
+	// Background chunk loading thread
+	gameInfo->CreateThread();
 }
 
 void MoveCamera(GameInfo* gameInfo) {

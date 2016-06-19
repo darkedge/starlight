@@ -87,6 +87,9 @@ typedef _ENetPeer ENetPeer;
 #define CALCULATE_DELTA_TIME(name) float name()
 typedef CALCULATE_DELTA_TIME(CalculateDeltaTimeFunc);
 
+#define CREATE_THREAD(name) void name()
+typedef CREATE_THREAD(CreateThreadFunc);
+
 #if 0
 #define MALLOC_FUNC(name) void* MEM_CALL name(std::size_t)
 typedef MALLOC_FUNC(MallocFunc);
@@ -118,6 +121,7 @@ struct GameInfo {
 	//memory::SimpleArena* allocator;
 
 	CalculateDeltaTimeFunc* CalculateDeltaTime;
+	CreateThreadFunc* CreateThread;
 #if 0
 	MallocFunc* Malloc;
 	FreeFunc* Free;
