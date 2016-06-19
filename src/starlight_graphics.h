@@ -13,7 +13,6 @@ struct TempMesh;
 enum EGraphicsApi {
 	D3D12,
 	D3D11,
-	D3D10,
 	OpenGL,
 	Vulkan,
 	Metal,
@@ -65,13 +64,6 @@ namespace graphics {
 		PURE_VIRTUAL(FUNC_09);
 	};
 
-
-#ifdef STARLIGHT_D3D10
-#define D3D10_IMPL(_c) RENDERER_IMPLEMENTATION(_c)
-#else
-#define D3D10_IMPL(_c)
-#endif
-
 #ifdef STARLIGHT_D3D11
 #define D3D11_IMPL(_c) RENDERER_IMPLEMENTATION(_c)
 #else
@@ -105,7 +97,6 @@ namespace graphics {
 
 // Support listing
 #ifdef _WIN32
-	D3D10_IMPL(D3D10);
 	D3D11_IMPL(D3D11);
 	D3D12_IMPL(D3D12);
 	VULKAN_IMPL(Vulkan);

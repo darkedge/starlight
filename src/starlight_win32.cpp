@@ -64,9 +64,6 @@ static GameFuncs s_gameFuncs;
 #ifdef STARLIGHT_D3D11
 static graphics::D3D11 d3d11;
 #endif
-#ifdef STARLIGHT_D3D10
-static graphics::D3D10 d3d10;
-#endif
 
 CALCULATE_DELTA_TIME(CalculateDeltaTime) {
 	LARGE_INTEGER currentTime;
@@ -121,12 +118,6 @@ GameFuncs LoadGameFuncs() {
 bool LoadRenderApiImpl(EGraphicsApi e) {
 	graphics::API* api = nullptr;
 	switch (e) {
-#ifdef STARLIGHT_D3D10
-	case D3D10:
-		logger::LogInfo("Loading D3D10...");
-		api = &d3d10;
-		break;
-#endif
 #ifdef STARLIGHT_D3D11
 	case D3D11:
 		g_LogInfo("Loading D3D11...");
