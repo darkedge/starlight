@@ -81,7 +81,6 @@ function DeleteFile($file) {
 DeleteFile("7za.exe")
 DeleteFile("7za920.zip")
 DeleteFile("enet-1.3.13.tar*")
-#DeleteFile("glm-0.9.7.2.zip")
 DeleteFile("lua-5.1.5.tar*")
 DeleteFile("protobuf-2.6.1.zip")
 DeleteFile("v1.3.0.zip")
