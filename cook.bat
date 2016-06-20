@@ -1,7 +1,7 @@
 @echo off
 pushd %~dp0
 set Destination=%1
-if [%1]==[] set Destination="Win32\bin\assets"
+if [%1]==[] set Destination="vs\Win32\bin\assets"
 
 mkdir %Destination%
 
