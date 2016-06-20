@@ -47,13 +47,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\starlight_win32_ub.cpp" />
+    <ClCompile Include="..\src\starlight_win32_ub.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="src\SimplePixelShader.hlsl">
+    <FxCompile Include="..\src\SimplePixelShader.hlsl">
       <ShaderType>Pixel</ShaderType>
     </FxCompile>
-    <FxCompile Include="src\SimpleVertexShader.hlsl">
+    <FxCompile Include="..\src\SimpleVertexShader.hlsl">
       <ShaderType>Vertex</ShaderType>
     </FxCompile>
   </ItemGroup>

@@ -66,7 +66,7 @@
       <SDLCheck>true</SDLCheck>
       <ExceptionHandling>Disabled</ExceptionHandling>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <AdditionalIncludeDirectories>external\protobuf-2.6.1\src;external\imgui-1.49;external\flatbuffers-1.3.0\include;external\sce_vectormath-master\include;external\enet-1.3.13\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\external\protobuf-2.6.1\..\src;..\external\imgui-1.49;..\external\flatbuffers-1.3.0\include;..\external\sce_vectormath-master\include;..\external\enet-1.3.13\include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
@@ -76,7 +76,7 @@
       <SDLCheck>true</SDLCheck>
       <ExceptionHandling>Disabled</ExceptionHandling>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <AdditionalIncludeDirectories>external\protobuf-2.6.1\src;external\imgui-1.49;external\flatbuffers-1.3.0\include;external\sce_vectormath-master\include;external\enet-1.3.13\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\external\protobuf-2.6.1\..\src;..\external\imgui-1.49;..\external\flatbuffers-1.3.0\include;..\external\sce_vectormath-master\include;..\external\enet-1.3.13\include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
@@ -88,7 +88,7 @@
       <SDLCheck>true</SDLCheck>
       <ExceptionHandling>Disabled</ExceptionHandling>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <AdditionalIncludeDirectories>external\protobuf-2.6.1\src;external\imgui-1.49;external\flatbuffers-1.3.0\include;external\sce_vectormath-master\include;external\enet-1.3.13\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\external\protobuf-2.6.1\..\src;..\external\imgui-1.49;..\external\flatbuffers-1.3.0\include;..\external\sce_vectormath-master\include;..\external\enet-1.3.13\include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -104,7 +104,7 @@
       <SDLCheck>true</SDLCheck>
       <ExceptionHandling>Disabled</ExceptionHandling>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <AdditionalIncludeDirectories>external\protobuf-2.6.1\src;external\imgui-1.49;external\flatbuffers-1.3.0\include;external\sce_vectormath-master\include;external\enet-1.3.13\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\external\protobuf-2.6.1\..\src;..\external\imgui-1.49;..\external\flatbuffers-1.3.0\include;..\external\sce_vectormath-master\include;..\external\enet-1.3.13\include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -113,36 +113,36 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\Addon.cpp" />
-    <ClCompile Include="src\Block.cpp" />
-    <ClCompile Include="src\JobSystem.cpp" />
-    <ClCompile Include="src\Network.cpp" />
-    <ClCompile Include="src\Noise.cpp" />
-    <ClCompile Include="src\Observer.cpp" />
-    <ClCompile Include="src\starlight_external.cpp" />
-    <ClCompile Include="src\starlight_game.cpp" />
-    <ClCompile Include="src\starlight_input.cpp" />
-    <ClCompile Include="src\starlight_log.cpp" />
-    <ClCompile Include="src\starlight_graphics.cpp" />
-    <ClCompile Include="src\starlight_transform.cpp" />
-    <ClCompile Include="src\WorldGen.cpp" />
+    <ClCompile Include="..\src\Addon.cpp" />
+    <ClCompile Include="..\src\Block.cpp" />
+    <ClCompile Include="..\src\JobSystem.cpp" />
+    <ClCompile Include="..\src\Network.cpp" />
+    <ClCompile Include="..\src\Noise.cpp" />
+    <ClCompile Include="..\src\Observer.cpp" />
+    <ClCompile Include="..\src\starlight_..\external.cpp" />
+    <ClCompile Include="..\src\starlight_game.cpp" />
+    <ClCompile Include="..\src\starlight_input.cpp" />
+    <ClCompile Include="..\src\starlight_log.cpp" />
+    <ClCompile Include="..\src\starlight_graphics.cpp" />
+    <ClCompile Include="..\src\starlight_transform.cpp" />
+    <ClCompile Include="..\src\WorldGen.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\JobSystem.h" />
-    <ClInclude Include="src\Network.h" />
-    <ClInclude Include="src\Noise.h" />
-    <ClInclude Include="src\Observer.h" />
-    <ClInclude Include="src\starlight.h" />
-    <ClInclude Include="src\starlight_config.h" />
-    <ClInclude Include="src\starlight_math.h" />
-    <ClInclude Include="src\starlight_memory.h" />
-    <ClInclude Include="src\starlight_game.h" />
-    <ClInclude Include="src\starlight_input.h" />
-    <ClInclude Include="src\starlight_log.h" />
-    <ClInclude Include="src\starlight_graphics.h" />
-    <ClInclude Include="src\starlight_transform.h" />
-    <ClInclude Include="src\starlight_thread_safe_queue.h" />
-    <ClInclude Include="src\WorldGen.h" />
+    <ClInclude Include="..\src\JobSystem.h" />
+    <ClInclude Include="..\src\Network.h" />
+    <ClInclude Include="..\src\Noise.h" />
+    <ClInclude Include="..\src\Observer.h" />
+    <ClInclude Include="..\src\starlight.h" />
+    <ClInclude Include="..\src\starlight_config.h" />
+    <ClInclude Include="..\src\starlight_math.h" />
+    <ClInclude Include="..\src\starlight_memory.h" />
+    <ClInclude Include="..\src\starlight_game.h" />
+    <ClInclude Include="..\src\starlight_input.h" />
+    <ClInclude Include="..\src\starlight_log.h" />
+    <ClInclude Include="..\src\starlight_graphics.h" />
+    <ClInclude Include="..\src\starlight_transform.h" />
+    <ClInclude Include="..\src\starlight_thread_safe_queue.h" />
+    <ClInclude Include="..\src\WorldGen.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
