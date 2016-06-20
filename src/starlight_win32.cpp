@@ -21,9 +21,9 @@
 #include "starlight_thread_safe_queue.h"
 #include "starlight_log.h"
 #include "starlight_memory.h"
-#include <process.h>
 
-#include "Objbase.h"
+#include <process.h> // _beginthreadex
+#include <Objbase.h> // CoInitializeEx, CoUninitialize
 
 #ifdef SL_CL
   static const wchar_t* s_dllName = L"starlight.dll";
