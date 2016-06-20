@@ -77,8 +77,37 @@ CALCULATE_DELTA_TIME(CalculateDeltaTime) {
 	return deltaTime;
 }
 
-CREATE_THREAD(mjCreateThread) {
+struct FunctionCall {
+	GameThread* func;
+	void* args;
+	HANDLE confirmation;
+};
 
+unsigned int __stdcall mjThreadProc(void* lpParameter) {
+	// Copy 
+	FunctionCall call = *((FunctionCall*)lpParameter);
+	// Signal that we copied the function call
+	SetEvent(call.confirmation);
+	// Call function
+	call.func(call.args);
+
+	return S_OK;
+}
+
+void* mjCreateThread(GameThread* func, void* args) {
+	// We wrap the arguments in a struct to avoid specifying a calling convention
+	FunctionCall call;
+	call.func = func;
+	call.args = args;
+	call.confirmation = CreateEventExW(nullptr, nullptr, 0, 0);
+
+	unsigned threadID; // TODO: Use this?
+	HANDLE thread = (HANDLE)_beginthreadex(nullptr, 0, mjThreadProc, &call, 0, &threadID);
+	assert(thread);
+	// Wait for the function call to be copied to the thread
+	WaitForSingleObject(call.confirmation, INFINITE);
+	// Return thread as void*
+	return thread;
 }
 
 GameFuncs LoadGameFuncs() {

@@ -82,12 +82,15 @@ typedef _ENetHost ENetHost;
 struct _ENetPeer;
 typedef _ENetPeer ENetPeer;
 
+#define GAME_THREAD(name) void name(void*)
+typedef GAME_THREAD(GameThread);
+
 // Functions visible to game from platform
 
 #define CALCULATE_DELTA_TIME(name) float name()
 typedef CALCULATE_DELTA_TIME(CalculateDeltaTimeFunc);
 
-#define CREATE_THREAD(name) void name()
+#define CREATE_THREAD(name) void* name(GameThread*, void*)
 typedef CREATE_THREAD(CreateThreadFunc);
 
 #if 0

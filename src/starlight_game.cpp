@@ -320,6 +320,10 @@ void ResetPosition(GameInfo* gameInfo) {
 	s_player.SetRotation(Quat(0, 0, 0, 1));
 }
 
+GAME_THREAD(test) {
+	_CrtDbgBreak();
+}
+
 void Init(GameInfo* gameInfo) {
 	input::Init();
 
@@ -358,7 +362,7 @@ void Init(GameInfo* gameInfo) {
 	ResetPosition(gameInfo);
 
 	// Background chunk loading thread
-	gameInfo->CreateThread();
+	gameInfo->CreateThread(&test, nullptr);
 }
 
 void MoveCamera(GameInfo* gameInfo) {
