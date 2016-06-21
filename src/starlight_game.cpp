@@ -320,8 +320,9 @@ void ResetPosition(GameInfo* gameInfo) {
 	s_player.SetRotation(Quat(0, 0, 0, 1));
 }
 
-GAME_THREAD(test) {
-	_CrtDbgBreak();
+GAME_THREAD(test);
+void test(void* args) {
+	
 }
 
 void Init(GameInfo* gameInfo) {

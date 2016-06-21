@@ -86,26 +86,35 @@ struct FunctionCall {
 unsigned int __stdcall mjThreadProc(void* lpParameter) {
 	// Copy 
 	FunctionCall call = *((FunctionCall*)lpParameter);
+
 	// Signal that we copied the function call
 	SetEvent(call.confirmation);
+
 	// Call function
 	call.func(call.args);
 
 	return S_OK;
 }
 
+CREATE_THREAD(mjCreateThread);
 void* mjCreateThread(GameThread* func, void* args) {
 	// We wrap the arguments in a struct to avoid specifying a calling convention
-	FunctionCall call;
+	FunctionCall call = { 0 };
 	call.func = func;
 	call.args = args;
-	call.confirmation = CreateEventExW(nullptr, nullptr, 0, 0);
+	call.confirmation = CreateEventA(NULL, FALSE, FALSE, NULL);
+	assert(call.confirmation);
 
+	// Start the thread
 	unsigned threadID; // TODO: Use this?
 	HANDLE thread = (HANDLE)_beginthreadex(nullptr, 0, mjThreadProc, &call, 0, &threadID);
 	assert(thread);
+
 	// Wait for the function call to be copied to the thread
-	WaitForSingleObject(call.confirmation, INFINITE);
+	DWORD result = WaitForSingleObject(call.confirmation, INFINITE);
+	assert(result != WAIT_FAILED);
+	CloseHandle(call.confirmation);
+
 	// Return thread as void*
 	return thread;
 }
