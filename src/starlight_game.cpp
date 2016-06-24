@@ -22,8 +22,7 @@ struct Camera {
 };
 
 static Transform s_player;
-static int32_t s_oldX;
-static int32_t s_oldZ;
+static int2 s_oldPlayerChunkPosition;
 //static Camera s_camera;
 static float s_deltaTime;
 
@@ -59,6 +58,13 @@ inline void SetBlock(Chunk* chunk, Block block, size_t x, size_t y, size_t z) {
 	assert(y >= 0 && y < CHUNK_DIM_Y);
 	assert(z >= 0 && z < CHUNK_DIM_XZ);
 	chunk->blocks[y * CHUNK_DIM_XZ * CHUNK_DIM_XZ + z * CHUNK_DIM_XZ + x] = block;
+}
+
+static int2 WorldToChunkPosition(float x, float z) {
+	int2 xz;
+	xz.x = (int32_t)floorf(x / CHUNK_DIM_XZ);
+	xz.z = (int32_t)floorf(z / CHUNK_DIM_XZ);
+	return xz;
 }
 
 struct ChunkMesh {
@@ -140,40 +146,28 @@ static void AddCubeTriangles(TempMesh *mesh, int32_t x, int32_t y, int32_t z) {
 	mesh->indices.insert(mesh->indices.end(), indices, indices + _countof(indices));
 }
 
-// MeshList contains all meshes related to chunks.
-static void UpdateMeshList(GameInfo* gameInfo, int32_t) {
-	assert(gameInfo);
-	assert(gameInfo->chunkPool);
-	//assert(gameInfo->chunkGrid);
-	// Remove meshes related to this chunk
+static void* GenerateChunkMesh(GameInfo* gameInfo, Chunk* chunk, int32_t cx, int32_t cz) {
 	// Maybe this needs to be queued
-
-	//meshList->remove[meshList->numRemove++] = chunkIdx;
+	// TODO: Smarter meshing
 
 	TempMesh mesh;
 
 	// Y->Z->X
-	for (size_t cx = 0; cx < CHUNK_DIAMETER; cx++) {
-		for (size_t cz = 0; cz < CHUNK_DIAMETER; cz++) {
-			Chunk* chunk = gameInfo->chunkGrid[cx * CHUNK_DIAMETER + cz];
-			// Blocks
-			for (int32_t y = 0; y < CHUNK_DIM_Y; y++) {
-				for (int32_t bz = 0; bz < CHUNK_DIM_XZ; bz++) {
-					for (int32_t bx = 0; bx < CHUNK_DIM_XZ; bx++) {
-						if (GetBlock(chunk, bx, y, bz) != 0) {
-							AddCubeTriangles(&mesh,
-								chunk->position.x * CHUNK_DIM_XZ + bx,
-								y,
-								chunk->position.z * CHUNK_DIM_XZ + bz);
-						}
-					}
+	for (int32_t y = 0; y < CHUNK_DIM_Y; y++) {
+		for (int32_t bz = 0; bz < CHUNK_DIM_XZ; bz++) {
+			for (int32_t bx = 0; bx < CHUNK_DIM_XZ; bx++) {
+				if (GetBlock(chunk, bx, y, bz) != 0) {
+					AddCubeTriangles(&mesh,
+						cx * CHUNK_DIM_XZ + bx,
+						y,
+						cz * CHUNK_DIM_XZ + bz);
 				}
 			}
 		}
 	}
 
 	//graphics
-	gameInfo->gfxFuncs->AddChunk(&mesh);
+	return gameInfo->gfxFuncs->AddChunk(&mesh);
 }
 
 
@@ -226,49 +220,71 @@ void UpdateChunkGrid(GameInfo* gameInfo) {
 	assert(gameInfo->chunkGrid);
 	assert(gameInfo->chunkPool);
 
-	// Clear chunkGrid
-	ZERO_MEM(gameInfo->chunkGrid, sizeof(Chunk*) * NUM_CHUNKS);
+	Vector3 pos = s_player.GetPosition();
+	int2 chunkPos = WorldToChunkPosition(pos.getX(), pos.getZ());
+	// ox = 1; nx = 3; dx = 2; chunk[0][2] = chunk[2][2] ;
+	// ox = 3; nx = 1; dx = -2; chunk[4][2] = chunk[2][2];
+	// max(abs(dx)) == CHUNK_DIAMETER - 1
 
-	// define center chunk
-	// TODO: Might be wise to store integer position in player struct
-	// And then offset with a float?
-	Vector3 playerPos = s_player.GetPosition();
+	// chunk[x, z] = chunk[x + dx, z + dz]
+	// if we moved in the negative axis, iterate backwards
 
-	// TODO: Maybe change this when player is at the edge of the world
-	// So we don't drop chunks for nothing
-	int32_t px = (int32_t)floorf(playerPos.getX() / CHUNK_DIM_XZ);
-	int32_t pz = (int32_t)floorf(playerPos.getZ() / CHUNK_DIM_XZ);
-	int2 basePos = { px, pz };
+	int2 dc = chunkPos - s_oldPlayerChunkPosition;
+	if (dc.x != 0) {
+		ptrdiff_t dx = dc.x > 0 ? 1 : -1;
+		size_t x = dc.x > 0 ? 0 : CHUNK_DIAMETER - 1;
+		for (; x + dc.x < CHUNK_DIAMETER; x += dx) {
+			for (size_t z = 0; z < CHUNK_DIAMETER; z++) {
+				gameInfo->chunkGrid[x * CHUNK_DIAMETER + z] = gameInfo->chunkGrid[(x + dc.x) * CHUNK_DIAMETER + z];
+			}
+		}
+		// Clear the rest
+		for (; x < CHUNK_DIAMETER; x += dx) {
+			for (size_t z = 0; z < CHUNK_DIAMETER; z++) {
+				VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
+				// TODO: Only unload if needed
+				chunk->chunk->loaded = false;
+				if (chunk->data) {
+					gameInfo->gfxFuncs->DeleteChunk(chunk->data);
+				}
+				ZERO_MEM(chunk, sizeof(VisibleChunk));
+			}
+		}
+	}
+	if (dc.z != 0) {
+		ptrdiff_t dz = dc.z > 0 ? 1 : -1;
+		size_t z = dc.z > 0 ? 0 : CHUNK_DIAMETER - 1;
+		for (size_t x = 0; x < CHUNK_DIAMETER; x++) {
+			for (; z + dc.z < CHUNK_DIAMETER; z += dz) {
+				gameInfo->chunkGrid[x * CHUNK_DIAMETER + z] = gameInfo->chunkGrid[x * CHUNK_DIAMETER + (z + dc.z)];
+			}
+		}
+		// Clear the rest
+		for (size_t x = 0; x < CHUNK_DIAMETER; x++) {
+			for (; z < CHUNK_DIAMETER; z += dz) {
+				VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
+				// TODO: Only unload if needed
+				chunk->chunk->loaded = false;
+				if (chunk->data) {
+					gameInfo->gfxFuncs->DeleteChunk(chunk->data);
+				}
+				ZERO_MEM(chunk, sizeof(VisibleChunk));
+			}
+		}
+	}
 
-	// pseudocode:
-	// clear grid
-	// find persistent chunks: flag active, add to grid
-	// mark rest inactive
-	
-	// find missing grid entries
-	// call addChunk and add to grid
+	// TODO: Chunks that need to load may already exist in the pool through chunk loaders/multiplayer
 
+	// Pointers to the chunk pool
 	Chunk* freeChunks[CHUNK_DIAMETER * CHUNK_DIAMETER] = { 0 };
 	size_t numFreeChunks = 0;
 
+	// List gaps in chunk pool
 	for (size_t x = 0; x < CHUNK_DIAMETER; x++) {
 		for (size_t z = 0; z < CHUNK_DIAMETER; z++) {
+			// TODO: This cannot work when we separate loaded chunks and visible chunks
 			Chunk* chunk = &gameInfo->chunkPool[x * CHUNK_DIAMETER + z];
-			int2 relativePos = chunk->position - basePos;
-			if (chunk->loaded && abs(relativePos.x) <= CHUNK_RADIUS && abs(relativePos.z) <= CHUNK_RADIUS) {
-				// Set grid pointer to this chunk
-				size_t gx = ((size_t) relativePos.x + CHUNK_RADIUS);
-				size_t gz = ((size_t) relativePos.z + CHUNK_RADIUS);
-				assert(gx < CHUNK_DIAMETER);
-				assert(gz < CHUNK_DIAMETER);
-				gameInfo->chunkGrid[gx * CHUNK_DIAMETER + gz] = chunk;
-			}
-			else {
-				if (chunk->loaded) {
-					// Loaded chunk is too far away, unload
-					//graphicsApi->RemoveChunk(chunk);
-					ZERO_MEM(chunk, sizeof(Chunk));
-				}
+			if (!chunk->loaded) {
 				assert(numFreeChunks < NUM_CHUNKS);
 				freeChunks[numFreeChunks++] = chunk;
 			}
@@ -278,31 +294,31 @@ void UpdateChunkGrid(GameInfo* gameInfo) {
 	// Add missing chunks
 	for (size_t x = 0; x < CHUNK_DIAMETER; x++) {
 		for (size_t z = 0; z < CHUNK_DIAMETER; z++) {
-			if (!gameInfo->chunkGrid[x * CHUNK_DIAMETER + z]) {
+			VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
+			if (!chunk->chunk) {
 				// Missing chunk found, find space in chunkPool
 				assert(numFreeChunks > 0);
 				Chunk* freeChunk = freeChunks[--numFreeChunks];
-				int32_t cx = (int32_t) (x + basePos.x - CHUNK_RADIUS);
-				int32_t cz = (int32_t) (z + basePos.z - CHUNK_RADIUS);
+				int32_t cx = (int32_t) (x + chunkPos.x - CHUNK_RADIUS);
+				int32_t cz = (int32_t) (z + chunkPos.z - CHUNK_RADIUS);
 				GenerateChunk(freeChunk, cx, cz);
-				gameInfo->chunkGrid[x * CHUNK_DIAMETER + z] = freeChunk;
+				chunk->chunk = freeChunk;
 				freeChunk->loaded = true;
-				//AddChunk(freeChunk, graphicsApi);
+				// TODO: This still embeds raw positional data instead of using a transform in rendering
+				chunk->data = GenerateChunkMesh(gameInfo, freeChunk, cx, cz);
 			}
 		}
 	}
-
-	UpdateMeshList(gameInfo, 0);
 }
 
 void ResetPosition(GameInfo* gameInfo) {
 	// Set chunk position of player
-	s_oldX = (int32_t)floorf(s_player.GetPosition().getX() / CHUNK_DIM_XZ);
-	s_oldZ = (int32_t)floorf(s_player.GetPosition().getZ() / CHUNK_DIM_XZ);
+	Vector3 pos = s_player.GetPosition();
+	s_oldPlayerChunkPosition = WorldToChunkPosition(pos.getX(), pos.getZ());
 
 	UpdateChunkGrid(gameInfo);
 
-	Chunk* chunk = gameInfo->chunkGrid[CHUNK_RADIUS * CHUNK_DIAMETER + CHUNK_RADIUS];
+	Chunk* chunk = gameInfo->chunkGrid[CHUNK_RADIUS * CHUNK_DIAMETER + CHUNK_RADIUS].chunk;
 
 	size_t x = CHUNK_DIM_XZ / 2;
 	size_t z = CHUNK_DIM_XZ / 2;
@@ -356,9 +372,8 @@ void Init(GameInfo* gameInfo) {
 	gameInfo->chunkPool = new Chunk[NUM_CHUNKS];
 	ZERO_MEM(gameInfo->chunkPool, sizeof(Chunk) * NUM_CHUNKS);
 
-	// chunkGrid is cleared at UpdateChunkGrid
-	gameInfo->chunkGrid = new Chunk*[NUM_CHUNKS];
-	
+	gameInfo->chunkGrid = new VisibleChunk[NUM_CHUNKS];
+	ZERO_MEM(gameInfo->chunkGrid, sizeof(VisibleChunk) * NUM_CHUNKS);
 
 	ResetPosition(gameInfo);
 
@@ -458,13 +473,12 @@ void __cdecl game::UpdateGame(GameInfo* gameInfo) {
 	MoveCamera(gameInfo);
 	input::EndFrame();
 
-	int32_t newX = (int32_t) floorf(s_player.GetPosition().getX() / CHUNK_DIM_XZ);
-	int32_t newZ = (int32_t) floorf(s_player.GetPosition().getZ() / CHUNK_DIM_XZ);
-	if (newX != s_oldX || newZ != s_oldZ) {
-		logger::LogInfo(std::string("new position: ") + std::to_string(newX) + std::string(", ") + std::to_string(newZ));
+	Vector3 pos = s_player.GetPosition();
+	int2 newXZ = WorldToChunkPosition(pos.getX(), pos.getZ());
+	if (newXZ != s_oldPlayerChunkPosition) {
+		logger::LogInfo(std::string("new position: ") + std::to_string(newXZ.x) + std::string(", ") + std::to_string(newXZ.z));
 		UpdateChunkGrid(gameInfo);
-		s_oldX = newX;
-		s_oldZ = newZ;
+		s_oldPlayerChunkPosition = newXZ;
 	}
 
 	network::Update(gameInfo);
@@ -474,7 +488,6 @@ void __cdecl game::UpdateGame(GameInfo* gameInfo) {
 	bool stay = true;
 	ImGui::Begin("game::UpdateGame", &stay);
 	//if (ImGui::Button("Load D3D11")) gameInfo->graphicsApi = EGraphicsApi::D3D11;
-	Vector3 pos = s_player.GetPosition();
 	ImGui::InputFloat3("Position", (float*) &pos);
 	Quat rot = s_player.GetRotation();
 	ImGui::InputFloat4("Rotation", (float*)&rot);

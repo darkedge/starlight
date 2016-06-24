@@ -86,6 +86,14 @@ inline int2 operator-(int2 a, int2 b) {
 	};
 }
 
+inline bool operator==(int2 a, int2 b) {
+	return a.x == b.x && a.z == b.z;
+}
+
+inline bool operator!=(int2 a, int2 b) {
+	return !(a == b);
+}
+
 struct byte3 {
 	uint8_t x;
 	uint8_t y;

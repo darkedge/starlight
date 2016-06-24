@@ -926,17 +926,17 @@ bool graphics::D3D11::ImGuiHandleEvent(WindowEvent* e) {
 	return (ImGui_ImplDX11_WndProcHandler(e->hWnd, e->msg, e->wParam, e->lParam) == 1);
 }
 
-int32_t graphics::D3D11::AddChunk(TempMesh *tempMesh) { 
+void* graphics::D3D11::AddChunk(TempMesh *tempMesh) { 
 	assert(sl_pd3dDevice);
 
-	static MeshD3D11 mesh;
+	MeshD3D11 mesh = { 0 };
 
 	Vertex* vertices = tempMesh->vertices.data();
 	int32_t numVertices = (int32_t) tempMesh->vertices.size();
 	int32_t* indices = tempMesh->indices.data();
 	int32_t numIndices = (int32_t) tempMesh->indices.size();
 
-#if 0
+#if 1
 	// Create an initialize the vertex buffer.
 	D3D11_BUFFER_DESC vertexBufferDesc = {0};
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
@@ -946,10 +946,6 @@ int32_t graphics::D3D11::AddChunk(TempMesh *tempMesh) {
 	D3D11_SUBRESOURCE_DATA resourceData = {0};
 	resourceData.pSysMem = vertices;
 
-	if (mesh.vertexBuffer) {
-		mesh.vertexBuffer->Release();
-		mesh.vertexBuffer = nullptr;
-	}
 	HRESULT hr = sl_pd3dDevice->CreateBuffer(&vertexBufferDesc, &resourceData, &mesh.vertexBuffer);
 	if (FAILED(hr))
 	{
@@ -968,10 +964,6 @@ int32_t graphics::D3D11::AddChunk(TempMesh *tempMesh) {
 	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 	resourceData.pSysMem = indices;
 
-	if (mesh.indexBuffer) {
-		mesh.indexBuffer->Release();
-		mesh.indexBuffer = nullptr;
-	}
 	hr = sl_pd3dDevice->CreateBuffer(&indexBufferDesc, &resourceData, &mesh.indexBuffer);
 	if (FAILED(hr))
 	{
@@ -1053,14 +1045,16 @@ int32_t graphics::D3D11::AddChunk(TempMesh *tempMesh) {
 	cmd.pipelineState.pixelShader = s_pixelShader;
 	cmd.pipelineState.vertexShader = s_vertexShader;
 	//cmd.pipelineState.rasterizerState = rasterizerstate
+	
+	// TODO: Use chunk position to create offset
+	// (currently baked in vertex data)
 	cmd.worldMatrix = Matrix4::identity();
 
-	//g_drawCommands[g_numDrawCommands++] = cmd;
-	//return g_numMeshes++;
+	g_drawCommands[g_numDrawCommands++] = cmd;
 
-	g_drawCommands[0] = cmd;
-	g_numDrawCommands = 1;
-	return 0;
+	void* ret = (void*) &g_meshes[g_numMeshes];
+	g_numMeshes++;
+	return ret;
 }
 
 void graphics::D3D11::SetPlayerCameraViewMatrix(Matrix4 viewMatrix) {
@@ -1069,6 +1063,15 @@ void graphics::D3D11::SetPlayerCameraViewMatrix(Matrix4 viewMatrix) {
 
 void graphics::D3D11::SetProjectionMatrix(Matrix4 projectionMatrix) {
 	s_projection = projectionMatrix;
+}
+
+// TODO: We're not cleaning up g_meshes or g_numMeshes
+// Meaning that we'll go out of bounds
+void graphics::D3D11::DeleteChunk(void* data) {
+	MeshD3D11* mesh = (MeshD3D11*)data;
+	mesh->vertexBuffer->Release();
+	mesh->vertexBuffer->Release();
+	// TODO: Check if ZERO_MEM is needed
 }
 
 #endif // defined(_WIN32) && defined(STARLIGHT_D3D11)

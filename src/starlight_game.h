@@ -70,6 +70,11 @@ struct Player {
 
 };
 
+struct VisibleChunk {
+	Chunk* chunk;
+	void* data;
+};
+
 #include <vector>
 struct TempMesh {
 	// lazy
@@ -135,7 +140,7 @@ struct GameInfo {
 	// Below this line is all game state
 
 	// A grid of pointers to chunks in chunkPool
-	Chunk** chunkGrid;
+	VisibleChunk* chunkGrid;
 	// Unordered chunk data
 	Chunk* chunkPool;
 
