@@ -1070,8 +1070,8 @@ void graphics::D3D11::SetProjectionMatrix(Matrix4 projectionMatrix) {
 void graphics::D3D11::DeleteChunk(void* data) {
 	MeshD3D11* mesh = (MeshD3D11*)data;
 	mesh->vertexBuffer->Release();
-	mesh->vertexBuffer->Release();
-	// TODO: Check if ZERO_MEM is needed
+	mesh->indexBuffer->Release();
+	ZERO_MEM(mesh, sizeof(MeshD3D11));
 }
 
 #endif // defined(_WIN32) && defined(STARLIGHT_D3D11)
