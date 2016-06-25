@@ -739,7 +739,7 @@ void graphics::D3D11::Render() {
 	bool sorting = true;
 	while (sorting) {
 		sorting = false;
-		for (int i = 1; i < g_numDrawCommands; i++) {
+		for (size_t i = 1; i < g_numDrawCommands; i++) {
 			if (g_drawCommands[i].key < g_drawCommands[i - 1].key ) {
 				DrawCommand t = g_drawCommands[i];
 				g_drawCommands[i] = g_drawCommands[i - 1];
@@ -765,7 +765,7 @@ void graphics::D3D11::Render() {
 	sl_pd3dDeviceContext->UpdateSubresource(s_constantBuffers[EConstantBuffer::View], 0, nullptr, &s_view, 0, 0);
 
 	// Submit draw commands
-	for (int32_t i = 0; i < g_numDrawCommands; i++) {
+	for (size_t i = 0; i < g_numDrawCommands; i++) {
 		DrawCommand* cmd = &g_drawCommands[i];
 		assert(cmd);
 
