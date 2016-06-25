@@ -26,11 +26,11 @@ struct MeshD3D11 {
 
 #define MAX_DRAW_COMMANDS 1024
 static DrawCommand g_drawCommands[MAX_DRAW_COMMANDS];
-static int32_t g_numDrawCommands;
+static size_t g_numDrawCommands;
 
 #define MAX_MESHES 1024
 static MeshD3D11 g_meshes[MAX_MESHES];
-static int32_t g_numMeshes;
+static size_t g_numMeshes;
 
 // shaders (generated)
 // changed to defines to prevent visual studio hanging

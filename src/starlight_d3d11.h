@@ -42,7 +42,7 @@ struct EConstantBuffer {
 
 struct DrawCommand {
 	uint64_t key;
-	int32_t mesh;
+	size_t mesh;
 	//Mesh* mesh;
 	PipelineState pipelineState;
 	//PerFrame* perFrame;
