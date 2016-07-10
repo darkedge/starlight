@@ -1,1 +1,2 @@
-@cmd.exe /k call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" amd64
+@echo off
+cmd.exe /k call "%VS140COMNTOOLS:~0,-14%VC\vcvarsall.bat" amd64
