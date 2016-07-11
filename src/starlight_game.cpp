@@ -253,21 +253,25 @@ void UpdateChunkGrid(GameInfo* gameInfo) {
 	}
 	if (dc.z != 0) {
 		ptrdiff_t dz = dc.z > 0 ? 1 : -1;
-		size_t z = dc.z > 0 ? 0 : CHUNK_DIAMETER - 1;
 		for (size_t x = 0; x < CHUNK_DIAMETER; x++) {
-			for (; z + dc.z < CHUNK_DIAMETER; z += dz) {
+			bool first = true;
+			for (size_t z = dc.z > 0 ? 0 : CHUNK_DIAMETER - 1; (z + dc.z) < CHUNK_DIAMETER; z += dz) {
+				if (first) {
+					VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
+					gameInfo->gfxFuncs->DeleteChunk(chunk->data);
+					chunk->data = nullptr;
+					ZERO_MEM(chunk->chunk, sizeof(Chunk));
+					first = false;
+				}
 				gameInfo->chunkGrid[x * CHUNK_DIAMETER + z] = gameInfo->chunkGrid[x * CHUNK_DIAMETER + (z + dc.z)];
 			}
 		}
 		// Clear the rest
 		for (size_t x = 0; x < CHUNK_DIAMETER; x++) {
-			for (; z < CHUNK_DIAMETER; z += dz) {
+			for (size_t z = dc.z > 0 ? CHUNK_DIAMETER - dc.z : -dc.z - 1; z < CHUNK_DIAMETER; z += dz) {
 				VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
 				// TODO: Only unload if needed
 				chunk->chunk->loaded = false;
-				if (chunk->data) {
-					gameInfo->gfxFuncs->DeleteChunk(chunk->data);
-				}
 				ZERO_MEM(chunk, sizeof(VisibleChunk));
 			}
 		}
@@ -299,6 +303,8 @@ void UpdateChunkGrid(GameInfo* gameInfo) {
 				// Missing chunk found, find space in chunkPool
 				assert(numFreeChunks > 0);
 				Chunk* freeChunk = freeChunks[--numFreeChunks];
+				// TODO: Figure out if clearing here is better than during unloading
+				ZERO_MEM(freeChunk, sizeof(Chunk));
 				int32_t cx = (int32_t) (x + chunkPos.x - CHUNK_RADIUS);
 				int32_t cz = (int32_t) (z + chunkPos.z - CHUNK_RADIUS);
 				GenerateChunk(freeChunk, cx, cz);
