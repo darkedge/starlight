@@ -2,15 +2,15 @@
 $shell = New-Object -com Shell.Application
 $webClient = New-Object Net.WebClient
 
-# Output folder
-$externalDir = "external"
-
 # -aoa: Overwrite all without prompt
 # -r: Recursive
-$7zargs = "-aoa -r *.cpp *.hpp *.c *.h *.inl *.ttf"
+$7zargs = " -aoa -r *.cpp *.hpp *.c *.h *.inl *.ttf"
 
 # Get working directory
-$workingDir = $((Resolve-Path .).ToString() + "\")
+$workingDir = $((Split-Path -Path $MyInvocation.MyCommand.Definition -Parent) + "\")
+
+# Output folder
+$externalDir = $($workingDir + "external")
 
 # Convenience functions
 function DownloadFile($address) {
@@ -38,16 +38,16 @@ function DownloadAndExtract($address) {
 	$extension = [System.IO.Path]::GetExtension($file)
 	Write-Host $("Extracting " + $file + "...")
 	if ($extension -eq ".zip") {
-		$cmd = ".\7za.exe x $file -o$externalDir $7zargs"
+		$cmd = $($workingDir + "7za.exe x " + $dest + " -o" + $externalDir + $7zargs)
         Write-Host $cmd
 		Invoke-Expression $cmd
 	} elseif ($extension -eq ".gz") { # .tar.gz
-        $cmd = ".\7za.exe e $file -aoa"
+        $cmd = $($workingDir + "7za.exe e " + $dest + " -o$workingDir -aoa")
         Write-Host $cmd
         Invoke-Expression $cmd
 
-        $tar = [System.IO.Path]::GetFileNameWithoutExtension($file)
-        $cmd = ".\7za.exe x $tar -o$externalDir $7zargs"
+        $tar = $($workingDir + [System.IO.Path]::GetFileNameWithoutExtension($file))
+        $cmd = $($workingDir + "7za.exe x $tar -o$externalDir $7zargs")
         Write-Host $cmd
         Invoke-Expression $cmd
 	} else {
@@ -75,7 +75,7 @@ DownloadAndExtract("https://github.com/erwincoumans/sce_vectormath/archive/maste
 
 # Delete downloads
 function DeleteFile($file) {
-    Remove-Item $file -Recurse -ErrorAction Ignore
+    Remove-Item $($workingDir + $file) -Recurse -ErrorAction Ignore
 }
 
 DeleteFile("7za.exe")
