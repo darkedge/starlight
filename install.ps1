@@ -4,7 +4,7 @@ $webClient = New-Object Net.WebClient
 
 # -aoa: Overwrite all without prompt
 # -r: Recursive
-$7zargs = " -aoa -r *.cpp *.hpp *.c *.h *.inl *.ttf"
+$7zargs = " -aoa -r *.cpp *.hpp *.c *.h *.inl *.ttf jom.exe"
 
 # Get working directory
 $workingDir = $((Split-Path -Path $MyInvocation.MyCommand.Definition -Parent) + "\")
@@ -65,6 +65,15 @@ foreach ($item in $shell.NameSpace($($workingDir + "7za920.zip")).Items()) {
     }
 }
 
+# jom
+DownloadFile("http://download.qt.io/official_releases/jom/jom.zip")
+foreach ($item in $shell.NameSpace($($workingDir + "jom.zip")).Items()) {
+    if ($item.Name -eq "jom.exe") {
+        # 16 = "Respond with "Yes to All" for any dialog box that is displayed."
+        $shell.NameSpace($workingDir).CopyHere($item, 16)
+    }
+}
+
 DownloadAndExtract("http://enet.bespin.org/download/enet-1.3.13.tar.gz")
 #DownloadAndExtract("https://github.com/g-truc/glm/releases/download/0.9.7.2/glm-0.9.7.2.zip")
 DownloadAndExtract("https://github.com/ocornut/imgui/archive/v1.49.zip")
@@ -86,3 +95,4 @@ DeleteFile("protobuf-2.6.1.zip")
 DeleteFile("v1.3.0.zip")
 DeleteFile("v1.49.zip")
 DeleteFile("master.zip")
+DeleteFile("jom.zip")
