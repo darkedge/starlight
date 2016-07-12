@@ -38,9 +38,9 @@ imgui: folder
 	lib /nologo /out:build/lib/imgui.lib build/imgui/*.obj
 
 starlight: enet imgui
-	cl $(slCompile) /LD /Festarlight.dll src/starlight_ub.cpp /link $(slLink) /PDB:starlight_$(SL_RANDOM).pdb
+	cl $(slCompile) /Fobuild/bin/ /LD /Febuild/bin/starlight.dll src/starlight_ub.cpp /link $(slLink) /PDB:build/bin/starlight_$(SL_RANDOM).pdb
 
 starlight_win32: enet imgui
 	fxc /Zi /E"main" /Od /Vn"g_SimplePixelShader" /WX /T ps_4_0 /Fh"src/SimplePixelShader.h" /nologo src/SimplePixelShader.hlsl
 	fxc /Zi /E"main" /Od /Vn"g_SimpleVertexShader" /WX /T vs_4_0 /Fh"src/SimpleVertexShader.h" /nologo src/SimpleVertexShader.hlsl
-	cl $(slCompile) /Festarlight.exe /Iexternal/imgui-1.49/examples/directx11_example src/starlight_win32_ub.cpp /link $(slLink) d3dcompiler.lib d3d11.lib
+	cl $(slCompile) /Fobuild/bin/ /Febuild/bin/starlight.exe /Iexternal/imgui-1.49/examples/directx11_example src/starlight_win32_ub.cpp /link $(slLink) d3dcompiler.lib d3d11.lib
