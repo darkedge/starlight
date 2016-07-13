@@ -1050,8 +1050,10 @@ void* graphics::D3D11::AddChunk(TempMesh *tempMesh) {
 	// (currently baked in vertex data)
 	cmd.worldMatrix = Matrix4::identity();
 
+	assert(g_numDrawCommands < MAX_DRAW_COMMANDS);
 	g_drawCommands[g_numDrawCommands++] = cmd;
 
+	assert(g_numMeshes < MAX_MESHES);
 	void* ret = (void*) &g_meshes[g_numMeshes];
 	g_numMeshes++;
 	return ret;
