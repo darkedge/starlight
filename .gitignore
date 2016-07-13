@@ -253,3 +253,4 @@ SimplePixelShader.h
 SimpleVertexShader.h
 *.nvuser
 *.VC.db
+assets/*.ttf
