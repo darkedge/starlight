@@ -222,19 +222,22 @@ void UpdateChunkGrid(GameInfo* gameInfo) {
 
 	Vector3 pos = s_player.GetPosition();
 	int2 chunkPos = WorldToChunkPosition(pos.getX(), pos.getZ());
-	// ox = 1; nx = 3; dx = 2; chunk[0][2] = chunk[2][2] ;
-	// ox = 3; nx = 1; dx = -2; chunk[4][2] = chunk[2][2];
-	// max(abs(dx)) == CHUNK_DIAMETER - 1
-
-	// chunk[x, z] = chunk[x + dx, z + dz]
-	// if we moved in the negative axis, iterate backwards
 
 	int2 dc = chunkPos - s_oldPlayerChunkPosition;
+
+	// Movement in X-axis
 	if (dc.x != 0) {
 		ptrdiff_t dx = dc.x > 0 ? 1 : -1;
 		size_t x = dc.x > 0 ? 0 : CHUNK_DIAMETER - 1;
 		for (; x + dc.x < CHUNK_DIAMETER; x += dx) {
 			for (size_t z = 0; z < CHUNK_DIAMETER; z++) {
+				// Note: I assume only one of the conditions is true in this function call
+				if (x == 0 || x == CHUNK_DIAMETER - 1) {
+					VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
+					gameInfo->gfxFuncs->DeleteChunk(chunk->data);
+					chunk->data = nullptr;
+					ZERO_MEM(chunk->chunk, sizeof(Chunk));
+				}
 				gameInfo->chunkGrid[x * CHUNK_DIAMETER + z] = gameInfo->chunkGrid[(x + dc.x) * CHUNK_DIAMETER + z];
 			}
 		}
@@ -244,24 +247,22 @@ void UpdateChunkGrid(GameInfo* gameInfo) {
 				VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
 				// TODO: Only unload if needed
 				chunk->chunk->loaded = false;
-				if (chunk->data) {
-					gameInfo->gfxFuncs->DeleteChunk(chunk->data);
-				}
 				ZERO_MEM(chunk, sizeof(VisibleChunk));
 			}
 		}
 	}
+
+	// Movement in Z-axis
 	if (dc.z != 0) {
 		ptrdiff_t dz = dc.z > 0 ? 1 : -1;
 		for (size_t x = 0; x < CHUNK_DIAMETER; x++) {
-			bool first = true;
 			for (size_t z = dc.z > 0 ? 0 : CHUNK_DIAMETER - 1; (z + dc.z) < CHUNK_DIAMETER; z += dz) {
-				if (first) {
+				// Note: I assume only one of the conditions is true in this function call
+				if (z == 0 || z == CHUNK_DIAMETER - 1) {
 					VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
 					gameInfo->gfxFuncs->DeleteChunk(chunk->data);
 					chunk->data = nullptr;
 					ZERO_MEM(chunk->chunk, sizeof(Chunk));
-					first = false;
 				}
 				gameInfo->chunkGrid[x * CHUNK_DIAMETER + z] = gameInfo->chunkGrid[x * CHUNK_DIAMETER + (z + dc.z)];
 			}
