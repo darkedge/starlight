@@ -47,27 +47,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\starlight_d3d11.cpp" />
-    <ClCompile Include="..\src\starlight_d3d11_imgui.cpp" />
-    <ClCompile Include="..\src\starlight_win32.cpp" />
-    <ClCompile Include="..\src\WICTextureLoader.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\src\SimplePixelShader.h" />
-    <ClInclude Include="..\src\SimpleVertexShader.h" />
-    <ClInclude Include="..\src\starlight_d3d11.h" />
-    <ClInclude Include="..\src\starlight_d3d_shared.h" />
-    <ClInclude Include="..\src\starlight_renderer_windows.h" />
-    <ClInclude Include="..\src\starlight_win32.h" />
-    <ClInclude Include="..\src\WICTextureLoader.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="..\src\SimplePixelShader.hlsl">
-      <ShaderType>Pixel</ShaderType>
-    </FxCompile>
-    <FxCompile Include="..\src\SimpleVertexShader.hlsl">
-      <ShaderType>Vertex</ShaderType>
-    </FxCompile>
+    <ClCompile Include="..\win32\starlight_d3d11.cpp" />
+    <ClCompile Include="..\win32\starlight_d3d11_imgui.cpp" />
+    <ClCompile Include="..\win32\starlight_win32.cpp" />
+    <ClCompile Include="..\win32\WICTextureLoader.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>

@@ -356,7 +356,7 @@ void Init(GameInfo* gameInfo) {
 	//s_mesh = CreateCube(graphicsApi);
 	
 	// Timing
-	s_deltaTime = 0.0f;
+	s_deltaTime =  0.0f;
 
 	// Addon loading
 	// This should happen according to a configuration file.
