@@ -8,8 +8,16 @@
 // TODO: Hard-coded for now
 #define CHUNK_DIM_XZ 16
 #define CHUNK_DIM_Y 128
-
-#define CHUNK_RADIUS 2 
+/*
+Name 					Blocks 	Chunks	Sections
+32 chunks ("Extreme") 	512 	4225 	67,600
+16 chunks ("Far") 		256 	1089 	17,424
+12 chunks (default) 	192 	625 	10,000
+8 chunks ("Normal") 	128 	289 	4624
+4 chunks ("Short") 		64 		81 		1296
+2 chunks ("Tiny") 		32 		25 		400
+*/
+#define CHUNK_RADIUS 12
 #define CHUNK_DIAMETER (CHUNK_RADIUS + 1 + CHUNK_RADIUS)
 #define NUM_CHUNKS (CHUNK_DIAMETER * CHUNK_DIAMETER)
 
