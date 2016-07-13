@@ -1,1 +1,1 @@
-@jom /j %NUMBER_OF_PROCESSORS% /nologo
+@jom /j %NUMBER_OF_PROCESSORS% /nologo "SL_RANDOM=%RANDOM%"
