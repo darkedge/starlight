@@ -254,3 +254,6 @@ SimpleVertexShader.h
 *.nvuser
 *.VC.db
 assets/*.ttf
+starlight.exp
+starlight_hlsl_generated.h
+starlight_vertex_generated.h
