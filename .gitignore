@@ -245,7 +245,7 @@ protobuf-2.6.1.zip
 v1.3.0.zip
 v1.47.zip
 external
-Win32
+vs/Win32
 !starlight_win32.vcxproj.user
 !starlight_win32_ub.vcxproj.user
 # TODO: pre- or postfix generated header files
