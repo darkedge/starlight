@@ -40,14 +40,22 @@ struct EConstantBuffer {
 	};
 };
 
+struct MeshD3D11; // TODO: Put definition here?
+
 struct DrawCommand {
-	uint64_t key;
-	size_t mesh;
-	//Mesh* mesh;
-	PipelineState pipelineState;
-	//PerFrame* perFrame;
-	//PerCamera* perCamera;
-	Vectormath::Aos::Matrix4 worldMatrix;
+	union {
+		struct {
+			uint64_t key;
+			MeshD3D11* mesh;
+			//Mesh* mesh;
+			PipelineState pipelineState;
+			//PerFrame* perFrame;
+			//PerCamera* perCamera;
+			//Vectormath::Aos::Matrix4 worldMatrix;
+			float worldMatrix[16];
+		} live;
+		DrawCommand* next;
+	} state;
 };
 
 struct SortKey1 {

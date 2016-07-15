@@ -19,18 +19,25 @@
 using namespace Vectormath::Aos;
 
 struct MeshD3D11 {
-	ID3D11Buffer* vertexBuffer;
-	ID3D11Buffer* indexBuffer;
-	int32_t numIndices;
+	union {
+		struct {
+			ID3D11Buffer* vertexBuffer;
+			ID3D11Buffer* indexBuffer;
+			int32_t numIndices;
+		} live;
+		MeshD3D11* next;
+	} state;
 };
 
+// These are free lists
+// Might not be efficient because we iterate over every command every frame
 #define MAX_DRAW_COMMANDS 1024
 static DrawCommand g_drawCommands[MAX_DRAW_COMMANDS];
-static size_t g_numDrawCommands;
+static DrawCommand* firstAvailableDrawCommand;
 
 #define MAX_MESHES 1024
 static MeshD3D11 g_meshes[MAX_MESHES];
-static size_t g_numMeshes;
+static MeshD3D11* firstAvailableMesh;
 
 // shaders (generated)
 // changed to defines to prevent visual studio hanging
@@ -256,32 +263,15 @@ void graphics::D3D11::Render() {
 	sl_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView, (float*) &clear_col);
 	sl_pd3dDeviceContext->ClearDepthStencilView(s_depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
-	//DrawCommand cmd;
-	//ZeroMemory(&cmd, sizeof(cmd));
-
-#if 0
-	cmd.mesh = &s_mesh;
-	cmd.pipelineState.inputLayout = s_inputLayout;
-	cmd.pipelineState.numViewports = 1;
-	cmd.pipelineState.viewports = &s_viewport;
-	cmd.pipelineState.pixelShader = s_pixelShader;
-	cmd.pipelineState.vertexShader = s_vertexShader;
-	cmd.pipelineState.rasterizerState = s_rasterizerState;
-	cmd.perObject = &s_perObject;
-
-	renderer::AddDrawCommand(cmd);
-#endif
-
-	// now we should do the actual rendering
-
 	// Bubble sort draw commands
 	// Currently just contains a single chunk
 	// No need to clear the buffer
+	/*
 	bool sorting = true;
 	while (sorting) {
 		sorting = false;
-		for (size_t i = 1; i < g_numDrawCommands; i++) {
-			if (g_drawCommands[i].key < g_drawCommands[i - 1].key ) {
+		for (size_t i = 1; i < g_lastDrawCommand; i++) {
+			if (g_drawCommands[i].state.live.key < g_drawCommands[i - 1].state.live.key ) {
 				DrawCommand t = g_drawCommands[i];
 				g_drawCommands[i] = g_drawCommands[i - 1];
 				g_drawCommands[i - 1] = t;
@@ -289,6 +279,7 @@ void graphics::D3D11::Render() {
 			}
 		}
 	}
+	*/
 
 	// For retrieving the window size
 	DXGI_SWAP_CHAIN_DESC desc;
@@ -306,17 +297,16 @@ void graphics::D3D11::Render() {
 	sl_pd3dDeviceContext->UpdateSubresource(s_constantBuffers[EConstantBuffer::View], 0, nullptr, &s_view, 0, 0);
 
 	// Submit draw commands
-	for (size_t i = 0; i < g_numDrawCommands; i++) {
+	for (size_t i = 0; i < MAX_DRAW_COMMANDS; i++) {
 		DrawCommand* cmd = &g_drawCommands[i];
-		assert(cmd);
 
-		MeshD3D11* mesh = &g_meshes[cmd->mesh];
-		assert(mesh);
-		PipelineState* pipelineState = &cmd->pipelineState;
+		MeshD3D11* mesh = cmd->state.live.mesh;
+		if (!mesh) continue;
+		PipelineState* pipelineState = &cmd->state.live.pipelineState;
 
 		// Constant Buffers
 		assert(s_constantBuffers[EConstantBuffer::Model]);
-		sl_pd3dDeviceContext->UpdateSubresource(s_constantBuffers[EConstantBuffer::Model], 0, nullptr, &cmd->worldMatrix, 0, 0);
+		sl_pd3dDeviceContext->UpdateSubresource(s_constantBuffers[EConstantBuffer::Model], 0, nullptr, &cmd->state.live.worldMatrix, 0, 0);
 
 		// Input Assembler
 		uint32_t stride = sizeof(Vertex);
@@ -324,8 +314,8 @@ void graphics::D3D11::Render() {
 		//assert(pipelineState.inputLayout);
 		//sl_pd3dDeviceContext->IASetInputLayout(pipelineState.inputLayout);
 		sl_pd3dDeviceContext->IASetInputLayout(s_inputLayout);
-		sl_pd3dDeviceContext->IASetVertexBuffers(0, 1, &mesh->vertexBuffer, &stride, &offset);
-		sl_pd3dDeviceContext->IASetIndexBuffer(mesh->indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+		sl_pd3dDeviceContext->IASetVertexBuffers(0, 1, &mesh->state.live.vertexBuffer, &stride, &offset);
+		sl_pd3dDeviceContext->IASetIndexBuffer(mesh->state.live.indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 		sl_pd3dDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		// Vertex Shader
@@ -352,7 +342,7 @@ void graphics::D3D11::Render() {
 		sl_pd3dDeviceContext->OMSetDepthStencilState(s_depthStencilState, 1);
 
 		// Draw call
-		sl_pd3dDeviceContext->DrawIndexed(mesh->numIndices, 0, 0);
+		sl_pd3dDeviceContext->DrawIndexed(mesh->state.live.numIndices, 0, 0);
 	}
 
 	ImGui::Render();
@@ -452,6 +442,19 @@ bool graphics::D3D11::Init(PlatformData *data, GameFuncs* funcs) {
 	// Setup ImGui binding
 	ImGui_ImplDX11_Init(data->hWnd, sl_pd3dDevice, sl_pd3dDeviceContext);
 
+	// Init free lists
+	firstAvailableDrawCommand = &g_drawCommands[0];
+	for (size_t i = 0; i < MAX_DRAW_COMMANDS; i++) {
+		g_drawCommands[i].state.next = &g_drawCommands[i + 1];
+	}
+	g_drawCommands[MAX_DRAW_COMMANDS - 1].state.next = nullptr;
+
+	firstAvailableMesh = &g_meshes[0];
+	for (size_t i = 0; i < MAX_MESHES; i++) {
+		g_meshes[i].state.next = &g_meshes[i + 1];
+	}
+	g_meshes[MAX_MESHES - 1].state.next = nullptr;
+
 	return true;
 }
 
@@ -470,7 +473,11 @@ bool graphics::D3D11::ImGuiHandleEvent(WindowEvent* e) {
 void* graphics::D3D11::AddChunk(TempMesh *tempMesh) { 
 	assert(sl_pd3dDevice);
 
-	MeshD3D11 mesh = { 0 };
+	assert(firstAvailableMesh);
+	MeshD3D11* mesh = firstAvailableMesh;
+	firstAvailableMesh = firstAvailableMesh->state.next;
+	assert(firstAvailableMesh);
+	ZERO_MEM(mesh, sizeof(MeshD3D11));
 
 	Vertex* vertices = tempMesh->vertices.data();
 	int32_t numVertices = (int32_t) tempMesh->vertices.size();
@@ -487,7 +494,7 @@ void* graphics::D3D11::AddChunk(TempMesh *tempMesh) {
 	D3D11_SUBRESOURCE_DATA resourceData = {0};
 	resourceData.pSysMem = vertices;
 
-	HRESULT hr = sl_pd3dDevice->CreateBuffer(&vertexBufferDesc, &resourceData, &mesh.vertexBuffer);
+	HRESULT hr = sl_pd3dDevice->CreateBuffer(&vertexBufferDesc, &resourceData, &mesh->state.live.vertexBuffer);
 	if (FAILED(hr))
 	{
 		__debugbreak();
@@ -495,7 +502,7 @@ void* graphics::D3D11::AddChunk(TempMesh *tempMesh) {
 
 	{
 		const char c_szName [] = "Mesh Vertex Buffer";
-		mesh.vertexBuffer->SetPrivateData(WKPDID_D3DDebugObjectName, sizeof(c_szName) - 1, c_szName);
+		mesh->state.live.vertexBuffer->SetPrivateData(WKPDID_D3DDebugObjectName, sizeof(c_szName) - 1, c_szName);
 	}
 
 	// Create and initialize the index buffer.
@@ -505,7 +512,7 @@ void* graphics::D3D11::AddChunk(TempMesh *tempMesh) {
 	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 	resourceData.pSysMem = indices;
 
-	hr = sl_pd3dDevice->CreateBuffer(&indexBufferDesc, &resourceData, &mesh.indexBuffer);
+	hr = sl_pd3dDevice->CreateBuffer(&indexBufferDesc, &resourceData, &mesh->state.live.indexBuffer);
 	if (FAILED(hr))
 	{
 		__debugbreak();
@@ -513,7 +520,7 @@ void* graphics::D3D11::AddChunk(TempMesh *tempMesh) {
 
 	{
 		const char c_szName [] = "Mesh Index Buffer";
-		mesh.indexBuffer->SetPrivateData(WKPDID_D3DDebugObjectName, sizeof(c_szName) - 1, c_szName);
+		mesh->state.live.indexBuffer->SetPrivateData(WKPDID_D3DDebugObjectName, sizeof(c_szName) - 1, c_szName);
 	}
 #else
 	// From ImGui
@@ -573,31 +580,32 @@ void* graphics::D3D11::AddChunk(TempMesh *tempMesh) {
 	sl_pd3dDeviceContext->Unmap(mesh.indexBuffer, 0);
 #endif
 
-	mesh.numIndices = numIndices;
+	mesh->state.live.numIndices = numIndices;
 
-	g_meshes[g_numMeshes] = mesh;
+	char buf[64];
+	sprintf(buf, "Create chunk index %zi", mesh - g_meshes);
+	g_LogInfo(buf);
 
 	// Add to draw calls
 
-	DrawCommand cmd = {0};
-	cmd.mesh = g_numMeshes;
+	assert(firstAvailableDrawCommand);
+	DrawCommand* cmd = firstAvailableDrawCommand;
+	firstAvailableDrawCommand = firstAvailableDrawCommand->state.next;
+	assert(firstAvailableDrawCommand);
+	ZERO_MEM(cmd, sizeof(DrawCommand));
+	//cmd->state.live.mesh = g_numMeshes;
+	cmd->state.live.mesh = mesh;
 	//cmd.pipelineState.inputLayout = g_inputlayout
-	cmd.pipelineState.numViewports = 1;
-	cmd.pipelineState.pixelShader = s_pixelShader;
-	cmd.pipelineState.vertexShader = s_vertexShader;
+	cmd->state.live.pipelineState.numViewports = 1;
+	cmd->state.live.pipelineState.pixelShader = s_pixelShader;
+	cmd->state.live.pipelineState.vertexShader = s_vertexShader;
 	//cmd.pipelineState.rasterizerState = rasterizerstate
-	
 	// TODO: Use chunk position to create offset
 	// (currently baked in vertex data)
-	cmd.worldMatrix = Matrix4::identity();
+	Matrix4 a = Matrix4::identity();
+	memcpy(&cmd->state.live.worldMatrix, &a, sizeof(Matrix4));
 
-	assert(g_numDrawCommands < MAX_DRAW_COMMANDS);
-	g_drawCommands[g_numDrawCommands++] = cmd;
-
-	assert(g_numMeshes < MAX_MESHES);
-	void* ret = (void*) &g_meshes[g_numMeshes];
-	g_numMeshes++;
-	return ret;
+	return mesh;
 }
 
 void graphics::D3D11::SetPlayerCameraViewMatrix(Matrix4 viewMatrix) {
@@ -608,13 +616,24 @@ void graphics::D3D11::SetProjectionMatrix(Matrix4 projectionMatrix) {
 	s_projection = projectionMatrix;
 }
 
-// TODO: We're not cleaning up g_meshes or g_numMeshes
-// Meaning that we'll go out of bounds
 void graphics::D3D11::DeleteChunk(void* data) {
 	MeshD3D11* mesh = (MeshD3D11*)data;
-	mesh->vertexBuffer->Release();
-	mesh->indexBuffer->Release();
+	mesh->state.live.vertexBuffer->Release();
+	mesh->state.live.indexBuffer->Release();
 	ZERO_MEM(mesh, sizeof(MeshD3D11));
+
+	mesh->state.next = firstAvailableMesh;
+	firstAvailableMesh = mesh;
+
+	// Also delete corresponding draw command
+	size_t ndx = mesh - g_meshes;
+	DrawCommand* cmd = &g_drawCommands[ndx];
+	cmd->state.next = firstAvailableDrawCommand;
+	firstAvailableDrawCommand = cmd;
+
+	char buf[64];
+	sprintf(buf, "Delete chunk index %zi", ndx);
+	g_LogInfo(buf);
 }
 
 #endif // defined(_WIN32) && defined(STARLIGHT_D3D11)
