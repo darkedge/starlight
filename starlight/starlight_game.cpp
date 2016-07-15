@@ -260,9 +260,12 @@ void UpdateChunkGrid(GameInfo* gameInfo) {
 				// Note: I assume only one of the conditions is true in this function call
 				if (z == 0 || z == CHUNK_DIAMETER - 1) {
 					VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
-					gameInfo->gfxFuncs->DeleteChunk(chunk->data);
-					chunk->data = nullptr;
-					ZERO_MEM(chunk->chunk, sizeof(Chunk));
+					// Might already have been removed during X step
+					if (chunk->data) {
+						gameInfo->gfxFuncs->DeleteChunk(chunk->data);
+						chunk->data = nullptr;
+						ZERO_MEM(chunk->chunk, sizeof(Chunk));
+					}
 				}
 				gameInfo->chunkGrid[x * CHUNK_DIAMETER + z] = gameInfo->chunkGrid[x * CHUNK_DIAMETER + (z + dc.z)];
 			}
@@ -271,9 +274,12 @@ void UpdateChunkGrid(GameInfo* gameInfo) {
 		for (size_t x = 0; x < CHUNK_DIAMETER; x++) {
 			for (size_t z = dc.z > 0 ? CHUNK_DIAMETER - dc.z : -dc.z - 1; z < CHUNK_DIAMETER; z += dz) {
 				VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
-				// TODO: Only unload if needed
-				chunk->chunk->loaded = false;
-				ZERO_MEM(chunk, sizeof(VisibleChunk));
+				// Might already have been removed during X step
+				if (chunk->data) {
+					// TODO: Only unload if needed
+					chunk->chunk->loaded = false;
+					ZERO_MEM(chunk, sizeof(VisibleChunk));
+				}
 			}
 		}
 	}
