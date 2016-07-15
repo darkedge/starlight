@@ -430,7 +430,7 @@ void MoveCamera(GameInfo* gameInfo) {
 	}
 
 	// Translation
-	const float SPEED = 10.0f;
+	const float SPEED = 30.0f;
 	Vector3 translation(0, 0, 0);
 	if (ImGui::GetIO().KeysDown[(intptr_t)'W'])		translation += s_player.Forward();
 	if (ImGui::GetIO().KeysDown[(intptr_t)'A'])		translation -= s_player.Right();
