@@ -487,6 +487,18 @@ void __cdecl game::UpdateGame(GameInfo* gameInfo) {
 	input::EndFrame();
 
 	Vector3 pos = s_player.GetPosition();
+
+	// Debug menu
+	bool stay = true;
+	ImGui::Begin("game::UpdateGame", &stay);
+	//if (ImGui::Button("Load D3D11")) gameInfo->graphicsApi = EGraphicsApi::D3D11;
+	if (ImGui::InputFloat3("Position", (float*) &pos, -1, ImGuiInputTextFlags_EnterReturnsTrue)) {
+		s_player.SetPosition(pos);
+	}
+	Quat rot = s_player.GetRotation();
+	ImGui::InputFloat4("Rotation", (float*)&rot);
+	ImGui::End();
+
 	int2 newXZ = WorldToChunkPosition(pos.getX(), pos.getZ());
 	if (newXZ != s_oldPlayerChunkPosition) {
 		logger::LogInfo(std::string("new position: ") + std::to_string(newXZ.x) + std::string(", ") + std::to_string(newXZ.z));
@@ -496,15 +508,6 @@ void __cdecl game::UpdateGame(GameInfo* gameInfo) {
 
 	network::Update(gameInfo);
 	//network::DrawDebugMenu(gameInfo);
-
-	// Debug menu
-	bool stay = true;
-	ImGui::Begin("game::UpdateGame", &stay);
-	//if (ImGui::Button("Load D3D11")) gameInfo->graphicsApi = EGraphicsApi::D3D11;
-	ImGui::InputFloat3("Position", (float*) &pos);
-	Quat rot = s_player.GetRotation();
-	ImGui::InputFloat4("Rotation", (float*)&rot);
-	ImGui::End();
 
 	// Network chat test
 #if 0
