@@ -53,6 +53,19 @@ struct Console
 		ScrollToBottom = true;
 	}
 
+	void SaveLog() {
+		FILE* file = fopen("log.txt", "w");
+		if (file) {
+			for (int i = 0; i < Items.Size; i++) {
+				fprintf(file, Items[i]);
+			}
+			logger::LogInfo("Saved!");
+		} else {
+			logger::LogInfo("Could not write to log.txt!");
+		}
+		fclose(file);
+	}
+
 	void    AddLog(const char* fmt, ...) IM_PRINTFARGS(2)
 	{
 		char buf[1024];
@@ -83,6 +96,7 @@ struct Console
 		//if (ImGui::SmallButton("Add Dummy Text")) { AddLog("%d some text", Items.Size); AddLog("some more text"); AddLog("display very important message here!"); } ImGui::SameLine();
 		//if (ImGui::SmallButton("Add Dummy Error")) AddLog("[error] something went wrong"); ImGui::SameLine();
 		if (ImGui::SmallButton("Clear")) ClearLog();
+		if (ImGui::SmallButton("Save")) SaveLog();
 		//static float t = 0.0f; if (ImGui::GetTime() - t > 0.02f) { t = ImGui::GetTime(); AddLog("Spam %f", t); }
 
 		ImGui::Separator();
