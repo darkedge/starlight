@@ -4,6 +4,9 @@
 #define DEG2RAD 0.0174532925199433f
 #define RAD2DEG 57.2957795130824f
 
+#define MAX(x, y) (((x) > (y)) ? (x) : (y))
+#define MIN(x, y) (((x) < (y)) ? (x) : (y))
+
 // sse_vectormath does not have explicit 8-byte and 12-byte vectors
 struct float3 {
 	float x;

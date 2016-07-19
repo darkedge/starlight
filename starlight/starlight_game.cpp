@@ -272,7 +272,13 @@ void UpdateChunkGrid(GameInfo* gameInfo) {
 		}
 		// Clear the rest
 		for (size_t x = 0; x < CHUNK_DIAMETER; x++) {
-			for (size_t z = dc.z > 0 ? CHUNK_DIAMETER - dc.z : -dc.z - 1; z < CHUNK_DIAMETER; z += dz) {
+			size_t z;
+			if (dc.z > 0) {
+				z = MAX(CHUNK_DIAMETER - dc.z, 0);
+			} else {
+				z = MIN(-dc.z - 1, CHUNK_DIAMETER - 1);
+			}
+			for (; z < CHUNK_DIAMETER; z += dz) {
 				VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
 				// Might already have been removed during X step
 				if (chunk->data) {
