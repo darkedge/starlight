@@ -30,6 +30,7 @@ enum EGraphicsApi {
 #define FUNC_08 void SL_CALL SetPlayerCameraViewMatrix(Vectormath::Aos::Matrix4 mat)
 #define FUNC_09 void SL_CALL SetProjectionMatrix(Vectormath::Aos::Matrix4 mat)
 #define FUNC_10 void SL_CALL DeleteChunk(void*)
+#define FUNC_11 size_t SL_CALL GetDataIndex(void*)
 
 #define PURE_VIRTUAL(_f) virtual _f = 0
 #define OVERRIDE_FINAL(_f) virtual _f override final
@@ -48,6 +49,7 @@ public: \
 	OVERRIDE_FINAL(FUNC_08); \
 	OVERRIDE_FINAL(FUNC_09); \
 	OVERRIDE_FINAL(FUNC_10); \
+	OVERRIDE_FINAL(FUNC_11); \
 };
 
 namespace graphics {
@@ -65,6 +67,7 @@ namespace graphics {
 		PURE_VIRTUAL(FUNC_08);
 		PURE_VIRTUAL(FUNC_09);
 		PURE_VIRTUAL(FUNC_10);
+		PURE_VIRTUAL(FUNC_11);
 	};
 
 #ifdef STARLIGHT_D3D11
@@ -123,6 +126,7 @@ namespace graphics {
 #undef OVERRIDE_FINAL
 #undef PURE_VIRTUAL
 
+#undef FUNC_11
 #undef FUNC_10
 #undef FUNC_09
 #undef FUNC_08

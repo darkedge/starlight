@@ -636,4 +636,8 @@ void graphics::D3D11::DeleteChunk(void* data) {
 	g_LogInfo(buf);
 }
 
+size_t graphics::D3D11::GetDataIndex(void* ptr) {
+	return ((MeshD3D11*)ptr) - &g_meshes[0];
+}
+
 #endif // defined(_WIN32) && defined(STARLIGHT_D3D11)
