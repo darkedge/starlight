@@ -10,6 +10,8 @@
 #include "Noise.h"
 #include <enet/enet.h>
 
+#include "starlight_d3d11.h"
+
 // temp
 #include <sstream>
 
@@ -224,25 +226,50 @@ void UpdateChunkGrid(GameInfo* gameInfo) {
 	int2 chunkPos = WorldToChunkPosition(pos.getX(), pos.getZ());
 
 	int2 dc = chunkPos - s_oldPlayerChunkPosition;
+	logger::LogInfo(std::string("dc: ") + std::to_string(dc.x) + ", " + std::to_string(dc.z));
 
 	// Movement in X-axis
-	if (dc.x != 0) {
-		ptrdiff_t dx = dc.x > 0 ? 1 : -1;
-		size_t x = dc.x > 0 ? 0 : CHUNK_DIAMETER - 1;
-		for (; x + dc.x < CHUNK_DIAMETER; x += dx) {
-			for (size_t z = 0; z < CHUNK_DIAMETER; z++) {
-				// Note: I assume only one of the conditions is true in this function call
-				if (x == 0 || x == CHUNK_DIAMETER - 1) {
+	if (dc.x > 0) {
+		// Copy right to left
+		size_t x;
+		for (x = 0; x + dc.x < CHUNK_DIAMETER; x++) {
+			for(size_t z = 0; z < CHUNK_DIAMETER; z++) {
+				if (x < dc.x) {
+					// These chunks are going to be overwritten
 					VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
 					gameInfo->gfxFuncs->DeleteChunk(chunk->data);
 					chunk->data = nullptr;
-					ZERO_MEM(chunk->chunk, sizeof(Chunk));
+					ZERO_MEM(chunk->chunk, sizeof(Chunk)); // TODO: Necessary?
 				}
 				gameInfo->chunkGrid[x * CHUNK_DIAMETER + z] = gameInfo->chunkGrid[(x + dc.x) * CHUNK_DIAMETER + z];
 			}
 		}
-		// Clear the rest
-		for (; x < CHUNK_DIAMETER; x += dx) {
+		// Clear to-be-generated chunks
+		for (; x < CHUNK_DIAMETER; x++) {
+			for (size_t z = 0; z < CHUNK_DIAMETER; z++) {
+				VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
+				// TODO: Only unload if needed
+				chunk->chunk->loaded = false;
+				ZERO_MEM(chunk, sizeof(VisibleChunk));
+			}
+		}
+	} else if (dc.x < 0) {
+		// Copy left to right
+		size_t x;
+		for (x = CHUNK_DIAMETER - 1; x + dc.x < CHUNK_DIAMETER; x--) {
+			for(size_t z = 0; z < CHUNK_DIAMETER; z++) {
+				if (x >= CHUNK_DIAMETER + dc.x || -dc.x >= CHUNK_DIAMETER) {
+					// These chunks are going to be overwritten
+					VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
+					gameInfo->gfxFuncs->DeleteChunk(chunk->data);
+					chunk->data = nullptr;
+					ZERO_MEM(chunk->chunk, sizeof(Chunk)); // TODO: Necessary?
+				}
+				gameInfo->chunkGrid[x * CHUNK_DIAMETER + z] = gameInfo->chunkGrid[(x + dc.x) * CHUNK_DIAMETER + z];
+			}
+		}
+		// Clear to-be-generated chunks
+		for (; x < CHUNK_DIAMETER; x--) {
 			for (size_t z = 0; z < CHUNK_DIAMETER; z++) {
 				VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
 				// TODO: Only unload if needed
@@ -252,40 +279,52 @@ void UpdateChunkGrid(GameInfo* gameInfo) {
 		}
 	}
 
-	// Movement in Z-axis
-	if (dc.z != 0) {
-		ptrdiff_t dz = dc.z > 0 ? 1 : -1;
-		for (size_t x = 0; x < CHUNK_DIAMETER; x++) {
-			for (size_t z = dc.z > 0 ? 0 : CHUNK_DIAMETER - 1; (z + dc.z) < CHUNK_DIAMETER; z += dz) {
-				// Note: I assume only one of the conditions is true in this function call
-				if (z == 0 || z == CHUNK_DIAMETER - 1) {
+	if (dc.z > 0) {
+		// Copy down to up
+		size_t z;
+		for(z = 0; z + dc.z < CHUNK_DIAMETER; z++) {
+			for (size_t x = 0; x < CHUNK_DIAMETER; x++) {
+				if (z < dc.z) {
+					// These chunks are going to be overwritten
 					VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
-					// Might already have been removed during X step
-					if (chunk->data) {
-						gameInfo->gfxFuncs->DeleteChunk(chunk->data);
-						chunk->data = nullptr;
-						ZERO_MEM(chunk->chunk, sizeof(Chunk));
-					}
+					gameInfo->gfxFuncs->DeleteChunk(chunk->data);
+					chunk->data = nullptr;
+					ZERO_MEM(chunk->chunk, sizeof(Chunk)); // TODO: Necessary?
 				}
 				gameInfo->chunkGrid[x * CHUNK_DIAMETER + z] = gameInfo->chunkGrid[x * CHUNK_DIAMETER + (z + dc.z)];
 			}
 		}
-		// Clear the rest
-		for (size_t x = 0; x < CHUNK_DIAMETER; x++) {
-			size_t z;
-			if (dc.z > 0) {
-				z = MAX(CHUNK_DIAMETER - dc.z, 0);
-			} else {
-				z = MIN(-dc.z - 1, CHUNK_DIAMETER - 1);
-			}
-			for (; z < CHUNK_DIAMETER; z += dz) {
+		// Clear to-be-generated chunks
+		for (; z < CHUNK_DIAMETER; z++) {
+			for (size_t x = 0; x < CHUNK_DIAMETER; x++) {
 				VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
-				// Might already have been removed during X step
-				if (chunk->data) {
-					// TODO: Only unload if needed
-					chunk->chunk->loaded = false;
-					ZERO_MEM(chunk, sizeof(VisibleChunk));
+				// TODO: Only unload if needed
+				chunk->chunk->loaded = false;
+				ZERO_MEM(chunk, sizeof(VisibleChunk));
+			}
+		}
+	} else if (dc.z < 0) {
+		// Copy up to down
+		size_t z;
+		for(z = CHUNK_DIAMETER - 1; z + dc.z < CHUNK_DIAMETER; z--) {
+			for (size_t x = 0; x < CHUNK_DIAMETER; x++) {
+				if (z >= CHUNK_DIAMETER + dc.z || -dc.z >= CHUNK_DIAMETER) {
+					// These chunks are going to be overwritten
+					VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
+					gameInfo->gfxFuncs->DeleteChunk(chunk->data);
+					chunk->data = nullptr;
+					ZERO_MEM(chunk->chunk, sizeof(Chunk)); // TODO: Necessary?
 				}
+				gameInfo->chunkGrid[x * CHUNK_DIAMETER + z] = gameInfo->chunkGrid[x * CHUNK_DIAMETER + (z + dc.z)];
+			}
+		}
+		// Clear to-be-generated chunks
+		for (; z < CHUNK_DIAMETER; z--) {
+			for (size_t x = 0; x < CHUNK_DIAMETER; x++) {
+				VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
+				// TODO: Only unload if needed
+				chunk->chunk->loaded = false;
+				ZERO_MEM(chunk, sizeof(VisibleChunk));
 			}
 		}
 	}
@@ -327,6 +366,15 @@ void UpdateChunkGrid(GameInfo* gameInfo) {
 				chunk->data = GenerateChunkMesh(gameInfo, freeChunk, cx, cz);
 			}
 		}
+	}
+
+	for (size_t z = 0; z < CHUNK_DIAMETER; z++) {
+		char buf[64] = { 0 };
+		for (size_t x = 0; x < CHUNK_DIAMETER; x++) {
+			VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
+			sprintf(buf, "%s[%zi]", buf, gameInfo->gfxFuncs->GetDataIndex(chunk->data));
+		}
+		logger::LogInfo(buf);
 	}
 }
 
