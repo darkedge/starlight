@@ -236,9 +236,9 @@ void UpdateChunkGrid(GameInfo* gameInfo) {
 				if (x < dc.x) {
 					// This chunk is going to be overwritten
 					VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
-					gameInfo->gfxFuncs->DeleteChunk(chunk->data);
+					if (chunk->data) gameInfo->gfxFuncs->DeleteChunk(chunk->data);
 					chunk->data = nullptr;
-					ZERO_MEM(chunk->chunk, sizeof(Chunk)); // TODO: Necessary?
+					if (chunk->chunk) ZERO_MEM(chunk->chunk, sizeof(Chunk)); // TODO: Necessary?
 				}
 				if (x + dc.x < CHUNK_DIAMETER) {
 					// Move chunk
@@ -247,7 +247,7 @@ void UpdateChunkGrid(GameInfo* gameInfo) {
 					// Generate new chunk here later
 					VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
 					// TODO: Only unload if needed
-					chunk->chunk->loaded = false;
+					if (chunk->chunk) chunk->chunk->loaded = false;
 					ZERO_MEM(chunk, sizeof(VisibleChunk));
 				}
 			}
@@ -259,9 +259,9 @@ void UpdateChunkGrid(GameInfo* gameInfo) {
 				if (x >= CHUNK_DIAMETER + dc.x || -dc.x >= CHUNK_DIAMETER) {
 					// These chunks are going to be overwritten
 					VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
-					gameInfo->gfxFuncs->DeleteChunk(chunk->data);
+					if (chunk->data) gameInfo->gfxFuncs->DeleteChunk(chunk->data);
 					chunk->data = nullptr;
-					ZERO_MEM(chunk->chunk, sizeof(Chunk)); // TODO: Necessary?
+					if (chunk->chunk) ZERO_MEM(chunk->chunk, sizeof(Chunk)); // TODO: Necessary?
 				}
 				if (x + dc.x < CHUNK_DIAMETER) {
 					// Move chunk
@@ -270,7 +270,7 @@ void UpdateChunkGrid(GameInfo* gameInfo) {
 					// Generate new chunk here later
 					VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
 					// TODO: Only unload if needed
-					chunk->chunk->loaded = false;
+					if (chunk->chunk) chunk->chunk->loaded = false;
 					ZERO_MEM(chunk, sizeof(VisibleChunk));
 				}
 			}
@@ -285,16 +285,16 @@ void UpdateChunkGrid(GameInfo* gameInfo) {
 				if (z < dc.z) {
 					// These chunks are going to be overwritten
 					VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
-					gameInfo->gfxFuncs->DeleteChunk(chunk->data);
+					if (chunk->data) gameInfo->gfxFuncs->DeleteChunk(chunk->data);
 					chunk->data = nullptr;
-					ZERO_MEM(chunk->chunk, sizeof(Chunk)); // TODO: Necessary?
+					if (chunk->chunk) ZERO_MEM(chunk->chunk, sizeof(Chunk)); // TODO: Necessary?
 				}
 				if (z + dc.z < CHUNK_DIAMETER) {
 					gameInfo->chunkGrid[x * CHUNK_DIAMETER + z] = gameInfo->chunkGrid[x * CHUNK_DIAMETER + (z + dc.z)];
 				} else {
 					VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
 					// TODO: Only unload if needed
-					chunk->chunk->loaded = false;
+					if (chunk->chunk) chunk->chunk->loaded = false;
 					ZERO_MEM(chunk, sizeof(VisibleChunk));
 				}
 			}
@@ -306,16 +306,16 @@ void UpdateChunkGrid(GameInfo* gameInfo) {
 				if (z >= CHUNK_DIAMETER + dc.z || -dc.z >= CHUNK_DIAMETER) {
 					// These chunks are going to be overwritten
 					VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
-					gameInfo->gfxFuncs->DeleteChunk(chunk->data);
+					if (chunk->data) gameInfo->gfxFuncs->DeleteChunk(chunk->data);
 					chunk->data = nullptr;
-					ZERO_MEM(chunk->chunk, sizeof(Chunk)); // TODO: Necessary?
+					if (chunk->chunk) ZERO_MEM(chunk->chunk, sizeof(Chunk)); // TODO: Necessary?
 				}
 				if (z + dc.z < CHUNK_DIAMETER) {
 					gameInfo->chunkGrid[x * CHUNK_DIAMETER + z] = gameInfo->chunkGrid[x * CHUNK_DIAMETER + (z + dc.z)];
 				} else {
 					VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
 					// TODO: Only unload if needed
-					chunk->chunk->loaded = false;
+					if (chunk->chunk) chunk->chunk->loaded = false;
 					ZERO_MEM(chunk, sizeof(VisibleChunk));
 				}
 			}
