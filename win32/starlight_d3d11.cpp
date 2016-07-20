@@ -288,7 +288,7 @@ void graphics::D3D11::Render() {
 	// Constant Buffers
 	// TODO: z-min, z-max (optional), FOV!
 	if (desc.BufferDesc.Width > 0 && desc.BufferDesc.Height > 0) {
-		Matrix4 projectionMatrix = Matrix4::perspective(45.0f * DEG2RAD, (float) desc.BufferDesc.Width / (float) desc.BufferDesc.Height, 0.1f, 100.0f);
+		Matrix4 projectionMatrix = Matrix4::perspective(45.0f * DEG2RAD, (float) desc.BufferDesc.Width / (float) desc.BufferDesc.Height, 0.1f, 1000.0f);
 		assert(s_constantBuffers[EConstantBuffer::Projection]);
 		sl_pd3dDeviceContext->UpdateSubresource(s_constantBuffers[EConstantBuffer::Projection], 0, nullptr, &projectionMatrix, 0, 0);
 	}
