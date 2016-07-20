@@ -174,7 +174,7 @@ static void* GenerateChunkMesh(GameInfo* gameInfo, Chunk* chunk, int32_t cx, int
 
 
 void GenerateChunk(Chunk* chunk, int32_t cx, int32_t cz) {
-	logger::LogInfo(std::string("Generating chunk: ") + std::to_string(cx) + ", " + std::to_string(cz));
+	//logger::LogInfo(std::string("Generating chunk: ") + std::to_string(cx) + ", " + std::to_string(cz));
 	chunk->position.x = cx;
 	chunk->position.z = cz;
 
@@ -226,7 +226,7 @@ void UpdateChunkGrid(GameInfo* gameInfo) {
 	int2 chunkPos = WorldToChunkPosition(pos.getX(), pos.getZ());
 
 	int2 dc = chunkPos - s_oldPlayerChunkPosition;
-	logger::LogInfo(std::string("dc: ") + std::to_string(dc.x) + ", " + std::to_string(dc.z));
+	//logger::LogInfo(std::string("dc: ") + std::to_string(dc.x) + ", " + std::to_string(dc.z));
 
 	// Movement in X-axis
 	if (dc.x > 0) {
@@ -361,14 +361,17 @@ void UpdateChunkGrid(GameInfo* gameInfo) {
 		}
 	}
 
+	/*
+	// Debug visible chunk grid
 	for (size_t z = 0; z < CHUNK_DIAMETER; z++) {
 		char buf[64] = { 0 };
 		for (size_t x = 0; x < CHUNK_DIAMETER; x++) {
 			VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
-			sprintf(buf, "%s[%zi]", buf, gameInfo->gfxFuncs->GetDataIndex(chunk->data));
+			sprintf(buf, "%s%02zi.", buf, gameInfo->gfxFuncs->GetDataIndex(chunk->data));
 		}
 		logger::LogInfo(buf);
 	}
+	*/
 }
 
 void ResetPosition(GameInfo* gameInfo) {
@@ -548,7 +551,7 @@ void __cdecl game::UpdateGame(GameInfo* gameInfo) {
 
 	int2 newXZ = WorldToChunkPosition(pos.getX(), pos.getZ());
 	if (newXZ != s_oldPlayerChunkPosition) {
-		logger::LogInfo(std::string("new position: ") + std::to_string(newXZ.x) + std::string(", ") + std::to_string(newXZ.z));
+		//logger::LogInfo(std::string("new position: ") + std::to_string(newXZ.x) + std::string(", ") + std::to_string(newXZ.z));
 		UpdateChunkGrid(gameInfo);
 		s_oldPlayerChunkPosition = newXZ;
 	}

@@ -582,9 +582,9 @@ void* graphics::D3D11::AddChunk(TempMesh *tempMesh) {
 
 	mesh->state.live.numIndices = numIndices;
 
-	char buf[64];
-	sprintf(buf, "Create chunk index %zi", mesh - g_meshes);
-	g_LogInfo(buf);
+	//char buf[64];
+	//sprintf(buf, "Create chunk index %zi", mesh - g_meshes);
+	//g_LogInfo(buf);
 
 	// Add to draw calls
 
@@ -631,9 +631,9 @@ void graphics::D3D11::DeleteChunk(void* data) {
 	cmd->state.next = firstAvailableDrawCommand;
 	firstAvailableDrawCommand = cmd;
 
-	char buf[64];
-	sprintf(buf, "Delete chunk index %zi", ndx);
-	g_LogInfo(buf);
+	//char buf[64];
+	//sprintf(buf, "Delete chunk index %zi", ndx);
+	//g_LogInfo(buf);
 }
 
 size_t graphics::D3D11::GetDataIndex(void* ptr) {
