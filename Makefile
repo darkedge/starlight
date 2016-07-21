@@ -46,16 +46,16 @@ starlight.dll: enet.lib imgui.lib starlight/*.cpp include/*.h
 	@if not exist build\bin mkdir build\bin
 	@cl $(slCompile) /Fobuild/bin/ /LD /Festarlight.dll starlight/starlight_ub.cpp /link $(slLink) /PDB:build/bin/starlight_$(SL_RANDOM).pdb
 
-hlsl_geom_wireframe.h: win32/hlsl_geom_wireframe.hlsl
+hlsl_geom_wireframe.h: win32/hlsl_geom_wireframe.hlsl win32/*.hlsli
 	@fxc /Zi /E"main" /Od /Vn"g_hlsl_geom_wireframe" /WX /T gs_4_0 /Fh"hlsl_geom_wireframe.h" /nologo win32/hlsl_geom_wireframe.hlsl
 
-SimplePixelShader.h: win32/SimplePixelShader.hlsl
+SimplePixelShader.h: win32/SimplePixelShader.hlsl win32/*.hlsli
 	@fxc /Zi /E"main" /Od /Vn"g_SimplePixelShader" /WX /T ps_4_0 /Fh"SimplePixelShader.h" /nologo win32/SimplePixelShader.hlsl
 
-SimpleVertexShader.h: win32/SimpleVertexShader.hlsl starlight_hlsl_generated.h
+SimpleVertexShader.h: win32/SimpleVertexShader.hlsl starlight_hlsl_generated.h win32/*.hlsli
 	@fxc /I. /Zi /E"main" /Od /Vn"g_SimpleVertexShader" /WX /T vs_4_0 /Fh"SimpleVertexShader.h" /nologo win32/SimpleVertexShader.hlsl
 
-starlight.exe: enet.lib imgui.lib win32/*.cpp SimplePixelShader.h SimpleVertexShader.h include/*.h
+starlight.exe: enet.lib imgui.lib win32/*.cpp hlsl_geom_wireframe.h SimplePixelShader.h SimpleVertexShader.h include/*.h
 	@if not exist build\bin mkdir build\bin
 	@cl $(slCompile) /Fobuild/bin/ /Festarlight.exe /Iexternal/imgui-1.49/examples/directx11_example win32/starlight_win32_ub.cpp /link $(slLink) d3dcompiler.lib d3d11.lib
 
