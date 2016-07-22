@@ -441,8 +441,19 @@ void UpdateChunkGrid(GameInfo* gameInfo) {
 				GenerateChunk(freeChunk, cx, cz);
 				chunk->chunk = freeChunk;
 				freeChunk->loaded = true;
+			}
+		}
+	}
+
+	// Meshing step
+	for (size_t x = 0; x < CHUNK_DIAMETER; x++) {
+		for (size_t z = 0; z < CHUNK_DIAMETER; z++) {
+			VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
+			if (!chunk->data) {
 				// TODO: This still embeds raw positional data instead of using a transform in rendering
-				chunk->data = GenerateChunkMesh(gameInfo, freeChunk, cx, cz);
+				int32_t cx = (int32_t) (x + chunkPos.x - CHUNK_RADIUS);
+				int32_t cz = (int32_t) (z + chunkPos.z - CHUNK_RADIUS);
+				chunk->data = GenerateChunkMesh(gameInfo, chunk->chunk, cx, cz);
 			}
 		}
 	}
