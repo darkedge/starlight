@@ -46,9 +46,6 @@ starlight.dll: enet.lib imgui.lib starlight/*.cpp include/*.h
 	@if not exist build\bin mkdir build\bin
 	@cl $(slCompile) /Fobuild/bin/ /LD /Festarlight.dll starlight/starlight_ub.cpp /link $(slLink) /PDB:build/bin/starlight_$(SL_RANDOM).pdb
 
-hlsl_geom_wireframe.h: win32/hlsl_geom_wireframe.hlsl
-	@fxc /Zi /E"main" /Od /Vn"g_hlsl_geom_wireframe" /WX /T gs_4_0 /Fh"hlsl_geom_wireframe.h" /nologo win32/hlsl_geom_wireframe.hlsl
-
 SimplePixelShader.h: win32/SimplePixelShader.hlsl
 	@fxc /Zi /E"main" /Od /Vn"g_SimplePixelShader" /WX /T ps_4_0 /Fh"SimplePixelShader.h" /nologo win32/SimplePixelShader.hlsl
 
