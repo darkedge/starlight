@@ -1,135 +1,55 @@
-#include "hlsl_input.hlsli"
+varying in float3 vertWorldPos[3];
+varying in float3 vertWorldNormal[3];
 
-uint infoA[]     = { 0, 0, 0, 0, 1, 1, 2 };
-uint infoB[]     = { 1, 1, 2, 0, 2, 1, 2 };
-uint infoAd[]    = { 2, 2, 1, 1, 0, 0, 0 };
-uint infoBd[]    = { 2, 2, 1, 2, 0, 2, 1 };
+varying out float3 worldNormal;
+varying out float3 worldPos;
 
-//float4 Viewport; // ???
-float4 Viewport = float4(1920, 1080, 0, 0);
+noperspective varying float3 dist;
 
-float2 projToWindow(in float4 pos)
+struct PS_INPUT
 {
-    return float2(  Viewport.x*0.5*((pos.x/pos.w) + 1) + Viewport.z,
-                    Viewport.y*0.5*(1-(pos.y/pos.w)) + Viewport.w );
-}
+	float4 p : SV_POSITION;
+	float2 t : TEXCOORD;
+	float opacity : OPACITY;
+};
 
+// https://msdn.microsoft.com/en-us/library/windows/desktop/bb205122(v=vs.85).aspx
 [maxvertexcount(3)]
-void main( triangle GS_INPUT input[3], inout TriangleStream<PS_INPUT_WIRE> outStream )
+void main( triangle GS_INPUT input[3], inout TriangleStream<PS_INPUT> OutputStream )
 {
-    PS_INPUT_WIRE output;
+	PS_INPUT output;
 
-    // Compute the case from the positions of point in space.
-    output.Case = (input[0].position.z < 0)*4 + (input[1].position.z < 0)*2 + (input[2].position.z < 0); 
+	float2 WIN_SCALE(1920, 1080);
 
-    // If case is all vertices behind viewpoint (case = 7) then cull.
-    if (output.Case == 7) return;
+	// taken from 'Single-Pass Wireframe Rendering'
+	float2 p0 = WIN_SCALE * gl_PositionIn[0].xy / gl_PositionIn[0].w;
+	float2 p1 = WIN_SCALE * gl_PositionIn[1].xy / gl_PositionIn[1].w;
+	float2 p2 = WIN_SCALE * gl_PositionIn[2].xy / gl_PositionIn[2].w;
+	float2 v0 = p2 - p1;
+	float2 v1 = p2 - p0;
+	float2 v2 = p1 - p0;
+	float area = abs(v1.x * v2.y - v1.y * v2.x);
 
-    // Shade and colour face just for the "all in one" technique.
-    //output.Col = shadeFace(input[0].PosV, input[1].PosV, input[2].PosV);
+	output.dist = float3(area / length(v0), 0, 0);
+	output.worldPos = input[0].vertWorldPos;
+	output.worldNormal = input[0].vertWorldNormal;
+	output.gl_Position = input[0].gl_PositionIn;
 
-   // Transform position to window space
-    float2 points[3];
-    points[0] = projToWindow(input[0].position);
-    points[1] = projToWindow(input[1].position);
-    points[2] = projToWindow(input[2].position);
+	OutputStream.Append( output );
 
-    // If Case is 0, all projected points are defined, do the
-    // general case computation
-    if (output.Case == 0) 
-    {
-        output.EdgeA = float4(0,0,0,0);
-        output.EdgeB = float4(0,0,0,0);
+	output.dist = float3(0, area / length(v1), 0);
+	output.worldPos = input[1].vertWorldPos;
+	output.worldNormal = input[1].vertWorldNormal;
+	output.gl_Position = input[1].gl_PositionIn;
 
-        // Compute the edges vectors of the transformed triangle
-        float2 edges[3];
-        edges[0] = points[1] - points[0];
-        edges[1] = points[2] - points[1];
-        edges[2] = points[0] - points[2];
+	OutputStream.Append( output );
 
-        // Store the length of the edges
-        float lengths[3];
-        lengths[0] = length(edges[0]);
-        lengths[1] = length(edges[1]);
-        lengths[2] = length(edges[2]);
+	output.dist = float3(0, 0, area / length(v2));
+	output.worldPos = input[2].vertWorldPos;
+	output.worldNormal = input[2].vertWorldNormal;
+	output.gl_Position = input[2].gl_PositionIn;
 
-        // Compute the cos angle of each vertices
-        float cosAngles[3];
-        cosAngles[0] = dot( -edges[2], edges[0]) / ( lengths[2] * lengths[0] );
-        cosAngles[1] = dot( -edges[0], edges[1]) / ( lengths[0] * lengths[1] );
-        cosAngles[2] = dot( -edges[1], edges[2]) / ( lengths[1] * lengths[2] );
+	OutputStream.Append( output );
 
-        // The height for each vertices of the triangle
-        float heights[3];
-        heights[1] = lengths[0]*sqrt(1 - cosAngles[0]*cosAngles[0]);
-        heights[2] = lengths[1]*sqrt(1 - cosAngles[1]*cosAngles[1]);
-        heights[0] = lengths[2]*sqrt(1 - cosAngles[2]*cosAngles[2]);
-
-        float edgeSigns[3];
-        edgeSigns[0] = (edges[0].x > 0 ? 1 : -1);
-        edgeSigns[1] = (edges[1].x > 0 ? 1 : -1);
-        edgeSigns[2] = (edges[2].x > 0 ? 1 : -1);
-
-        float edgeOffsets[3];
-        edgeOffsets[0] = lengths[0]*(0.5 - 0.5*edgeSigns[0]);
-        edgeOffsets[1] = lengths[1]*(0.5 - 0.5*edgeSigns[1]);
-        edgeOffsets[2] = lengths[2]*(0.5 - 0.5*edgeSigns[2]);
-
-        output.Pos =( input[0].position );
-        output.uv =( input[0].uv );
-        output.EdgeA[0] = 0;
-        output.EdgeA[1] = heights[0];
-        output.EdgeA[2] = 0;
-        output.EdgeB[0] = edgeOffsets[0];
-        output.EdgeB[1] = edgeOffsets[1] + edgeSigns[1] * cosAngles[1]*lengths[0];
-        output.EdgeB[2] = edgeOffsets[2] + edgeSigns[2] * lengths[2];
-        outStream.Append( output );
-
-        output.Pos = ( input[1].position );
-        output.uv = ( input[1].uv );
-        output.EdgeA[0] = 0;
-        output.EdgeA[1] = 0;
-        output.EdgeA[2] = heights[1];
-        output.EdgeB[0] = edgeOffsets[0] + edgeSigns[0] * lengths[0];
-        output.EdgeB[1] = edgeOffsets[1];
-        output.EdgeB[2] = edgeOffsets[2] + edgeSigns[2] * cosAngles[2]*lengths[1];
-        outStream.Append( output );
-
-        output.Pos = ( input[2].position );
-        output.uv = ( input[2].uv );
-        output.EdgeA[0] = heights[2];
-        output.EdgeA[1] = 0;
-        output.EdgeA[2] = 0;
-        output.EdgeB[0] = edgeOffsets[0] + edgeSigns[0] * cosAngles[0]*lengths[2];
-        output.EdgeB[1] = edgeOffsets[1] + edgeSigns[1] * lengths[1];
-        output.EdgeB[2] = edgeOffsets[2];
-        outStream.Append( output );
-
-        outStream.RestartStrip();
-    }
-    // Else need some tricky computations
-    else
-    {
-        // Then compute and pass the edge definitions from the case
-        output.EdgeA.xy = points[ infoA[output.Case] ];
-        output.EdgeB.xy = points[ infoB[output.Case] ];
-
-		output.EdgeA.zw = normalize( output.EdgeA.xy - points[ infoAd[output.Case] ] ); 
-        output.EdgeB.zw = normalize( output.EdgeB.xy - points[ infoBd[output.Case] ] );
-		
-		// Generate vertices
-        output.Pos =( input[0].position );
-        output.uv =( input[0].uv );
-        outStream.Append( output );
-     
-        output.Pos = ( input[1].position );
-        output.uv = ( input[1].uv );
-        outStream.Append( output );
-
-        output.Pos = ( input[2].position );
-        output.uv = ( input[2].uv );
-        outStream.Append( output );
-
-        outStream.RestartStrip();
-    }
+	//EndPrimitive();
 }

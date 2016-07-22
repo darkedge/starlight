@@ -1,16 +1,18 @@
 #include "starlight_hlsl_generated.h"
-#include "hlsl_input.hlsli"
 
-GS_INPUT main(Vertex IN) {
-    GS_INPUT output;
+struct VertexShaderOutput
+{
+    float2 uv : TEXCOORD;
+    float4 position : SV_POSITION;
+};
 
-	// TODO: put in constant buffer
-    matrix mvp = mul(projection, mul(view, worldMatrix));
-    //matrix mv = mul(projection, view);
+VertexShaderOutput main( Vertex IN )
+{
+    VertexShaderOutput OUT;
 
-    output.position = mul(mvp, float4(IN.position, 1.0f));
-    //output.PosV = mul(mv, float4(IN.position, 1.0f));
-    output.uv = float2(IN.uv.x, 1.0f - IN.uv.y);
+    matrix mvp = mul( projection, mul( view, worldMatrix ) );
+    OUT.position = mul( mvp, float4( IN.position, 1.0f ) );
+    OUT.uv = float2( IN.uv.x, 1.0f - IN.uv.y );
 
-    return output;
+    return OUT;
 }

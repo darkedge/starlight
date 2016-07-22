@@ -45,13 +45,9 @@ static MeshD3D11* firstAvailableMesh;
 #define PixelShaderBlob g_SimplePixelShader
 #include "SimpleVertexShader.h"
 #define VertexShaderBlob g_SimpleVertexShader
-#include "hlsl_geom_wireframe.h"
-#define GeometryShaderBlob g_hlsl_geom_wireframe
 
 static ID3D11PixelShader* s_pixelShader;
 static ID3D11VertexShader* s_vertexShader;
-static ID3D11GeometryShader* s_geometryShader;
-
 static ID3D11Buffer* s_constantBuffers[EConstantBuffer::Count];
 static ID3D11InputLayout* s_inputLayout;
 static ID3D11RasterizerState* s_rasterizerState;
@@ -330,8 +326,7 @@ void graphics::D3D11::Render() {
 
 		// TODO: Domain Shader
 
-		// TODO: Geometry Shader is not set in pipeline state
-		sl_pd3dDeviceContext->GSSetShader(s_geometryShader, nullptr, 0);
+		// TODO: Geometry Shader
 
 		// Rasterizer
 		sl_pd3dDeviceContext->RSSetState(s_rasterizerState);
@@ -349,9 +344,6 @@ void graphics::D3D11::Render() {
 		// Draw call
 		sl_pd3dDeviceContext->DrawIndexed(mesh->state.live.numIndices, 0, 0);
 	}
-
-	// Disable geometry shader for ImGui
-	sl_pd3dDeviceContext->GSSetShader(nullptr, nullptr, 0);
 
 	ImGui::Render();
 
@@ -376,7 +368,6 @@ bool graphics::D3D11::Init(PlatformData *data, GameFuncs* funcs) {
 	D3D_TRY(sl_pd3dDevice->CreatePixelShader(PixelShaderBlob, sizeof(PixelShaderBlob), nullptr, &s_pixelShader));
 	D3D_TRY(sl_pd3dDevice->CreateVertexShader(VertexShaderBlob, sizeof(VertexShaderBlob), nullptr, &s_vertexShader));
 	D3D_TRY(sl_pd3dDevice->CreateInputLayout(g_Vertex, COUNT_OF(g_Vertex), VertexShaderBlob, sizeof(VertexShaderBlob), &s_inputLayout));
-	D3D_TRY(sl_pd3dDevice->CreateGeometryShader(GeometryShaderBlob, sizeof(GeometryShaderBlob), nullptr, &s_geometryShader));
 
 	// Create constant buffers
 
