@@ -296,6 +296,8 @@ void graphics::D3D11::Render() {
 	assert(s_constantBuffers[EConstantBuffer::View]);
 	sl_pd3dDeviceContext->UpdateSubresource(s_constantBuffers[EConstantBuffer::View], 0, nullptr, &s_view, 0, 0);
 
+	size_t numTrianglesDrawn = 0;
+
 	// Submit draw commands
 	for (size_t i = 0; i < MAX_DRAW_COMMANDS; i++) {
 		DrawCommand* cmd = &g_drawCommands[i];
@@ -343,7 +345,13 @@ void graphics::D3D11::Render() {
 
 		// Draw call
 		sl_pd3dDeviceContext->DrawIndexed(mesh->state.live.numIndices, 0, 0);
+
+		numTrianglesDrawn += mesh->state.live.numIndices / 3;
 	}
+
+	ImGui::Begin("hoi");
+	ImGui::Text("Triangles drawn: %zi", numTrianglesDrawn);
+	ImGui::End();
 
 	ImGui::Render();
 
