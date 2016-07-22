@@ -41,11 +41,15 @@ static byte3 Offsets[ESide::Count] = {
 
 // Currently returns by value... maybe we want to return by pointer when Block becomes a struct?
 // Or use SoA and this keeps being an integer.
-__inline Block GetBlock(Chunk* chunk, size_t x, size_t y, size_t z) {
+// TODO: Change 0 to "AIR" or something
+inline Block GetBlock(Chunk* chunk, size_t x, size_t y, size_t z) {
 	assert(chunk);
-	assert(x >= 0 && x < CHUNK_DIM_XZ);
-	assert(y >= 0 && y < CHUNK_DIM_Y);
-	assert(z >= 0 && z < CHUNK_DIM_XZ);
+	//assert(x >= 0 && x < CHUNK_DIM_XZ);
+	//assert(y >= 0 && y < CHUNK_DIM_Y);
+	//assert(z >= 0 && z < CHUNK_DIM_XZ);
+	if (x >= CHUNK_DIM_XZ) return Block(0);
+	if (y >= CHUNK_DIM_Y) return Block(0);
+	if (z >= CHUNK_DIM_XZ) return Block(0);
 	return chunk->blocks[y * CHUNK_DIM_XZ * CHUNK_DIM_XZ + z * CHUNK_DIM_XZ + x];
 }
 
@@ -99,33 +103,34 @@ static void AddCubeTriangles(TempMesh *mesh, int32_t x, int32_t y, int32_t z) {
 	| \|
 	0--1
 	*/
+	// Left Down Behind Up Right Front
 	Vertex vertices[] = {
-		// -X
+		// -X, Left
 		{ uv[0], v + float3{ (0.0f), 0.0f, 0.0f } },
 		{ uv[1], v + float3{ (0.0f), 0.0f, 1.0f } },
 		{ uv[2], v + float3{ (0.0f), 1.0f, 0.0f } },
 		{ uv[3], v + float3{ (0.0f), 1.0f, 1.0f } },
-		// -Y
+		// -Y, Down
 		{ uv[0], v + float3{ 0.0f, (0.0f), 0.0f } },
 		{ uv[1], v + float3{ 1.0f, (0.0f), 0.0f } },
 		{ uv[2], v + float3{ 0.0f, (0.0f), 1.0f } },
 		{ uv[3], v + float3{ 1.0f, (0.0f), 1.0f } },
-		// -Z
+		// -Z, Behind
 		{ uv[0], v + float3{ 1.0f, 0.0f, (0.0f) } },
 		{ uv[1], v + float3{ 0.0f, 0.0f, (0.0f) } },
 		{ uv[2], v + float3{ 1.0f, 1.0f, (0.0f) } },
 		{ uv[3], v + float3{ 0.0f, 1.0f, (0.0f) } },
-		// +X
+		// +X, Right
 		{ uv[0], v + float3{ (1.0f), 0.0f, 1.0f } },
 		{ uv[1], v + float3{ (1.0f), 0.0f, 0.0f } },
 		{ uv[2], v + float3{ (1.0f), 1.0f, 1.0f } },
 		{ uv[3], v + float3{ (1.0f), 1.0f, 0.0f } },
-		// +Y
+		// +Y, Up
 		{ uv[0], v + float3{ 0.0f, (1.0f), 1.0f } },
 		{ uv[1], v + float3{ 1.0f, (1.0f), 1.0f } },
 		{ uv[2], v + float3{ 0.0f, (1.0f), 0.0f } },
 		{ uv[3], v + float3{ 1.0f, (1.0f), 0.0f } },
-		// +Z
+		// +Z, Front
 		{ uv[0], v + float3{ 0.0f, 0.0f, (1.0f) } },
 		{ uv[1], v + float3{ 1.0f, 0.0f, (1.0f) } },
 		{ uv[2], v + float3{ 0.0f, 1.0f, (1.0f) } },
@@ -148,21 +153,102 @@ static void AddCubeTriangles(TempMesh *mesh, int32_t x, int32_t y, int32_t z) {
 	mesh->indices.insert(mesh->indices.end(), indices, indices + _countof(indices));
 }
 
+/*
+	2--3
+	|\ |
+	| \|
+	0--1
+*/
+static void AddQuad(TempMesh *mesh, float3 v0, float3 v1, float3 v2, float3 v3) {
+	Vertex vertices[] = {
+		{ {0,0}, v0 },
+		{ {1,0}, v1 },
+		{ {0,1}, v2 },
+		{ {1,1}, v3 },
+	};
+	mesh->vertices.insert(mesh->vertices.end(), vertices, vertices + 4);
+
+	int32_t size = (int32_t) mesh->vertices.size();
+	int32_t indices[] = {size + 0, size + 1, size + 2, size + 2, size + 1, size + 3};
+	mesh->indices.insert(mesh->indices.end(), indices, indices + 6);
+}
+
 static void* GenerateChunkMesh(GameInfo* gameInfo, Chunk* chunk, int32_t cx, int32_t cz) {
-	// Maybe this needs to be queued
-	// TODO: Smarter meshing
+	// TODO: Separate thread
+	// TODO: Do not bake chunk world position in here
 
 	TempMesh mesh;
 
 	// Y->Z->X
-	for (int32_t y = 0; y < CHUNK_DIM_Y; y++) {
-		for (int32_t bz = 0; bz < CHUNK_DIM_XZ; bz++) {
-			for (int32_t bx = 0; bx < CHUNK_DIM_XZ; bx++) {
+	for (size_t y = 0; y < CHUNK_DIM_Y; y++) {
+		for (size_t bz = 0; bz < CHUNK_DIM_XZ; bz++) {
+			for (size_t bx = 0; bx < CHUNK_DIM_XZ; bx++) {
+				// TODO: SIMD?
 				if (GetBlock(chunk, bx, y, bz) != 0) {
-					AddCubeTriangles(&mesh,
-						cx * CHUNK_DIM_XZ + bx,
-						y,
-						cz * CHUNK_DIM_XZ + bz);
+					float3 v { (float) cx * CHUNK_DIM_XZ + bx, (float) y, (float) cz * CHUNK_DIM_XZ + bz };
+
+					// Left Down Behind Up Right Front
+
+					/*
+						2--3
+						|\ |
+						| \|
+						0--1
+					*/
+
+					// Left: X - 1
+					if (!GetBlock(chunk, bx - 1, y, bz)) {
+						AddQuad(&mesh,
+							v + float3{ (0.0f), 0.0f, 0.0f },
+							v + float3{ (0.0f), 0.0f, 1.0f },
+							v + float3{ (0.0f), 1.0f, 0.0f },
+							v + float3{ (0.0f), 1.0f, 1.0f });
+					}
+
+					// Down: Y - 1
+					if (!GetBlock(chunk, bx, y - 1, bz)) {
+						AddQuad(&mesh,
+							v + float3{ 0.0f, (0.0f), 0.0f },
+							v + float3{ 1.0f, (0.0f), 0.0f },
+							v + float3{ 0.0f, (0.0f), 1.0f },
+							v + float3{ 1.0f, (0.0f), 1.0f });
+					}
+
+					// Behind: Z - 1
+					if (!GetBlock(chunk, bx, y, bz - 1)) {
+						AddQuad(&mesh,
+							v + float3{ 1.0f, 0.0f, (0.0f) },
+							v + float3{ 0.0f, 0.0f, (0.0f) },
+							v + float3{ 1.0f, 1.0f, (0.0f) },
+							v + float3{ 0.0f, 1.0f, (0.0f) });
+					}
+
+					// Right: X + 1
+					if (!GetBlock(chunk, bx + 1, y, bz)) {
+						AddQuad(&mesh,
+							v + float3{ (1.0f), 0.0f, 1.0f },
+							v + float3{ (1.0f), 0.0f, 0.0f },
+							v + float3{ (1.0f), 1.0f, 1.0f },
+							v + float3{ (1.0f), 1.0f, 0.0f });
+					}
+
+					// Up: Y + 1
+					if (!GetBlock(chunk, bx, y + 1, bz)) {
+						AddQuad(&mesh,
+							v + float3{ 0.0f, (1.0f), 1.0f },
+							v + float3{ 1.0f, (1.0f), 1.0f },
+							v + float3{ 0.0f, (1.0f), 0.0f },
+							v + float3{ 1.0f, (1.0f), 0.0f });
+					}
+
+					// Front: Z + 1
+					if (!GetBlock(chunk, bx, y, bz + 1)) {
+						AddQuad(&mesh,
+							v + float3{ 0.0f, 0.0f, (1.0f) },
+							v + float3{ 1.0f, 0.0f, (1.0f) },
+							v + float3{ 0.0f, 1.0f, (1.0f) },
+							v + float3{ 1.0f, 1.0f, (1.0f) });
+					}
 				}
 			}
 		}
