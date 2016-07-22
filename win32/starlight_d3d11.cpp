@@ -409,7 +409,7 @@ bool graphics::D3D11::Init(PlatformData *data, GameFuncs* funcs) {
 	rasterizerDesc.DepthBias = 0;
 	rasterizerDesc.DepthBiasClamp = 0.0f;
 	rasterizerDesc.DepthClipEnable = TRUE;
-	rasterizerDesc.FillMode = D3D11_FILL_SOLID;
+	rasterizerDesc.FillMode = D3D11_FILL_WIREFRAME;
 	rasterizerDesc.FrontCounterClockwise = TRUE;
 	rasterizerDesc.MultisampleEnable = FALSE;
 	rasterizerDesc.ScissorEnable = FALSE;
