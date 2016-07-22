@@ -319,21 +319,18 @@ void UpdateChunkGrid(GameInfo* gameInfo) {
 		// Copy right to left
 		for (size_t x = 0; x < CHUNK_DIAMETER; x++) {
 			for(size_t z = 0; z < CHUNK_DIAMETER; z++) {
+				VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
 				if (x < dc.x) {
-					// This chunk is going to be overwritten
-					VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
+					// Delete chunk + data
 					if (chunk->data) gameInfo->gfxFuncs->DeleteChunk(chunk->data);
 					chunk->data = nullptr;
-					if (chunk->chunk) ZERO_MEM(chunk->chunk, sizeof(Chunk)); // TODO: Necessary?
+					if (chunk->chunk) chunk->chunk->loaded = false;
 				}
 				if (x + dc.x < CHUNK_DIAMETER) {
 					// Move chunk
-					gameInfo->chunkGrid[x * CHUNK_DIAMETER + z] = gameInfo->chunkGrid[(x + dc.x) * CHUNK_DIAMETER + z];	
+					*chunk = gameInfo->chunkGrid[(x + dc.x) * CHUNK_DIAMETER + z];	
 				} else {
-					// Generate new chunk here later
-					VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
-					// TODO: Only unload if needed
-					if (chunk->chunk) chunk->chunk->loaded = false;
+					// Generate new chunk here
 					ZERO_MEM(chunk, sizeof(VisibleChunk));
 				}
 			}
@@ -342,21 +339,18 @@ void UpdateChunkGrid(GameInfo* gameInfo) {
 		// Copy left to right
 		for (size_t x = CHUNK_DIAMETER - 1; x < CHUNK_DIAMETER; x--) {
 			for(size_t z = 0; z < CHUNK_DIAMETER; z++) {
+				VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
 				if (x >= CHUNK_DIAMETER + dc.x || -dc.x >= CHUNK_DIAMETER) {
-					// These chunks are going to be overwritten
-					VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
+					// Delete chunk + data
 					if (chunk->data) gameInfo->gfxFuncs->DeleteChunk(chunk->data);
 					chunk->data = nullptr;
-					if (chunk->chunk) ZERO_MEM(chunk->chunk, sizeof(Chunk)); // TODO: Necessary?
+					if (chunk->chunk) chunk->chunk->loaded = false;
 				}
 				if (x + dc.x < CHUNK_DIAMETER) {
 					// Move chunk
-					gameInfo->chunkGrid[x * CHUNK_DIAMETER + z] = gameInfo->chunkGrid[(x + dc.x) * CHUNK_DIAMETER + z];
+					*chunk = gameInfo->chunkGrid[(x + dc.x) * CHUNK_DIAMETER + z];
 				} else {
-					// Generate new chunk here later
-					VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
-					// TODO: Only unload if needed
-					if (chunk->chunk) chunk->chunk->loaded = false;
+					// Generate new chunk here
 					ZERO_MEM(chunk, sizeof(VisibleChunk));
 				}
 			}
@@ -368,19 +362,18 @@ void UpdateChunkGrid(GameInfo* gameInfo) {
 		// Copy down to up
 		for(size_t z = 0; z < CHUNK_DIAMETER; z++) {
 			for (size_t x = 0; x < CHUNK_DIAMETER; x++) {
+				VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
 				if (z < dc.z) {
-					// These chunks are going to be overwritten
-					VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
+					// Delete chunk + data
 					if (chunk->data) gameInfo->gfxFuncs->DeleteChunk(chunk->data);
 					chunk->data = nullptr;
-					if (chunk->chunk) ZERO_MEM(chunk->chunk, sizeof(Chunk)); // TODO: Necessary?
+					if (chunk->chunk) chunk->chunk->loaded = false;
 				}
 				if (z + dc.z < CHUNK_DIAMETER) {
-					gameInfo->chunkGrid[x * CHUNK_DIAMETER + z] = gameInfo->chunkGrid[x * CHUNK_DIAMETER + (z + dc.z)];
+					// Move chunk
+					*chunk = gameInfo->chunkGrid[x * CHUNK_DIAMETER + (z + dc.z)];
 				} else {
-					VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
-					// TODO: Only unload if needed
-					if (chunk->chunk) chunk->chunk->loaded = false;
+					// Generate new chunk here
 					ZERO_MEM(chunk, sizeof(VisibleChunk));
 				}
 			}
@@ -389,19 +382,18 @@ void UpdateChunkGrid(GameInfo* gameInfo) {
 		// Copy up to down
 		for(size_t z = CHUNK_DIAMETER - 1; z < CHUNK_DIAMETER; z--) {
 			for (size_t x = 0; x < CHUNK_DIAMETER; x++) {
+				VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
 				if (z >= CHUNK_DIAMETER + dc.z || -dc.z >= CHUNK_DIAMETER) {
-					// These chunks are going to be overwritten
-					VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
+					// Delete chunk + data
 					if (chunk->data) gameInfo->gfxFuncs->DeleteChunk(chunk->data);
 					chunk->data = nullptr;
-					if (chunk->chunk) ZERO_MEM(chunk->chunk, sizeof(Chunk)); // TODO: Necessary?
+					if (chunk->chunk) chunk->chunk->loaded = false;
 				}
 				if (z + dc.z < CHUNK_DIAMETER) {
-					gameInfo->chunkGrid[x * CHUNK_DIAMETER + z] = gameInfo->chunkGrid[x * CHUNK_DIAMETER + (z + dc.z)];
+					// Move chunk
+					*chunk = gameInfo->chunkGrid[x * CHUNK_DIAMETER + (z + dc.z)];
 				} else {
-					VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
-					// TODO: Only unload if needed
-					if (chunk->chunk) chunk->chunk->loaded = false;
+					// Generate new chunk here
 					ZERO_MEM(chunk, sizeof(VisibleChunk));
 				}
 			}
@@ -425,6 +417,8 @@ void UpdateChunkGrid(GameInfo* gameInfo) {
 			}
 		}
 	}
+
+	logger::LogInfo("Found " + std::to_string(numFreeChunks) + " unloaded chunks");
 
 	// Add missing chunks
 	for (size_t x = 0; x < CHUNK_DIAMETER; x++) {
