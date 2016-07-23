@@ -214,28 +214,6 @@ static HRESULT CreateDeviceD3D(HWND hWnd, GameFuncs* funcs)
 		featureLevel == D3D_FEATURE_LEVEL_9_1 ? "9.1" : "error";
 
 	g_LogInfo(std::string("D3D Feature level: ") + level);
-	
-
-	// Setup rasterizer
-	{
-		D3D11_RASTERIZER_DESC RSDesc;
-		memset(&RSDesc, 0, sizeof(D3D11_RASTERIZER_DESC));
-		RSDesc.FillMode = D3D11_FILL_SOLID;
-		RSDesc.CullMode = D3D11_CULL_NONE;
-		RSDesc.FrontCounterClockwise = FALSE;
-		RSDesc.DepthBias = 0;
-		RSDesc.SlopeScaledDepthBias = 0.0f;
-		RSDesc.DepthBiasClamp = 0;
-		RSDesc.DepthClipEnable = TRUE;
-		RSDesc.ScissorEnable = TRUE;
-		RSDesc.AntialiasedLineEnable = FALSE;
-		RSDesc.MultisampleEnable = (sd.SampleDesc.Count > 1) ? TRUE : FALSE;
-
-		ID3D11RasterizerState* pRState = NULL;
-		sl_pd3dDevice->CreateRasterizerState(&RSDesc, &pRState);
-		sl_pd3dDeviceContext->RSSetState(pRState);
-		pRState->Release();
-	}
 
 	CreateRenderTarget();
 
