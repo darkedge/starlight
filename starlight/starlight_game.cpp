@@ -352,7 +352,7 @@ void UpdateChunkGrid(GameInfo* gameInfo) {
 		}
 	}
 
-	logger::LogInfo("Found " + std::to_string(numFreeChunks) + " unloaded chunks");
+	//logger::LogInfo("Found " + std::to_string(numFreeChunks) + " unloaded chunks");
 
 	// Add missing chunks
 	for (size_t x = 0; x < CHUNK_DIAMETER; x++) {
