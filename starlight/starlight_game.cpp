@@ -100,9 +100,14 @@ static void AddQuad(TempMesh *mesh, float3 v0, float3 v1, float3 v2, float3 v3) 
 		{ {0,1}, v2 },
 		{ {1,1}, v3 },
 	};
+
+	// Get base vertex index
+	int32_t size = (int32_t)mesh->vertices.size();
+
+	// Add vertices
 	mesh->vertices.insert(mesh->vertices.end(), vertices, vertices + 4);
 
-	int32_t size = (int32_t) mesh->vertices.size();
+	// Add indices
 	int32_t indices[] = {size + 0, size + 1, size + 2, size + 2, size + 1, size + 3};
 	mesh->indices.insert(mesh->indices.end(), indices, indices + 6);
 }
