@@ -5,11 +5,6 @@
 #include "starlight_d3d11.h"
 #include "starlight_renderer_windows.h"
 
-#include <D3Dcommon.h>
-
-#include <algorithm>
-
-#include <array>
 #include "starlight_log.h"
 #include "starlight_game.h"
 
