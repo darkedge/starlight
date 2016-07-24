@@ -555,8 +555,6 @@ void __cdecl game::UpdateGame(GameInfo* gameInfo) {
 	if(showMainMenuBar) {
 		ImGui::BeginMainMenuBar();
 		if (ImGui::BeginMenu("File")) {
-			static bool wireframe = true;
-			ImGui::MenuItem("Wireframe", nullptr, &wireframe);
 			if (ImGui::MenuItem("Exit", nullptr, nullptr)) {
 				// TODO
 			}

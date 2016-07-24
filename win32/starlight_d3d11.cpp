@@ -327,8 +327,17 @@ void graphics::D3D11::Render() {
 		numTrianglesDrawn += mesh->state.live.numIndices / 3;
 	}
 
-	ImGui::Begin("hoi");
+	ImGui::Begin("starlight_d3d11");
 	ImGui::Text("Triangles drawn: %zi", numTrianglesDrawn);
+	static bool wireframe = false;
+	if (ImGui::Checkbox("Wireframe", &wireframe)) {
+		D3D11_RASTERIZER_DESC rasterizerDesc;
+		s_rasterizerState->GetDesc( &rasterizerDesc );
+		s_rasterizerState->Release();
+		rasterizerDesc.FillMode = wireframe ? D3D11_FILL_WIREFRAME : D3D11_FILL_SOLID;
+		D3D_TRY(sl_pd3dDevice->CreateRasterizerState(&rasterizerDesc, &s_rasterizerState));
+		sl_pd3dDeviceContext->RSSetState( s_rasterizerState );
+	}
 	ImGui::End();
 
 	ImGui::Render();
@@ -395,7 +404,7 @@ bool graphics::D3D11::Init(PlatformData *data, GameFuncs* funcs) {
 	rasterizerDesc.DepthBias = 0;
 	rasterizerDesc.DepthBiasClamp = 0.0f;
 	rasterizerDesc.DepthClipEnable = TRUE;
-	rasterizerDesc.FillMode = D3D11_FILL_WIREFRAME;
+	rasterizerDesc.FillMode = D3D11_FILL_SOLID;
 	rasterizerDesc.FrontCounterClockwise = TRUE;
 	rasterizerDesc.MultisampleEnable = FALSE;
 	rasterizerDesc.ScissorEnable = FALSE;
