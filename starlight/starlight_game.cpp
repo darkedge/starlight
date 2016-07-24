@@ -118,75 +118,111 @@ static void* GenerateChunkMesh(GameInfo* gameInfo, Chunk* chunk, int32_t cx, int
 
 	TempMesh mesh;
 
+	// Note: This assertion guarantees that the mask is large enough
+	assert(CHUNK_DIM_Y >= CHUNK_DIM_XZ);
+	// 16 * 128 * 2 = 4 KB stack space, should be safe
+	Block slice[CHUNK_DIM_XZ * CHUNK_DIM_Y];
+
+	size_t xyz[] = { 0, 0, 0 }; // xyz yzx zxy
+	size_t max[] = { CHUNK_DIM_XZ, CHUNK_DIM_Y, CHUNK_DIM_XZ };
+
 	// Y->Z->X
-	for (size_t y = 0; y < CHUNK_DIM_Y; y++) {
-		for (size_t bz = 0; bz < CHUNK_DIM_XZ; bz++) {
-			for (size_t bx = 0; bx < CHUNK_DIM_XZ; bx++) {
-				// TODO: SIMD?
-				if (GetBlock(chunk, bx, y, bz) != 0) {
-					float3 v { (float) cx * CHUNK_DIM_XZ + bx, (float) y, (float) cz * CHUNK_DIM_XZ + bz };
+	// For every side
+	for (size_t i = 0; i < 6; i++) {
+		// -X, -Y, -Z, +X, +Y, +Z
+		// X: for(x, y/z, y/z)
+		// Y: for(y, z, x)
+		// Z: for(z, x/y, x/y)
+		
+		size_t d0 = (i + 0) % 3; // x y z
+		size_t d1 = (i + 1) % 3; // y z x
+		size_t d2 = (i + 2) % 3; // z x y
 
-					// Left Down Behind Up Right Front
+		size_t x = (6 - i) % 3; // 0 2 1
+		size_t y = (5 - i) % 3; // 2 1 0
+		size_t z = (4 - i) % 3; // 1 0 2
 
-					/*
-						2--3
-						|\ |
-						| \|
-						0--1
-					*/
+		ptrdiff_t backface = i / 3 * 2 - 1; // -1 -1 -1 +1 +1 +1
 
-					// Left: X - 1
-					if (!GetBlock(chunk, bx - 1, y, bz)) {
-						AddQuad(&mesh,
-							v + float3{ (0.0f), 0.0f, 0.0f },
-							v + float3{ (0.0f), 0.0f, 1.0f },
-							v + float3{ (0.0f), 1.0f, 0.0f },
-							v + float3{ (0.0f), 1.0f, 1.0f });
+		// Traverse the chunk
+		for(xyz[d0] = 0; xyz[d0] < max[d0]; xyz[d0]++) {
+
+			// Fill in slice
+			for (xyz[d1] = 0; xyz[d1] < max[d1]; xyz[d1]++) {
+				for (xyz[d2] = 0; xyz[d2] < max[d0]; xyz[d2]++) {
+					Block block = GetBlock(chunk, xyz[x], xyz[y], xyz[z]);
+					if (block) {
+						// Check neighbor
+						xyz[d0] += backface;
+						if (GetBlock(chunk, xyz[x], xyz[y], xyz[z])) {
+							slice[xyz[d1] * max[d2] + xyz[d2]] = Block(0);
+						} else {
+							slice[xyz[d1] * max[d2] + xyz[d2]] = block;
+						}
+						xyz[d0] -= backface;
+					} else {
+						slice[xyz[d1] * max[d2] + xyz[d2]] = Block(0);
+					}
+				}
+			}
+
+			// Mesh the slice
+			for (xyz[d1] = 0; xyz[d1] < max[d1]; xyz[d1]++) {
+				for (xyz[d2] = 0; xyz[d2] < max[d2]; /*xyz[d2]++*/) {
+					Block type = slice[xyz[d1] * max[d2] + xyz[d2]];
+
+					// Skip air (or already meshed quads)
+					if (type == Block(0)) {
+						xyz[d2]++;
+						continue;
 					}
 
-					// Down: Y - 1
-					if (!GetBlock(chunk, bx, y - 1, bz)) {
-						AddQuad(&mesh,
-							v + float3{ 0.0f, (0.0f), 0.0f },
-							v + float3{ 1.0f, (0.0f), 0.0f },
-							v + float3{ 0.0f, (0.0f), 1.0f },
-							v + float3{ 1.0f, (0.0f), 1.0f });
+					size_t width = 1;
+
+					// Find the largest line
+					for (size_t d22 = xyz[d2] + 1; d22 < max[d2]; d22++) {
+						if (slice[xyz[d1] * max[d2] + d22] != type) break;
+						width++;
+
+						// Advance search position for next quad
+						xyz[d2]++; 
 					}
 
-					// Behind: Z - 1
-					if (!GetBlock(chunk, bx, y, bz - 1)) {
-						AddQuad(&mesh,
-							v + float3{ 1.0f, 0.0f, (0.0f) },
-							v + float3{ 0.0f, 0.0f, (0.0f) },
-							v + float3{ 1.0f, 1.0f, (0.0f) },
-							v + float3{ 0.0f, 1.0f, (0.0f) });
+					size_t height = 1;
+
+					// Find the largest rectangle
+					bool done = false;
+					for (size_t d11 = xyz[d1] + 1; d11 < max[d1]; d11++) {
+						// Find lines of the same width
+						for (size_t d22 = xyz[d2]; d22 < xyz[d2] + width; d22++) {
+							if (slice[d11 * max[d2] + d22] != type) {
+								done = true;
+								break;
+							}
+						}
+						height++;
 					}
 
-					// Right: X + 1
-					if (!GetBlock(chunk, bx + 1, y, bz)) {
-						AddQuad(&mesh,
-							v + float3{ (1.0f), 0.0f, 1.0f },
-							v + float3{ (1.0f), 0.0f, 0.0f },
-							v + float3{ (1.0f), 1.0f, 1.0f },
-							v + float3{ (1.0f), 1.0f, 0.0f });
-					}
+					float w[] = { 0, 0, 0 };
+					w[d1] = (float) width;
+					float h[] = { 0, 0, 0 };
+					h[d2] = (float) height;
 
-					// Up: Y + 1
-					if (!GetBlock(chunk, bx, y + 1, bz)) {
-						AddQuad(&mesh,
-							v + float3{ 0.0f, (1.0f), 1.0f },
-							v + float3{ 1.0f, (1.0f), 1.0f },
-							v + float3{ 0.0f, (1.0f), 0.0f },
-							v + float3{ 1.0f, (1.0f), 0.0f });
-					}
+					float3 v {cx * CHUNK_DIM_XZ + (float) xyz[0], (float) xyz[1], cz * CHUNK_DIM_XZ + (float) xyz[2]};
 
-					// Front: Z + 1
-					if (!GetBlock(chunk, bx, y, bz + 1)) {
-						AddQuad(&mesh,
-							v + float3{ 0.0f, 0.0f, (1.0f) },
-							v + float3{ 1.0f, 0.0f, (1.0f) },
-							v + float3{ 0.0f, 1.0f, (1.0f) },
-							v + float3{ 1.0f, 1.0f, (1.0f) });
+					// Now we have a quad
+					// TODO: probably need to flip some faces
+					AddQuad(&mesh,
+						v,
+						v + float3{w[0], w[1], w[2]},
+						v + float3{h[0], h[1], h[2]},
+						v + float3{w[0] + h[0], w[1] + h[1], w[2] + h[2]});
+
+					// Zero the quad in the slice
+					for (size_t d11 = xyz[d1]; d11 < xyz[d1] + height; d11++) {
+						for (size_t d22 = xyz[d2]; d22 < xyz[d2] + width; d22++) {
+							slice[d11 * max[d2] + d22] = Block(0);
+						}
 					}
 				}
 			}
