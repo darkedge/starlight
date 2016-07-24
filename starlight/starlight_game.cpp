@@ -194,6 +194,7 @@ static void* GenerateChunkMesh(GameInfo* gameInfo, Chunk* chunk, int32_t cx, int
 	}
 
 	//graphics
+	mesh.xz = int2 {cx * CHUNK_DIM_XZ, cz * CHUNK_DIM_XZ};
 	return gameInfo->gfxFuncs->AddChunk(&mesh);
 }
 

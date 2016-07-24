@@ -86,6 +86,7 @@ struct VisibleChunk {
 #include <vector>
 struct TempMesh {
 	// lazy
+	int2 xz;
 	std::vector<int32_t> indices;
 	std::vector<Vertex> vertices;
 };

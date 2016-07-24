@@ -19,6 +19,7 @@ struct MeshD3D11 {
 			ID3D11Buffer* vertexBuffer;
 			ID3D11Buffer* indexBuffer;
 			int32_t numIndices;
+			int2 xz;
 		} live;
 		MeshD3D11* next;
 	} state;
@@ -230,6 +231,98 @@ void graphics::D3D11::Destroy() {
 	CleanupDeviceD3D();
 }
 
+struct bound3 {
+	float mMinX;
+	float mMinY;
+	float mMinZ;
+	float mMaxX;
+	float mMaxY;
+	float mMaxZ;
+};
+
+struct frustum3 {
+	Vector4 mPlane[6];
+	//Vector3 mPoints[8]; // corner points
+};
+
+// http://www.iquilezles.org/www/articles/frustumcorrect/frustumcorrect.htm
+bool boxInFrustum( frustum3* fru, bound3* box )
+{
+    // check box outside/inside of frustum
+    for ( size_t i = 0; i < 6; i++ )
+    {
+        int out = 0;
+        out += ((dot( fru->mPlane[i], Vector4(box->mMinX, box->mMinY, box->mMinZ, 1.0f) ) < 0.0f ) ? 1: 0);
+        out += ((dot( fru->mPlane[i], Vector4(box->mMaxX, box->mMinY, box->mMinZ, 1.0f) ) < 0.0f ) ? 1: 0);
+        out += ((dot( fru->mPlane[i], Vector4(box->mMinX, box->mMaxY, box->mMinZ, 1.0f) ) < 0.0f ) ? 1: 0);
+        out += ((dot( fru->mPlane[i], Vector4(box->mMaxX, box->mMaxY, box->mMinZ, 1.0f) ) < 0.0f ) ? 1: 0);
+        out += ((dot( fru->mPlane[i], Vector4(box->mMinX, box->mMinY, box->mMaxZ, 1.0f) ) < 0.0f ) ? 1: 0);
+        out += ((dot( fru->mPlane[i], Vector4(box->mMaxX, box->mMinY, box->mMaxZ, 1.0f) ) < 0.0f ) ? 1: 0);
+        out += ((dot( fru->mPlane[i], Vector4(box->mMinX, box->mMaxY, box->mMaxZ, 1.0f) ) < 0.0f ) ? 1: 0);
+        out += ((dot( fru->mPlane[i], Vector4(box->mMaxX, box->mMaxY, box->mMaxZ, 1.0f) ) < 0.0f ) ? 1: 0);
+        if( out == 8 ) return false;
+    }
+
+    #if 0 // Additional checks
+
+    // check frustum outside/inside box
+    int out;
+    out = 0; for( int i = 0; i < 8; i++ ) out += ((fru.mPoints[i].x > box.mMaxX) ? 1: 0); if ( out == 8 ) return false;
+    out = 0; for( int i = 0; i < 8; i++ ) out += ((fru.mPoints[i].x < box.mMinX) ? 1: 0); if ( out == 8 ) return false;
+    out = 0; for( int i = 0; i < 8; i++ ) out += ((fru.mPoints[i].y > box.mMaxY) ? 1: 0); if ( out == 8 ) return false;
+    out = 0; for( int i = 0; i < 8; i++ ) out += ((fru.mPoints[i].y < box.mMinY) ? 1: 0); if ( out == 8 ) return false;
+    out = 0; for( int i = 0; i < 8; i++ ) out += ((fru.mPoints[i].z > box.mMaxZ) ? 1: 0); if ( out == 8 ) return false;
+    out = 0; for( int i = 0; i < 8; i++ ) out += ((fru.mPoints[i].z < box.mMinZ) ? 1: 0); if ( out == 8 ) return false;
+    #endif
+
+    return true;
+}
+
+void FrustumFromVPMatrix(frustum3* frustum, Matrix4* vp) {
+	// left
+	frustum->mPlane[0] =  Vector4(
+		vp->getElem(0, 3) + vp->getElem(0, 0),
+		vp->getElem(1, 3) + vp->getElem(1, 0),
+		vp->getElem(2, 3) + vp->getElem(2, 0),
+		vp->getElem(3, 3) + vp->getElem(3, 0)
+	);
+	// right
+	frustum->mPlane[1] = Vector4(
+		vp->getElem(0, 3) - vp->getElem(0, 0),
+		vp->getElem(1, 3) - vp->getElem(1, 0),
+		vp->getElem(2, 3) - vp->getElem(2, 0),
+		vp->getElem(3, 3) - vp->getElem(3, 0)
+	);
+	// bottom
+	frustum->mPlane[2] = Vector4(
+		vp->getElem(0, 3) + vp->getElem(0, 1),
+		vp->getElem(1, 3) + vp->getElem(1, 1),
+		vp->getElem(2, 3) + vp->getElem(2, 1),
+		vp->getElem(3, 3) + vp->getElem(3, 1)
+	);
+	// top
+	frustum->mPlane[3] = Vector4(
+		vp->getElem(0, 3) - vp->getElem(0, 1),
+		vp->getElem(1, 3) - vp->getElem(1, 1),
+		vp->getElem(2, 3) - vp->getElem(2, 1),
+		vp->getElem(3, 3) - vp->getElem(3, 1)
+	);
+	// near
+	frustum->mPlane[4] = Vector4(
+		vp->getElem(0, 2),
+		vp->getElem(1, 2),
+		vp->getElem(2, 2),
+		vp->getElem(3, 2)
+	);
+	// far
+	frustum->mPlane[5] = Vector4(
+		vp->getElem(0, 3) - vp->getElem(0, 2),
+		vp->getElem(1, 3) - vp->getElem(1, 2),
+		vp->getElem(2, 3) - vp->getElem(2, 2),
+		vp->getElem(3, 3) - vp->getElem(3, 2)
+	);
+}
+
 void graphics::D3D11::Render() {
 	// Clear
 	ImVec4 clear_col = ImColor(114, 144, 154);
@@ -271,12 +364,33 @@ void graphics::D3D11::Render() {
 
 	size_t numTrianglesDrawn = 0;
 
+	Matrix4 vp = s_projection * s_view;
+	frustum3 frustum;
+	FrustumFromVPMatrix(&frustum, &vp);
+
+	int32_t culledChunks = 0;
+
 	// Submit draw commands
 	for (size_t i = 0; i < MAX_DRAW_COMMANDS; i++) {
 		DrawCommand* cmd = &g_drawCommands[i];
 
 		MeshD3D11* mesh = cmd->state.live.mesh;
 		if (!mesh) continue;
+
+		// Frustum culling
+		bound3 b = {
+			(float) mesh->state.live.xz.x,
+			0.0f,
+			(float) mesh->state.live.xz.z,
+			(float) mesh->state.live.xz.x + CHUNK_DIM_XZ + 1.0f,
+			(float) CHUNK_DIM_Y + 1.0f,
+			(float) mesh->state.live.xz.z + CHUNK_DIM_XZ + 1.0f
+		};
+		if (!boxInFrustum(&frustum, &b)) {
+			culledChunks++;
+			continue;
+		};
+
 		PipelineState* pipelineState = &cmd->state.live.pipelineState;
 
 		// Constant Buffers
@@ -333,6 +447,7 @@ void graphics::D3D11::Render() {
 		D3D_TRY(sl_pd3dDevice->CreateRasterizerState(&rasterizerDesc, &s_rasterizerState));
 		sl_pd3dDeviceContext->RSSetState( s_rasterizerState );
 	}
+	ImGui::Text("Culled chunks: %i / %i", culledChunks, CHUNK_DIAMETER * CHUNK_DIAMETER);
 	ImGui::End();
 
 	ImGui::Render();
@@ -468,6 +583,8 @@ void* graphics::D3D11::AddChunk(TempMesh *tempMesh) {
 	firstAvailableMesh = firstAvailableMesh->state.next;
 	assert(firstAvailableMesh);
 	ZERO_MEM(mesh, sizeof(MeshD3D11));
+
+	mesh->state.live.xz = tempMesh->xz;
 
 	Vertex* vertices = tempMesh->vertices.data();
 	int32_t numVertices = (int32_t) tempMesh->vertices.size();
