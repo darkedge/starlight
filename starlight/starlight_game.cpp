@@ -263,9 +263,9 @@ void GenerateChunk(Chunk* chunk, int32_t cx, int32_t cz) {
 			size_t height = (size_t)(sample * 32) + 64;
 			if (height < 0) height = 0;
 			if (height >= CHUNK_DIM_Y) height = CHUNK_DIM_Y - 1;
-			//for (int32_t y = 0; y < height; y++) {
-			SetBlock(chunk, 1, bx, (int32_t)height, bz);
-			//}
+			for (int32_t y = 0; y < height; y++) {
+				SetBlock(chunk, 1, bx, y, bz);
+			}
 		}
 	}
 #if 0
