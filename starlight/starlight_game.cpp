@@ -93,12 +93,12 @@ struct ChunkMeshList {
 	| \|
 	0--1
 */
-static void AddQuad(TempMesh *mesh, float3 v0, float3 v1, float3 v2, float3 v3) {
+static void AddQuad(TempMesh *mesh, float3 v0, float3 v1, float3 v2, float3 v3, size_t width, size_t height) {
 	Vertex vertices[] = {
-		{ {0,0}, v0 },
-		{ {1,0}, v1 },
-		{ {0,1}, v2 },
-		{ {1,1}, v3 },
+		{ { 0,0 }, v0 },
+		{ { (float) width,0 }, v1 },
+		{ { 0, (float) height }, v2 },
+		{ { (float) width, (float) height }, v3 },
 	};
 
 	// Get base vertex index
@@ -138,23 +138,19 @@ static void* GenerateChunkMesh(GameInfo* gameInfo, Chunk* chunk, int32_t cx, int
 		size_t d1 = (i + 1) % 3; // y z x
 		size_t d2 = (i + 2) % 3; // z x y
 
-		size_t x = (6 - i) % 3; // 0 2 1
-		size_t y = (5 - i) % 3; // 2 1 0
-		size_t z = (4 - i) % 3; // 1 0 2
-
 		ptrdiff_t backface = i / 3 * 2 - 1; // -1 -1 -1 +1 +1 +1
 
 		// Traverse the chunk
-		for(xyz[d0] = 0; xyz[d0] < max[d0]; xyz[d0]++) {
+		for (xyz[d0] = 0; xyz[d0] < max[d0]; xyz[d0]++) {
 
 			// Fill in slice
 			for (xyz[d1] = 0; xyz[d1] < max[d1]; xyz[d1]++) {
-				for (xyz[d2] = 0; xyz[d2] < max[d0]; xyz[d2]++) {
-					Block block = GetBlock(chunk, xyz[x], xyz[y], xyz[z]);
+				for (xyz[d2] = 0; xyz[d2] < max[d2]; xyz[d2]++) {
+					Block block = GetBlock(chunk, xyz[0], xyz[1], xyz[2]);
 					if (block) {
 						// Check neighbor
 						xyz[d0] += backface;
-						if (GetBlock(chunk, xyz[x], xyz[y], xyz[z])) {
+						if (GetBlock(chunk, xyz[0], xyz[1], xyz[2])) {
 							slice[xyz[d1] * max[d2] + xyz[d2]] = Block(0);
 						} else {
 							slice[xyz[d1] * max[d2] + xyz[d2]] = block;
@@ -183,9 +179,6 @@ static void* GenerateChunkMesh(GameInfo* gameInfo, Chunk* chunk, int32_t cx, int
 					for (size_t d22 = xyz[d2] + 1; d22 < max[d2]; d22++) {
 						if (slice[xyz[d1] * max[d2] + d22] != type) break;
 						width++;
-
-						// Advance search position for next quad
-						xyz[d2]++; 
 					}
 
 					size_t height = 1;
@@ -200,23 +193,39 @@ static void* GenerateChunkMesh(GameInfo* gameInfo, Chunk* chunk, int32_t cx, int
 								break;
 							}
 						}
+						if (done) break;
 						height++;
 					}
 
 					float w[] = { 0, 0, 0 };
-					w[d1] = (float) width;
+					w[d2] = (float) width;
 					float h[] = { 0, 0, 0 };
-					h[d2] = (float) height;
+					h[d1] = (float) height;
 
 					float3 v {cx * CHUNK_DIM_XZ + (float) xyz[0], (float) xyz[1], cz * CHUNK_DIM_XZ + (float) xyz[2]};
 
+					// FIXME: Awkward way to shift front faces by one block
+					if (backface > 0) {
+						float f[] = { 0, 0, 0 };
+						f[d0] += 1.0f;
+						v += float3{ f[0], f[1], f[2] };
+					}
+
 					// Now we have a quad
-					// TODO: probably need to flip some faces
-					AddQuad(&mesh,
-						v,
-						v + float3{w[0], w[1], w[2]},
-						v + float3{h[0], h[1], h[2]},
-						v + float3{w[0] + h[0], w[1] + h[1], w[2] + h[2]});
+					// TODO: -/+Z and +X need to be rotated
+					if (backface < 0) {
+						AddQuad(&mesh,
+							v,
+							v + float3{ w[0], w[1], w[2] },
+							v + float3{ h[0], h[1], h[2] },
+							v + float3{ w[0] + h[0], w[1] + h[1], w[2] + h[2] }, width, height);
+					} else {
+						AddQuad(&mesh,
+							v + float3{ h[0], h[1], h[2] },
+							v + float3{ w[0] + h[0], w[1] + h[1], w[2] + h[2] },
+							v,
+							v + float3{ w[0], w[1], w[2] }, width, height);
+					}
 
 					// Zero the quad in the slice
 					for (size_t d11 = xyz[d1]; d11 < xyz[d1] + height; d11++) {
@@ -224,6 +233,9 @@ static void* GenerateChunkMesh(GameInfo* gameInfo, Chunk* chunk, int32_t cx, int
 							slice[d11 * max[d2] + d22] = Block(0);
 						}
 					}
+
+					// Advance search position for next quad
+					xyz[d2] += width;
 				}
 			}
 		}
