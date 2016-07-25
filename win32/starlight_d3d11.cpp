@@ -130,6 +130,9 @@ static void CreateRenderTarget()
 static void CleanupRenderTarget()
 {
 	if (g_mainRenderTargetView) { g_mainRenderTargetView->Release(); g_mainRenderTargetView = NULL; }
+	if (s_depthStencilBuffer) { s_depthStencilBuffer->Release(); s_depthStencilBuffer = NULL; }
+	if (s_depthStencilView) { s_depthStencilView->Release(); s_depthStencilView = NULL; }
+	if (s_depthStencilState) { s_depthStencilState->Release(); s_depthStencilState = NULL; }
 }
 
 static HRESULT CreateDeviceD3D(HWND hWnd, GameFuncs* funcs)
