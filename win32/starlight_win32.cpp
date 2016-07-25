@@ -48,7 +48,6 @@
 #endif
 
 // Globals
-static std::mutex s_mutex;
 static graphics::API* g_renderApi;
 
 static HWND s_hwnd = nullptr;
@@ -304,10 +303,7 @@ unsigned int __stdcall MyThreadFunction(void*) {
 		s_gameFuncs.UpdateGame(&gameInfo);
 
 		// Rendering
-		if (std::try_lock(s_mutex)) {
-			g_renderApi->Render();
-			s_mutex.unlock();
-		}
+		g_renderApi->Render();
 	}
 
 	s_gameFuncs.DestroyGame();
@@ -341,7 +337,7 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	case WM_SIZE:
 		if (g_renderApi && wParam != SIZE_MINIMIZED) {
 			g_renderApi->Resize((int32_t) LOWORD(lParam), (int32_t) HIWORD(lParam));
-			//return 0;
+			return 0;
 		}
 		break;
 	case WM_SYSCOMMAND:
@@ -476,7 +472,6 @@ int CALLBACK WinMain(
 	MSG msg;
 	while (s_running.load() && GetMessageW(&msg, nullptr, 0, 0))
 	{
-		std::lock_guard<std::mutex> lock(s_mutex);
 		TranslateMessage(&msg);
 		DispatchMessageW(&msg);
 	}

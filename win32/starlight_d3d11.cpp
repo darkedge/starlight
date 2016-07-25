@@ -58,6 +58,9 @@ static D3D11_VIEWPORT s_viewport;
 static Matrix4 s_view;
 static Matrix4 s_projection;
 
+// Should be atomic read/write
+static bool g_resize = false;
+
 #include <imgui.h>
 #include "examples\directx11_example\imgui_impl_dx11.h"
 #include <d3d11.h>
@@ -324,6 +327,13 @@ void FrustumFromVPMatrix(frustum3* frustum, Matrix4* vp) {
 }
 
 void graphics::D3D11::Render() {
+	if (g_resize) {
+		CleanupRenderTarget();
+		D3D_TRY(g_pSwapChain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, 0));
+		CreateRenderTarget();
+		g_resize = false;
+	}
+
 	// Clear
 	ImVec4 clear_col = ImColor(114, 144, 154);
 	sl_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView, (float*) &clear_col);
@@ -457,9 +467,7 @@ void graphics::D3D11::Render() {
 }
 
 void graphics::D3D11::Resize(int32_t, int32_t) {
-	CleanupRenderTarget();
-	g_pSwapChain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, 0);
-	CreateRenderTarget();
+	g_resize = true;
 }
 
 bool graphics::D3D11::Init(PlatformData *data, GameFuncs* funcs) {
