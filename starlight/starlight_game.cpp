@@ -212,19 +212,64 @@ static void* GenerateChunkMesh(GameInfo* gameInfo, Chunk* chunk, int32_t cx, int
 					}
 
 					// Now we have a quad
-					// TODO: -/+Z and +X need to be rotated
-					if (backface < 0) {
-						AddQuad(&mesh,
-							v,
-							v + float3{ w[0], w[1], w[2] },
-							v + float3{ h[0], h[1], h[2] },
-							v + float3{ w[0] + h[0], w[1] + h[1], w[2] + h[2] }, width, height);
-					} else {
-						AddQuad(&mesh,
-							v + float3{ h[0], h[1], h[2] },
-							v + float3{ w[0] + h[0], w[1] + h[1], w[2] + h[2] },
-							v,
-							v + float3{ w[0], w[1], w[2] }, width, height);
+					switch (i) {
+						case 0: // -X
+						{
+							AddQuad(&mesh,
+								v,
+								v + float3{ w[0], w[1], w[2] },
+								v + float3{ h[0], h[1], h[2] },
+								v + float3{ w[0] + h[0], w[1] + h[1], w[2] + h[2] }, width, height);
+							break;
+						}
+						case 1: // -Y
+						{
+							AddQuad(&mesh,
+								v,
+								v + float3{ w[0], w[1], w[2] },
+								v + float3{ h[0], h[1], h[2] },
+								v + float3{ w[0] + h[0], w[1] + h[1], w[2] + h[2] }, width, height);
+							break;
+						}
+						case 2: // -Z
+						{
+							AddQuad(&mesh,
+								v + float3{ h[0], h[1], h[2] },
+								v,
+								v + float3{ w[0] + h[0], w[1] + h[1], w[2] + h[2] },
+								v + float3{ w[0], w[1], w[2] },
+								height, width);
+							break;
+						}
+						case 3: // +X
+						{
+							AddQuad(&mesh,
+								v + float3{ w[0], w[1], w[2] },
+								v,
+								v + float3{ w[0] + h[0], w[1] + h[1], w[2] + h[2] },
+								v + float3{ h[0], h[1], h[2] },
+								width, height);
+							break;
+						}
+						case 4: // +Y
+						{
+							AddQuad(&mesh,
+								v + float3{ h[0], h[1], h[2] },
+								v + float3{ w[0] + h[0], w[1] + h[1], w[2] + h[2] },
+								v,
+								v + float3{ w[0], w[1], w[2] }, width, height);
+							break;
+						}
+						case 5: // +Z
+						{
+							AddQuad(&mesh,
+								v,
+								v + float3{ h[0], h[1], h[2] },
+								v + float3{ w[0], w[1], w[2] },
+								v + float3{ w[0] + h[0], w[1] + h[1], w[2] + h[2] },
+								height, width);
+							break;
+						}
 					}
 
 					// Zero the quad in the slice
