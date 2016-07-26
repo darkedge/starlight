@@ -374,6 +374,7 @@ int CALLBACK WinMain(
 
 	// Log CPU features
 	{
+#if 0
 		struct CPUInfo {
 			union {
 				int i[4];
@@ -400,6 +401,36 @@ int CALLBACK WinMain(
 			memcpy(vendor + 8, data[0].i + 2, 4);
 			g_LogInfo("CPU Vendor: " + std::string(vendor));
 		}
+#endif
+		// http://stackoverflow.com/questions/850774/how-to-determine-the-hardware-cpu-and-ram-on-a-machine
+		int CPUInfo[4] = { 0 };
+    	char CPUBrandString[0x40];
+    	// Get the information associated with each extended ID.
+    	__cpuid(CPUInfo, 0x80000000);
+    	int nExIds = CPUInfo[0];
+    	for (int i = 0x80000000; i <= nExIds; i++)
+    	{
+    		__cpuid(CPUInfo, i);
+    		// Interpret CPU brand string
+    		if  (i == 0x80000002)
+    			memcpy(CPUBrandString, CPUInfo, sizeof(CPUInfo));
+    		else if  (i == 0x80000003)
+    			memcpy(CPUBrandString + 16, CPUInfo, sizeof(CPUInfo));
+    		else if  (i == 0x80000004)
+    			memcpy(CPUBrandString + 32, CPUInfo, sizeof(CPUInfo));
+    	}
+        //string includes manufacturer, model and clockspeed
+        std::string brand(CPUBrandString);
+    	g_LogInfo(brand.substr(brand.find_first_not_of(" ")));
+
+    	SYSTEM_INFO sysInfo;
+    	GetSystemInfo(&sysInfo);
+    	g_LogInfo("Logical processors: " + std::to_string(sysInfo.dwNumberOfProcessors));
+
+    	MEMORYSTATUSEX statex;
+    	statex.dwLength = sizeof (statex);
+    	GlobalMemoryStatusEx(&statex);
+        g_LogInfo("Total System Memory: " + std::to_string(statex.ullTotalPhys/1024/1024) + " MB");
 	}
 
 	auto className = L"StarlightClassName";
