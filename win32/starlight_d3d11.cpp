@@ -11,6 +11,8 @@
 #include "starlight_hlsl_generated.h"
 #include "WICTextureLoader.h"
 
+#include <codecvt> // wstring to string
+
 using namespace Vectormath::Aos;
 
 struct MeshD3D11 {
@@ -216,6 +218,17 @@ static HRESULT CreateDeviceD3D(HWND hWnd, GameFuncs* funcs)
 		featureLevel == D3D_FEATURE_LEVEL_9_1 ? "9.1" : "error";
 
 	g_LogInfo(std::string("D3D Feature level: ") + level);
+
+	// Log graphics adapter
+	IDXGIDevice* pDXGIDevice;
+	D3D_TRY(sl_pd3dDevice->QueryInterface(__uuidof(IDXGIDevice), (void **)&pDXGIDevice));
+	IDXGIAdapter* pDXGIAdapter;
+	pDXGIDevice->GetAdapter(&pDXGIAdapter);
+	DXGI_ADAPTER_DESC adapterDesc;
+	pDXGIAdapter->GetDesc(&adapterDesc);
+	std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter;
+	std::string converted_str = converter.to_bytes( std::wstring(adapterDesc.Description) );
+	g_LogInfo(converted_str);
 
 	CreateRenderTarget();
 
