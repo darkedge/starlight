@@ -24,6 +24,7 @@
 
 #include <process.h> // _beginthreadex
 #include <Objbase.h> // CoInitializeEx, CoUninitialize
+#include <Psapi.h> // GetProcessMemoryInfo
 
 #ifdef SL_CL
   static const wchar_t* s_dllName = L"starlight.dll";
@@ -301,6 +302,14 @@ unsigned int __stdcall MyThreadFunction(void*) {
 		g_renderApi->ImGuiNewFrame();
 
 		s_gameFuncs.UpdateGame(&gameInfo);
+
+		// Memory stuff
+		PROCESS_MEMORY_COUNTERS_EX pmc = { 0 };
+		GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*) &blep, sizeof(blep));
+
+		ImGui::Begin("starlight_win32");
+		ImGui::Text(std::to_string(pmc.PrivateUsage).c_str());
+		ImGui::End();
 
 		// Rendering
 		g_renderApi->Render();
