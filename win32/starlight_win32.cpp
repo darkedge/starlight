@@ -305,7 +305,7 @@ unsigned int __stdcall MyThreadFunction(void*) {
 
 		// Memory stuff
 		PROCESS_MEMORY_COUNTERS_EX pmc = { 0 };
-		GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*) &blep, sizeof(blep));
+		GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*) &pmc, sizeof(pmc));
 
 		ImGui::Begin("starlight_win32");
 		ImGui::Text(std::to_string(pmc.PrivateUsage).c_str());
