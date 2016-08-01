@@ -17,27 +17,9 @@
 
 using namespace Vectormath::Aos;
 
-struct Camera {
-	float m_fieldOfView = 60.0f * DEG2RAD; // Field of view angle (radians)
-	float m_zNear = 0.3f;
-	float m_zFar = 1000.0f;
-};
-
 static Transform s_player;
 static int2 s_oldPlayerChunkPosition;
-//static Camera s_camera;
 static float s_deltaTime;
-
-#if 0
-static byte3 Offsets[ESide::Count] = {
-	{ -1, 0, 0 },	// West
-	{ 0, -1, 0 },	// Bottom
-	{ 0, 0, -1 },	// North
-	{ 1, 0, 0 },	// East
-	{ 0, 1, 0 },	// Top
-	{ 0, 0, 1 },	// South
-};
-#endif
 
 // Currently returns by value... maybe we want to return by pointer when Block becomes a struct?
 // Or use SoA and this keeps being an integer.
