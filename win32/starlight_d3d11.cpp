@@ -63,13 +63,7 @@ static Matrix4 s_projection;
 // Should be atomic read/write
 static bool g_resize = false;
 
-#include <imgui.h>
 #include "examples\directx11_example\imgui_impl_dx11.h"
-#include <d3d11.h>
-#include <d3dcompiler.h>
-#define DIRECTINPUT_VERSION 0x0800
-#include <dinput.h>
-#include <tchar.h>
 
 // Data
 // It is okay for this to be file/global.
