@@ -507,7 +507,7 @@ void ResetPosition(GameInfo* gameInfo) {
 
 GAME_THREAD(test);
 void test(void* args) {
-	
+	// Multiframe worker threads
 }
 
 void Init(GameInfo* gameInfo) {
@@ -653,7 +653,16 @@ void __cdecl game::UpdateGame(GameInfo* gameInfo) {
 	}
 	Quat rot = s_player.GetRotation();
 	ImGui::InputFloat4("Rotation", (float*)&rot);
-	ImGui::End();
+
+	// FPS bar
+	static float arr[128] = { 0 };
+	for (size_t i = 0; i < 127; i++) {
+		arr[i] = arr[i + 1];
+	}
+	arr[127] = s_deltaTime * 1000.0f;
+    ImGui::PlotLines("CPU Time", arr, _countof(arr), 0, NULL, 0.0f, 33.0f, ImVec2(0,80));
+
+    ImGui::End();
 
 	int2 newXZ = WorldToChunkPosition(pos.getX(), pos.getZ());
 	if (newXZ != s_oldPlayerChunkPosition) {
