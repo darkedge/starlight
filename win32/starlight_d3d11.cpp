@@ -9,7 +9,7 @@
 #include "starlight_game.h"
 
 #include "starlight_hlsl_generated.h"
-#include "WICTextureLoader.h"
+#include "stb_image.h"
 
 #include <codecvt> // wstring to string
 
@@ -560,7 +560,45 @@ bool graphics::D3D11::Init(PlatformData *data, GameFuncs* funcs) {
 	D3D_TRY(sl_pd3dDevice->CreateSamplerState( &samplerDesc, &s_samplerState ));
 
 	// Texture
-	CreateWICTextureFromFile(sl_pd3dDevice, sl_pd3dDeviceContext, L"assets/test.png", &s_textureResource, &s_shaderResourceView);
+	int x, y, n;
+	unsigned char* img = stbi_load("assets/test.png", &x, &y, &n, 4);
+	assert(data);
+
+	// Create texture
+	DXGI_FORMAT format = DXGI_FORMAT_R8G8B8A8_UNORM;
+
+    D3D11_TEXTURE2D_DESC desc;
+    desc.Width = x;
+    desc.Height = y;
+    desc.MipLevels = 0;
+    desc.ArraySize = 1;
+    desc.Format = format;
+    desc.SampleDesc.Count = 1;
+    desc.SampleDesc.Quality = 0;
+    desc.Usage = D3D11_USAGE_DEFAULT;
+    desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+    desc.CPUAccessFlags = 0;
+    desc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
+
+    ID3D11Texture2D* tex = nullptr;
+    HRESULT hr = sl_pd3dDevice->CreateTexture2D( &desc, nullptr, &tex );
+    assert(SUCCEEDED(hr) && tex != 0);
+    
+    D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc;
+    memset( &SRVDesc, 0, sizeof( SRVDesc ) );
+    SRVDesc.Format = format;
+    SRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+    SRVDesc.Texture2D.MipLevels = (UINT)-1;
+
+    hr = sl_pd3dDevice->CreateShaderResourceView( tex, &SRVDesc, &s_shaderResourceView );
+    assert(SUCCEEDED(hr));
+
+    sl_pd3dDeviceContext->UpdateSubresource( tex, 0, nullptr, img, x * n, x * y * n );
+    sl_pd3dDeviceContext->GenerateMips( s_shaderResourceView );
+
+    s_textureResource = tex;
+
+	stbi_image_free(img);
 
 	// Setup ImGui binding
 	ImGui_ImplDX11_Init(data->hWnd, sl_pd3dDevice, sl_pd3dDeviceContext);
