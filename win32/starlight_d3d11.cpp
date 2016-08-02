@@ -239,9 +239,11 @@ static void CleanupDeviceD3D()
 
 // graphics::API implementation
 
+// TODO: This probably misses some stuff
 void graphics::D3D11::Destroy() {
 	ImGui_ImplDX11_Shutdown();
 	CleanupDeviceD3D();
+	if (s_shaderResourceView) { s_shaderResourceView->Release(); s_shaderResourceView = NULL; }
 }
 
 struct bound3 {
@@ -559,46 +561,60 @@ bool graphics::D3D11::Init(PlatformData *data, GameFuncs* funcs) {
 	 
 	D3D_TRY(sl_pd3dDevice->CreateSamplerState( &samplerDesc, &s_samplerState ));
 
-	// Texture
-	int x, y, n;
-	unsigned char* img = stbi_load("assets/test.png", &x, &y, &n, 4);
-	assert(data);
-
 	// Create texture
-	DXGI_FORMAT format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	{
+		DXGI_FORMAT format = DXGI_FORMAT_R8G8B8A8_UNORM;
 
-    D3D11_TEXTURE2D_DESC desc;
-    desc.Width = x;
-    desc.Height = y;
-    desc.MipLevels = 0;
-    desc.ArraySize = 1;
-    desc.Format = format;
-    desc.SampleDesc.Count = 1;
-    desc.SampleDesc.Quality = 0;
-    desc.Usage = D3D11_USAGE_DEFAULT;
-    desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
-    desc.CPUAccessFlags = 0;
-    desc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
+	    D3D11_TEXTURE2D_DESC desc;
+	    desc.Width = 16;
+	    desc.Height = 16;
+	    desc.MipLevels = 0;
+	    desc.ArraySize = 256;
+	    desc.Format = format;
+	    desc.SampleDesc.Count = 1;
+	    desc.SampleDesc.Quality = 0;
+	    desc.Usage = D3D11_USAGE_DEFAULT;
+	    desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+	    desc.CPUAccessFlags = 0;
+	    desc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
 
-    ID3D11Texture2D* tex = nullptr;
-    HRESULT hr = sl_pd3dDevice->CreateTexture2D( &desc, nullptr, &tex );
-    assert(SUCCEEDED(hr) && tex != 0);
-    
-    D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc;
-    memset( &SRVDesc, 0, sizeof( SRVDesc ) );
-    SRVDesc.Format = format;
-    SRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-    SRVDesc.Texture2D.MipLevels = (UINT)-1;
+	    ID3D11Texture2D* texArray = nullptr;
+	    HRESULT hr = sl_pd3dDevice->CreateTexture2D( &desc, nullptr, &texArray );
+	    assert(SUCCEEDED(hr) && texArray != 0);
 
-    hr = sl_pd3dDevice->CreateShaderResourceView( tex, &SRVDesc, &s_shaderResourceView );
-    assert(SUCCEEDED(hr));
+	    texArray->GetDesc(&desc);
 
-    sl_pd3dDeviceContext->UpdateSubresource( tex, 0, nullptr, img, x * n, x * y * n );
-    sl_pd3dDeviceContext->GenerateMips( s_shaderResourceView );
+	    D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc;
+	    memset( &SRVDesc, 0, sizeof( SRVDesc ) );
+	    SRVDesc.Format = format;
+	    SRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
+	    SRVDesc.Texture2DArray.MostDetailedMip = 0;
+	    SRVDesc.Texture2DArray.MipLevels = (UINT)-1;
+	    SRVDesc.Texture2DArray.FirstArraySlice = 0;
+	    SRVDesc.Texture2DArray.ArraySize = 256;
 
-    s_textureResource = tex;
+	    hr = sl_pd3dDevice->CreateShaderResourceView( texArray, &SRVDesc, &s_shaderResourceView );
+	    assert(SUCCEEDED(hr));
 
-	stbi_image_free(img);
+		int width, height, n;
+		unsigned char* img = stbi_load("assets/terrain.png", &width, &height, &n, 4);
+		assert(data);
+
+		// Split image into texture array
+		for (UINT i = 0; i < 256; i++) {
+			UINT x = i % 16;
+			UINT y = i / 16;
+			unsigned char* src = img + (x * 16 + y * 16 * 256) * n;
+			sl_pd3dDeviceContext->UpdateSubresource(texArray, D3D11CalcSubresource(0, i, desc.MipLevels), 0, src, width * n, 0);			
+		}
+
+	    sl_pd3dDeviceContext->GenerateMips( s_shaderResourceView );
+
+	    s_textureResource = texArray;
+
+		texArray->Release();
+		stbi_image_free(img);
+	}
 
 	// Setup ImGui binding
 	ImGui_ImplDX11_Init(data->hWnd, sl_pd3dDevice, sl_pd3dDeviceContext);

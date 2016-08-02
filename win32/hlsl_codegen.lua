@@ -1,6 +1,6 @@
 -- Vertex specification
 vertex = {"Vertex", {
-	{"float2", "uv", "TEXCOORD"},
+	{"float3", "uv", "TEXCOORD"},
 	{"float3", "position", "POSITION"},
 }}
 

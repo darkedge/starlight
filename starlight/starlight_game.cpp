@@ -75,12 +75,13 @@ struct ChunkMeshList {
 	| \|
 	0--1
 */
-static void AddQuad(TempMesh *mesh, float3 v0, float3 v1, float3 v2, float3 v3, size_t width, size_t height) {
+static void AddQuad(TempMesh *mesh, float3 v0, float3 v1, float3 v2, float3 v3, size_t width, size_t height, Block type) {
+	float tx = (float) type;
 	Vertex vertices[] = {
-		{ { 0,0 }, v0 },
-		{ { (float) width,0 }, v1 },
-		{ { 0, (float) height }, v2 },
-		{ { (float) width, (float) height }, v3 },
+		{ { 0, 0, tx }, v0 },
+		{ { (float) width, 0, tx }, v1 },
+		{ { 0, (float) height, tx }, v2 },
+		{ { (float) width, (float) height, tx }, v3 },
 	};
 
 	// Get base vertex index
@@ -193,6 +194,28 @@ static void* GenerateChunkMesh(GameInfo* gameInfo, Chunk* chunk, int32_t cx, int
 						v += float3{ f[0], f[1], f[2] };
 					}
 
+					Block face = type;
+					// Grass faces (TODO: Magic number)
+					if (type == 1) {
+						switch (i) {
+							case 1: // -Y
+							{
+								face = 2;
+								break;
+							}
+							case 4: // +Y
+							{
+								face = 0;
+								break;
+							}
+							default: // Sides
+							{
+								face = 3;
+								break;
+							}
+						}
+					}
+
 					// Now we have a quad
 					switch (i) {
 						case 0: // -X
@@ -201,7 +224,7 @@ static void* GenerateChunkMesh(GameInfo* gameInfo, Chunk* chunk, int32_t cx, int
 								v,
 								v + float3{ w[0], w[1], w[2] },
 								v + float3{ h[0], h[1], h[2] },
-								v + float3{ w[0] + h[0], w[1] + h[1], w[2] + h[2] }, width, height);
+								v + float3{ w[0] + h[0], w[1] + h[1], w[2] + h[2] }, width, height, face);
 							break;
 						}
 						case 1: // -Y
@@ -210,7 +233,7 @@ static void* GenerateChunkMesh(GameInfo* gameInfo, Chunk* chunk, int32_t cx, int
 								v,
 								v + float3{ w[0], w[1], w[2] },
 								v + float3{ h[0], h[1], h[2] },
-								v + float3{ w[0] + h[0], w[1] + h[1], w[2] + h[2] }, width, height);
+								v + float3{ w[0] + h[0], w[1] + h[1], w[2] + h[2] }, width, height, face);
 							break;
 						}
 						case 2: // -Z
@@ -220,7 +243,7 @@ static void* GenerateChunkMesh(GameInfo* gameInfo, Chunk* chunk, int32_t cx, int
 								v,
 								v + float3{ w[0] + h[0], w[1] + h[1], w[2] + h[2] },
 								v + float3{ w[0], w[1], w[2] },
-								height, width);
+								height, width, face);
 							break;
 						}
 						case 3: // +X
@@ -230,7 +253,7 @@ static void* GenerateChunkMesh(GameInfo* gameInfo, Chunk* chunk, int32_t cx, int
 								v,
 								v + float3{ w[0] + h[0], w[1] + h[1], w[2] + h[2] },
 								v + float3{ h[0], h[1], h[2] },
-								width, height);
+								width, height, face);
 							break;
 						}
 						case 4: // +Y
@@ -239,7 +262,7 @@ static void* GenerateChunkMesh(GameInfo* gameInfo, Chunk* chunk, int32_t cx, int
 								v + float3{ h[0], h[1], h[2] },
 								v + float3{ w[0] + h[0], w[1] + h[1], w[2] + h[2] },
 								v,
-								v + float3{ w[0], w[1], w[2] }, width, height);
+								v + float3{ w[0], w[1], w[2] }, width, height, face);
 							break;
 						}
 						case 5: // +Z
@@ -249,7 +272,7 @@ static void* GenerateChunkMesh(GameInfo* gameInfo, Chunk* chunk, int32_t cx, int
 								v + float3{ h[0], h[1], h[2] },
 								v + float3{ w[0], w[1], w[2] },
 								v + float3{ w[0] + h[0], w[1] + h[1], w[2] + h[2] },
-								height, width);
+								height, width, face);
 							break;
 						}
 					}

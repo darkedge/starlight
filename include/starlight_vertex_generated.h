@@ -4,6 +4,6 @@
 
 struct Vertex
 {
-	float2 uv;
+	float3 uv;
 	float3 position;
 };
