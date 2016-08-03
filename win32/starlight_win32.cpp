@@ -411,9 +411,7 @@ int CALLBACK WinMain(
 	int         nCmdShow)
 {
 	s_gameFuncs = LoadGameFuncs();
-	if (!s_gameFuncs.valid) {
-		return 1;
-	}
+	assert(s_gameFuncs.valid);
 
 	ImGuiIO& io = ImGui::GetIO();
 	//io.MemAllocFn = memory::malloc;
