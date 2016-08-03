@@ -536,8 +536,6 @@ void test(void* args) {
 void Init(GameInfo* gameInfo) {
 	input::Init();
 
-	ImGui::SetCurrentContext(gameInfo->imguiState);
-
 	// Cube
 	//s_mesh = CreateCube(graphicsApi);
 	
@@ -639,6 +637,9 @@ void __cdecl game::UpdateGame(GameInfo* gameInfo) {
 		Init(gameInfo);
 		gameInfo->initialized = true;
 	}
+
+	// ImGui in the .dll is unset after code reload
+	ImGui::SetCurrentContext(gameInfo->imguiState);
 
 	// Timing
 	s_deltaTime = gameInfo->CalculateDeltaTime();
