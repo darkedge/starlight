@@ -177,15 +177,6 @@ typedef GAME_UPDATE(UpdateGameFunc);
 #define GAME_DESTROY(name) void name()
 typedef GAME_DESTROY(DestroyGameFunc);
 
-// Maybe separate struct for logger etc?
-
-struct GameFuncs {
-	DestroyLoggerFunc* DestroyLogger;
-	UpdateGameFunc* UpdateGame;
-	DestroyGameFunc* DestroyGame;
-	bool valid;
-};
-
 // NOTE: Platform layer can't use exported functions in debug (linker errors!)
 namespace game {
 	extern "C"

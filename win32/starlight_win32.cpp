@@ -27,22 +27,22 @@
 #include <Psapi.h> // GetProcessMemoryInfo
 
 #ifdef SL_CL
-  static const wchar_t* s_dllName = L"starlight.dll";
+  static const char* s_dllName = "starlight.dll";
 #else
   #ifdef SL_UB
     #ifdef _DEBUG
       #ifdef _WIN64
-        static const wchar_t* s_dllName = L"starlight_ub_x64_UB Debug.dll";
+        static const char* s_dllName = "starlight_ub_x64_UB Debug.dll";
       #else
-        static const wchar_t* s_dllName = L"starlight_ub_Win32_UB Debug.dll";
+        static const char* s_dllName = "starlight_ub_Win32_UB Debug.dll";
       #endif
     #endif
   #else
     #ifdef _DEBUG
       #ifdef _WIN64
-        static const wchar_t* s_dllName = L"starlight_x64_Debug.dll";
+        static const char* s_dllName = "starlight_x64_Debug.dll";
       #else
-        static const wchar_t* s_dllName = L"starlight_Win32_Debug.dll";
+        static const char* s_dllName = "starlight_Win32_Debug.dll";
       #endif
     #endif
   #endif
@@ -57,6 +57,17 @@ static std::atomic_bool s_running;
 
 static LARGE_INTEGER s_lastTime;
 static LARGE_INTEGER s_perfFreq;
+
+// Maybe separate struct for logger etc?
+struct GameFuncs {
+	DestroyLoggerFunc* DestroyLogger;
+	UpdateGameFunc* UpdateGame;
+	DestroyGameFunc* DestroyGame;
+	bool valid;
+
+	FILETIME DLLLastWriteTime;
+	HMODULE dll;
+};
 
 static GameFuncs s_gameFuncs;
 
@@ -119,28 +130,49 @@ void* mjCreateThread(GameThread* func, void* args) {
 	return thread;
 }
 
+inline FILETIME
+Win32GetLastWriteTime(char *Filename)
+{
+    FILETIME LastWriteTime = {};
+
+    WIN32_FILE_ATTRIBUTE_DATA Data;
+    if(GetFileAttributesExA(Filename, GetFileExInfoStandard, &Data))
+    {
+        LastWriteTime = Data.ftLastWriteTime;
+    }
+
+    return(LastWriteTime);
+}
+
 GameFuncs LoadGameFuncs() {
-	GameFuncs gameFuncs;
-	ZERO_MEM(&gameFuncs, sizeof(GameFuncs));
+	GameFuncs gameFuncs = { 0 };
 
 #if _DEBUG
-	HMODULE lib = LoadLibraryW(s_dllName);
-	if (!lib) {
-		MessageBoxW(s_hwnd, L"Could not find game .DLL!", L"Error", MB_ICONHAND);
-	}
-	else {
-		gameFuncs.DestroyGame = (DestroyGameFunc*) GetProcAddress(lib, "DestroyGame");
-		gameFuncs.UpdateGame = (UpdateGameFunc*) GetProcAddress(lib, "UpdateGame");
-		gameFuncs.DestroyLogger = (DestroyLoggerFunc*) GetProcAddress(lib, "DestroyLogger");
-		g_LogInfo = (LogInfoFunc*) GetProcAddress(lib, "LogInfo");
-		if (gameFuncs.DestroyGame
-			&& gameFuncs.UpdateGame
-			&& gameFuncs.DestroyLogger
-			&& g_LogInfo
-			) {
-			gameFuncs.valid = true;
-		} else {
-			MessageBoxW(s_hwnd, L"Could not load functions from .DLL!", L"Error", MB_ICONHAND);
+	WIN32_FILE_ATTRIBUTE_DATA fad;
+    if(!GetFileAttributesExA("LockFileName", GetFileExInfoStandard, &fad))
+    {
+        gameFuncs.DLLLastWriteTime = Win32GetLastWriteTime((char*)s_dllName);
+
+        CopyFileA(s_dllName, "starlight_temp.dll", FALSE);
+
+		gameFuncs.dll = LoadLibraryA("starlight_temp.dll");
+		if (!gameFuncs.dll) {
+			MessageBoxA(s_hwnd, "Could not find game .DLL!", "Error", MB_ICONHAND);
+		}
+		else {
+			gameFuncs.DestroyGame = (DestroyGameFunc*) GetProcAddress(gameFuncs.dll, "DestroyGame");
+			gameFuncs.UpdateGame = (UpdateGameFunc*) GetProcAddress(gameFuncs.dll, "UpdateGame");
+			gameFuncs.DestroyLogger = (DestroyLoggerFunc*) GetProcAddress(gameFuncs.dll, "DestroyLogger");
+			g_LogInfo = (LogInfoFunc*) GetProcAddress(gameFuncs.dll, "LogInfo");
+			if (gameFuncs.DestroyGame
+				&& gameFuncs.UpdateGame
+				&& gameFuncs.DestroyLogger
+				&& g_LogInfo
+				) {
+				gameFuncs.valid = true;
+			} else {
+				MessageBoxA(s_hwnd, "Could not load functions from .DLL!", "Error", MB_ICONHAND);
+			}
 		}
 	}
 #else
@@ -310,6 +342,18 @@ unsigned int __stdcall MyThreadFunction(void*) {
 		ImGui::Begin("starlight_win32");
 		ImGui::Text(std::to_string(pmc.PrivateUsage).c_str());
 		ImGui::End();
+
+#ifdef _DEBUG
+		// Reload DLL
+		FILETIME NewDLLWriteTime = Win32GetLastWriteTime((char*)s_dllName);
+        if (CompareFileTime(&NewDLLWriteTime, &s_gameFuncs.DLLLastWriteTime) != 0) {
+        	if (s_gameFuncs.dll) {
+		        FreeLibrary(s_gameFuncs.dll);
+		    }
+
+            s_gameFuncs = LoadGameFuncs();
+        }
+#endif
 
 		// Rendering
 		g_renderApi->Render();
