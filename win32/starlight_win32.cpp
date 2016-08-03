@@ -23,7 +23,6 @@
 #include "starlight_memory.h"
 
 #include <process.h> // _beginthreadex
-#include <Objbase.h> // CoInitializeEx, CoUninitialize
 #include <Psapi.h> // GetProcessMemoryInfo
 
 #ifdef SL_CL
@@ -541,8 +540,6 @@ int CALLBACK WinMain(
 	ShowWindow(s_hwnd, SW_MAXIMIZE);
 	UpdateWindow(s_hwnd);
 
-	assert(CoInitializeEx(NULL, COINIT_MULTITHREADED) == S_OK);
-
 	// Create thread
 	s_running.store(true);
 	unsigned int threadID;
@@ -570,8 +567,6 @@ int CALLBACK WinMain(
 	delete s_queue;
 
 	UnregisterClassW(className, GetModuleHandleW(nullptr));
-
-	CoUninitialize();
 
 	_CrtDumpMemoryLeaks();
 
