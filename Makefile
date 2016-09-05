@@ -57,6 +57,8 @@ starlight.exe: enet.lib imgui.lib win32/*.cpp SimplePixelShader.h SimpleVertexSh
 	@cl $(slCompile) /Fobuild/bin/ /Festarlight.exe /Iexternal/imgui-1.49/examples/directx11_example win32/starlight_win32_ub.cpp /link $(slLink) d3dcompiler.lib d3d11.lib
 
 clean:
+	@del SimplePixelShader.h
+	@del SimpleVertexShader.h
 	@del starlight.dll
 	@del starlight.exe
 	@del starlight.exp
