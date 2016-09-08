@@ -746,4 +746,5 @@ extern "C"
 __declspec(dllexport)
 void __cdecl game::DestroyGame() {
     // Free dynamic memory used by game here
+    slDestroyJVM();
 }
