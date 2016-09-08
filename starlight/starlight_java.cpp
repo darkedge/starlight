@@ -1,39 +1,12 @@
 // Launch command
 // cl /I"C:\Program Files\Java\jdk1.8.0_102\include" /I"C:\Program Files\Java\jdk1.8.0_102\include\win32" starlight_java.cpp /link /delayload:jvm.dll /libpath:"C:\Program Files\Java\jdk1.8.0_102\lib" jvm.lib Shell32.lib Ole32.lib Delayimp.lib
 
-#include <stdio.h>
 #include <jni.h>
-    
-// Windows
-#include <Windows.h>
+
+#include <stdio.h>    
 #include <string>
-#include <cassert>
 
 int main() {
-    char version[255] = {};
-    char runtimeLib[255] = {};
-    DWORD BufferSize = 8192;
-    std::string javaKey = "SOFTWARE\\JavaSoft\\Java Runtime Environment";
-    if(RegGetValue(HKEY_LOCAL_MACHINE, javaKey.c_str(), "CurrentVersion", RRF_RT_ANY, NULL, (PVOID)&version, &BufferSize) != ERROR_SUCCESS)
-    {
-        printf("jre not found\n");
-    } else {
-        printf("jre found, %s\n", version);
-    }
-
-    javaKey += "\\";
-    javaKey += version;
-    BufferSize = 8192;
-
-    if(RegGetValue(HKEY_LOCAL_MACHINE, javaKey.c_str(), "RuntimeLib", RRF_RT_ANY, NULL, (PVOID)&runtimeLib, &BufferSize) != ERROR_SUCCESS)
-    {
-        printf("jvm.dll not found\n");
-    } else {
-        printf("jvm.dll found, %s\n", runtimeLib);
-    }
-
-    LoadLibrary(runtimeLib);
-
     JavaVM *jvm;       /* denotes a Java VM */
     JNIEnv *env;       /* pointer to native method interface */
     JavaVMInitArgs vm_args; /* JDK/JRE 6 VM initialization arguments */

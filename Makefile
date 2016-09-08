@@ -44,7 +44,7 @@ starlight_hlsl_generated.h: win32/hlsl_codegen.lua
 
 starlight.dll: enet.lib imgui.lib starlight/*.cpp include/*.h
 	@if not exist build\bin mkdir build\bin
-	@cl $(slCompile) /Fobuild/bin/ /LD /Festarlight.dll starlight/starlight_ub.cpp /link $(slLink) /PDB:build/bin/starlight_$(SL_RANDOM).pdb
+	@cl $(slCompile) /I"$(JAVA_HOME)\include" /I"$(JAVA_HOME)\include\win32" /Fobuild/bin/ /LD /Festarlight.dll starlight/starlight_ub.cpp /link /libpath:"$(JAVA_HOME)\lib" $(slLink) jvm.lib Delayimp.lib /PDB:build/bin/starlight_$(SL_RANDOM).pdb /delayload:jvm.dll
 
 SimplePixelShader.h: win32/SimplePixelShader.hlsl
 	@fxc /Zi /E"main" /Od /Vn"g_SimplePixelShader" /WX /T ps_4_0 /Fh"SimplePixelShader.h" /nologo win32/SimplePixelShader.hlsl
@@ -54,7 +54,7 @@ SimpleVertexShader.h: win32/SimpleVertexShader.hlsl starlight_hlsl_generated.h
 
 starlight.exe: enet.lib imgui.lib win32/*.cpp SimplePixelShader.h SimpleVertexShader.h include/*.h
 	@if not exist build\bin mkdir build\bin
-	@cl $(slCompile) /Fobuild/bin/ /Festarlight.exe /Iexternal/imgui-1.49/examples/directx11_example win32/starlight_win32_ub.cpp /link $(slLink) d3dcompiler.lib d3d11.lib
+	@cl $(slCompile) /Fobuild/bin/ /Festarlight.exe /Iexternal/imgui-1.49/examples/directx11_example win32/starlight_win32_ub.cpp /link $(slLink) d3dcompiler.lib d3d11.lib Advapi32.lib
 
 clean:
 	@del SimplePixelShader.h

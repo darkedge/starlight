@@ -413,6 +413,32 @@ int CALLBACK WinMain(
 	s_gameFuncs = LoadGameFuncs();
 	assert(s_gameFuncs.valid);
 
+	// Load Java
+	{
+		char version[255] = {};
+	    char runtimeLib[255] = {};
+	    DWORD BufferSize = 8192;
+	    std::string javaKey = "SOFTWARE\\JavaSoft\\Java Runtime Environment";
+	    if(RegGetValueA(HKEY_LOCAL_MACHINE, javaKey.c_str(), "CurrentVersion", RRF_RT_ANY, NULL, (PVOID)&version, &BufferSize) != ERROR_SUCCESS)
+	    {
+	        printf("jre not found\n");
+	    } else {
+	        printf("jre found, %s\n", version);
+	    }
+
+	    javaKey += "\\";
+	    javaKey += version;
+	    BufferSize = 8192;
+
+	    if(RegGetValueA(HKEY_LOCAL_MACHINE, javaKey.c_str(), "RuntimeLib", RRF_RT_ANY, NULL, (PVOID)&runtimeLib, &BufferSize) != ERROR_SUCCESS)
+	    {
+	        printf("jvm.dll not found\n");
+	    } else {
+	        printf("jvm.dll found, %s\n", runtimeLib);
+	    }
+	    LoadLibraryA(runtimeLib);
+	}
+
 	ImGuiIO& io = ImGui::GetIO();
 	//io.MemAllocFn = memory::malloc;
 	//io.MemFreeFn = memory::free;
