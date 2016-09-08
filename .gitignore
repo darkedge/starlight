@@ -256,5 +256,6 @@ SimpleVertexShader.h
 assets/*.ttf
 starlight.exp
 starlight_hlsl_generated.h
+starlight_java_generated.h
 starlight_vertex_generated.h
 log.txt

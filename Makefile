@@ -42,7 +42,10 @@ imgui.lib: external/imgui-1.49/imgui.cpp external/imgui-1.49/imgui_demo.cpp exte
 starlight_hlsl_generated.h: win32/hlsl_codegen.lua
 	lua win32/hlsl_codegen.lua
 
-starlight.dll: enet.lib imgui.lib starlight/*.cpp include/*.h
+starlight_java_generated.h: modding-api/src/ModdingApi.java
+	javah -o starlight_java_generated.h -cp modding-api\out\production\modding-api ModdingApi
+
+starlight.dll: enet.lib imgui.lib starlight/*.cpp include/*.h starlight_java_generated.h
 	if not exist build\bin mkdir build\bin
 	cl $(slCompile) /I"$(JAVA_HOME)\include" /I"$(JAVA_HOME)\include\win32" /Fobuild/bin/ /LD /Festarlight.dll starlight/starlight_ub.cpp /link /libpath:"$(JAVA_HOME)\lib" $(slLink) jvm.lib Delayimp.lib /PDB:build/bin/starlight_$(SL_RANDOM).pdb /delayload:jvm.dll
 

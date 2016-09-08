@@ -1,21 +1,24 @@
 #include "starlight_java.h"
+#include "starlight_java_generated.h"
 #include "starlight_log.h"
-#include <jni.h>
 
 #include <stdio.h>
 
 static JavaVM *sl_jvm;
 
-extern "C" {
-JNIEXPORT void JNICALL Java_ModdingApi_print(JNIEnv *env, jobject obj) {
+void Java_ModdingApi_print(JNIEnv *env, jobject obj) {
+    // State needs to be set here
     logger::LogInfo("C++ function called from Java!");
 }
+
+void Java_ModdingApi_copyState(JNIEnv *, jobject, jlong) {
+    // TODO: Assign the state here
 }
 
 void slCreateJVM() {
     JNIEnv *env;       /* pointer to native method interface */
-    JavaVMInitArgs vm_args; /* JDK/JRE 6 VM initialization arguments */
-    JavaVMOption options[2];
+	JavaVMInitArgs vm_args = {}; /* JDK/JRE 6 VM initialization arguments */
+    JavaVMOption options[2] = {};
     options[0].optionString = "-Djava.class.path=modding-api/out/production/modding-api";
     options[1].optionString = "-Djava.library.path=.";
     vm_args.version = JNI_VERSION_1_6;
@@ -33,10 +36,12 @@ void slCreateJVM() {
     assert(cls);
 
 
-    // Get a string from Java
-    jmethodID mid = env->GetStaticMethodID(cls, "getString", "()Ljava/lang/String;");
+    jmethodID mid = env->GetStaticMethodID(cls, "start", "(J)Ljava/lang/String;");
     assert(mid);
-    jstring returnString = (jstring) env->CallObjectMethod(cls, mid);
+
+    // TODO: This should be our state pointer
+    void* ptr = NULL;
+    jstring returnString = (jstring) env->CallObjectMethod(cls, mid, (jlong) ptr);
 
     const char *js = env->GetStringUTFChars(returnString, NULL);
     assert(js);
