@@ -60,6 +60,7 @@ clean:
 	del SimplePixelShader.h
 	del SimpleVertexShader.h
 	del starlight.dll
+	del starlight_temp.dll
 	del starlight.exe
 	del starlight.exp
 	del starlight.lib
@@ -68,4 +69,5 @@ clean:
 	del enet.lib
 	del imgui.lib
 	del *.h
+	del *.log
 	del assets\*.ttf
