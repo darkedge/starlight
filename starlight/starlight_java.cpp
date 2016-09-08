@@ -1,12 +1,10 @@
-// Launch command
-// cl /I"C:\Program Files\Java\jdk1.8.0_102\include" /I"C:\Program Files\Java\jdk1.8.0_102\include\win32" starlight_java.cpp /link /delayload:jvm.dll /libpath:"C:\Program Files\Java\jdk1.8.0_102\lib" jvm.lib Shell32.lib Ole32.lib Delayimp.lib
-
+#include "starlight_java.h"
+#include "starlight_log.h"
 #include <jni.h>
 
-#include <stdio.h>    
-#include <string>
+#include <stdio.h>
 
-int main() {
+void slCreateJVM() {
     JavaVM *jvm;       /* denotes a Java VM */
     JNIEnv *env;       /* pointer to native method interface */
     JavaVMInitArgs vm_args; /* JDK/JRE 6 VM initialization arguments */
@@ -21,7 +19,7 @@ int main() {
     JNI_CreateJavaVM(&jvm, (void**)&env, &vm_args);
     delete options;
 
-    printf("yay!\n");
+    logger::LogInfo("JVM Created.");
     
     /* invoke the Main.test method using the JNI */
     //jclass cls = env->FindClass("Main");
@@ -29,4 +27,6 @@ int main() {
     //env->CallStaticVoidMethod(cls, mid, 100);
     /* We are done. */
     jvm->DestroyJavaVM();
+
+    logger::LogInfo("JVM Destroyed.");
 }

@@ -1,5 +1,6 @@
 #include "starlight_game.h"
 #include "starlight_input.h"
+#include "starlight_java.h"
 #include "starlight_log.h"
 #include "starlight_transform.h"
 #include "starlight_graphics.h"
@@ -535,6 +536,8 @@ void test(void* args) {
 
 void Init(GameInfo* gameInfo) {
 	input::Init();
+
+	slCreateJVM();
 
 	// Cube
 	//s_mesh = CreateCube(graphicsApi);
