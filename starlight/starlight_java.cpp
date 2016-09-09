@@ -19,7 +19,7 @@ void slCreateJVM() {
     JNIEnv *env;       /* pointer to native method interface */
 	JavaVMInitArgs vm_args = {}; /* JDK/JRE 6 VM initialization arguments */
     JavaVMOption options[2] = {};
-    options[0].optionString = "-Djava.class.path=modding-api/out/production/modding-api";
+    options[0].optionString = "-Djava.class.path=.";
     options[1].optionString = "-Djava.library.path=.";
     vm_args.version = JNI_VERSION_1_6;
     vm_args.nOptions = 1;

@@ -42,8 +42,11 @@ imgui.lib: external/imgui-1.49/imgui.cpp external/imgui-1.49/imgui_demo.cpp exte
 starlight_hlsl_generated.h: win32/hlsl_codegen.lua
 	lua win32/hlsl_codegen.lua
 
-starlight_java_generated.h: modding-api/src/ModdingApi.java
-	javah -o starlight_java_generated.h -cp modding-api\out\production\modding-api ModdingApi
+ModdingApi.class: modding-api/src/ModdingApi.java
+	javac -d . modding-api/src/ModdingApi.java
+
+starlight_java_generated.h: ModdingApi.class
+	javah -o starlight_java_generated.h ModdingApi
 
 starlight.dll: enet.lib imgui.lib starlight/*.cpp include/*.h starlight_java_generated.h
 	if not exist build\bin mkdir build\bin
