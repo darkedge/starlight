@@ -1,23 +1,7 @@
 imgui.ini
-7za920.zip
-enet-1.3.13.tar
-enet-1.3.13.tar.gz
-glm-0.9.7.2.zip
-lua-5.1.5.tar
-lua-5.1.5.tar.gz
-nowide_standalone.zip
-protobuf-2.6.1.zip
-v1.3.0.zip
-v1.47.zip
 external
-vs/Win32
-!starlight_win32.vcxproj.user
-!starlight_win32_ub.vcxproj.user
-# TODO: pre- or postfix generated header files
 SimplePixelShader.h
 SimpleVertexShader.h
-*.nvuser
-*.VC.db
 assets/*.ttf
 starlight.exp
 starlight_hlsl_generated.h
