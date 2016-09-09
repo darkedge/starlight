@@ -16,7 +16,7 @@
 
 slBasicCompile=/nologo /Gm- /MDd /GR- /EHs-c- /fp:fast /fp:except- /Oi
 slDefinitions=-DSL_CL -D_DEBUG -DUNICODE -D_UNICODE -D_SCL_SECURE_NO_WARNINGS -D_HAS_EXCEPTIONS=0 -DNOMINMAX -DVC_EXTRALEAN -DSTRICT -DWIN32_LEAN_AND_MEAN -DNOGDI -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS -D_WINSOCK_DEPRECATED_NO_WARNINGS
-slInclude=/I. /Iinclude /Iexternal/sce_vectormath-master/include /Iexternal/flatbuffers-1.3.0/include /Iexternal/protobuf-2.6.1/src /Iexternal/enet-1.3.13/include /Iexternal/imgui-1.49
+slInclude=/I. /Iinclude /Iexternal/sce_vectormath-master/include /Iexternal/protobuf-2.6.1/src /Iexternal/enet-1.3.13/include /Iexternal/imgui-1.49
 slCompile=$(slBasicCompile) $(slDefinitions) $(slInclude) /Ob1 /WX /W4 /wd4100 /wd4505 /Z7
 
 # [Linker options]
@@ -63,6 +63,7 @@ starlight.exe: enet.lib imgui.lib win32/*.cpp SimplePixelShader.h SimpleVertexSh
 	cl $(slCompile) /Fobuild/bin/ /Festarlight.exe /Iexternal/imgui-1.49/examples/directx11_example win32/starlight_win32_ub.cpp /link $(slLink) d3dcompiler.lib d3d11.lib Advapi32.lib
 
 clean:
+	rd /s /q build
 	del SimplePixelShader.h
 	del SimpleVertexShader.h
 	del starlight.dll
