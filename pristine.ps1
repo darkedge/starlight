@@ -1,4 +1,8 @@
-.\clean.bat
+# Makefile clean target
+if ((Test-Path "jom")) {
+    $cmd = "jom clean"
+    Invoke-Expression $cmd
+}
 
 # Add git to path
 if ((Test-Path $($env:ProgramFiles + "\Git\bin"))) {
