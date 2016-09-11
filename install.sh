@@ -25,7 +25,7 @@ function DownloadAndExtract {
 	local extension="${file##*.}"
 	echo "Extracting $file..."
 	if [ "$extension" == "zip" ]; then
-		unzip $dest -d $externalDir
+		unzip -o $dest -d $externalDir
 	else
 		if [ "$extension" == "gz" ]; then
 			tar -zxf $dest -C $externalDir
@@ -39,21 +39,15 @@ function DownloadAndExtract {
 
 DownloadAndExtract http://enet.bespin.org/download/enet-1.3.13.tar.gz
 DownloadAndExtract https://github.com/ocornut/imgui/archive/v1.49.zip
-DownloadAndExtract http://www.lua.org/ftp/lua-5.1.5.tar.gz
 DownloadAndExtract https://github.com/google/protobuf/releases/download/v2.6.1/protobuf-2.6.1.zip
-DownloadAndExtract https://github.com/google/flatbuffers/archive/v1.3.0.zip
 DownloadAndExtract https://github.com/erwincoumans/sce_vectormath/archive/master.zip
 
 # Delete downloads
 function DeleteFile {
-	if [ -e "$workingDir/$1" ]; then
-		rm $workingDir/$1
-	fi
+	rm -f $workingDir/$1
 }
 
 DeleteFile enet-1.3.13.tar*
-DeleteFile lua-5.1.5.tar*
 DeleteFile protobuf-2.6.1.zip
-DeleteFile v1.3.0.zip
 DeleteFile v1.49.zip
 DeleteFile master.zip
