@@ -2,6 +2,7 @@
 #include <cmath>
 #include <cassert>
 #include <numeric>
+#include <algorithm>
 #include <random>
 
 // Perlin noise

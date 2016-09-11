@@ -3,15 +3,11 @@
 
 // NOTE: Platform layer can't use exported functions in debug (linker errors!)
 namespace logger {
-	extern "C"
-	__declspec(dllexport)
-	void __cdecl LogInfo(const std::string& str);
+    SL_EXPORT(void) LogInfo(const std::string& str);
 
-	void Render();
+    void Render();
 
-	extern "C"
-	__declspec(dllexport)
-	void __cdecl DestroyLogger();
+    SL_EXPORT(void) DestroyLogger();
 }
 
 #define LOGGER_LOGINFO(name) void name(const std::string&)

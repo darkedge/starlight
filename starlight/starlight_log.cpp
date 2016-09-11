@@ -306,9 +306,7 @@ Console *s_console;
 bool opened;
 bool ScrollToBottom = true;
 
-extern "C"
-__declspec(dllexport)
-void __cdecl logger::LogInfo(const std::string& str) {
+SL_EXPORT(void) logger::LogInfo(const std::string& str) {
 	if (!s_console) {
 		s_console = new Console();
 	}
@@ -319,9 +317,7 @@ void logger::Render() {
 	s_console->Draw("Console", &opened);
 }
 
-extern "C"
-__declspec(dllexport)
-void __cdecl logger::DestroyLogger()
+SL_EXPORT(void) logger::DestroyLogger()
 {
 	delete s_console;
 }

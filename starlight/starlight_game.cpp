@@ -622,8 +622,9 @@ void MoveCamera(GameInfo* gameInfo) {
     if (ImGui::GetIO().KeysDown[(intptr_t)'A'])     translation -= s_player.Right();
     if (ImGui::GetIO().KeysDown[(intptr_t)'S'])     translation -= s_player.Forward();
     if (ImGui::GetIO().KeysDown[(intptr_t)'D'])     translation += s_player.Right();
-    if (ImGui::GetIO().KeysDown[VK_LCONTROL] || ImGui::GetIO().KeysDown[(intptr_t)'C'] || ImGui::GetIO().KeysDown[VK_LSHIFT]) translation -= Vector3(0, 1, 0);
-    if (ImGui::GetIO().KeysDown[VK_SPACE]) translation += Vector3(0, 1, 0);
+    // TODO: Cross-platform
+    //if (ImGui::GetIO().KeysDown[VK_LCONTROL] || ImGui::GetIO().KeysDown[(intptr_t)'C'] || ImGui::GetIO().KeysDown[VK_LSHIFT]) translation -= Vector3(0, 1, 0);
+    //if (ImGui::GetIO().KeysDown[VK_SPACE]) translation += Vector3(0, 1, 0);
     if (lengthSqr(translation) != 0.0f)
     {
         Vector3 pos = s_player.GetPosition();
@@ -633,9 +634,7 @@ void MoveCamera(GameInfo* gameInfo) {
     }
 }
 
-extern "C"
-__declspec(dllexport)
-void __cdecl game::UpdateGame(GameInfo* gameInfo) {
+SL_EXPORT(void) game::UpdateGame(GameInfo* gameInfo) {
     if(!gameInfo->initialized) {
         Init(gameInfo);
         gameInfo->initialized = true;
@@ -651,9 +650,12 @@ void __cdecl game::UpdateGame(GameInfo* gameInfo) {
     input::BeginFrame();
 
     static bool showMainMenuBar = true;
+#if 0
+    // TODO: Cross-platform
     if(ImGui::GetIO().KeysDown[VK_F3]) {
         showMainMenuBar = !showMainMenuBar;
     }
+#endif
 
     if(showMainMenuBar) {
         ImGui::BeginMainMenuBar();
@@ -687,7 +689,7 @@ void __cdecl game::UpdateGame(GameInfo* gameInfo) {
         arr[i] = arr[i + 1];
     }
     arr[127] = s_deltaTime * 1000.0f;
-    ImGui::PlotLines("CPU Time", arr, _countof(arr), 0, NULL, 0.0f, 33.0f, ImVec2(0,80));
+    ImGui::PlotLines("CPU Time", arr, COUNT_OF(arr), 0, NULL, 0.0f, 33.0f, ImVec2(0,80));
 
     ImGui::End();
 
@@ -742,9 +744,7 @@ void __cdecl game::UpdateGame(GameInfo* gameInfo) {
 #endif
 }
 
-extern "C"
-__declspec(dllexport)
-void __cdecl game::DestroyGame() {
+SL_EXPORT(void) game::DestroyGame() {
     // Free dynamic memory used by game here
     slDestroyJVM();
 }

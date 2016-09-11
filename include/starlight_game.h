@@ -179,11 +179,7 @@ typedef GAME_DESTROY(DestroyGameFunc);
 
 // NOTE: Platform layer can't use exported functions in debug (linker errors!)
 namespace game {
-	extern "C"
-	__declspec(dllexport)
-	void __cdecl UpdateGame(GameInfo* gameInfo);
+	SL_EXPORT(void) UpdateGame(GameInfo* gameInfo);
 
-	extern "C"
-	__declspec(dllexport)
-	void __cdecl DestroyGame();
+	SL_EXPORT(void) DestroyGame();
 }

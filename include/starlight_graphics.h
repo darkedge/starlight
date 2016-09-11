@@ -2,7 +2,8 @@
 #include "starlight.h"
 #include <vectormath/scalar/cpp/vectormath_aos.h>
 #include "starlight_config.h"
-#include <cstdint>
+#include <stddef.h>
+#include <stdint.h>
 
 // Platform needs to provide this
 struct PlatformData;
