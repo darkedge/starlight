@@ -4,7 +4,7 @@ setlocal
 pushd %~dp0
 set t0=%time: =0%
 
-jom /j %NUMBER_OF_PROCESSORS% /nologo "SL_RANDOM=%RANDOM%"
+jom -j%NUMBER_OF_PROCESSORS% /nologo "SL_RANDOM=%RANDOM%"
 
 :: Capture the end time before doing anything else
 set t=%time: =0%

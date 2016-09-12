@@ -10,7 +10,7 @@ $7zargs = " -aoa -r *.cpp *.hpp *.c *.h *.inl *.ttf jom.exe"
 $workingDir = $((Split-Path -Path $MyInvocation.MyCommand.Definition -Parent) + "\")
 
 # Output folder
-$externalDir = $($workingDir + "external")
+$externalDir = $($workingDir + "..\external")
 
 # Convenience functions
 function DownloadFile($address) {
