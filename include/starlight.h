@@ -109,7 +109,7 @@ struct byte3 {
   #else
     #define SL_CALL __cdecl
   #endif
-  #define SL_EXPORT(X) extern "C" __declspec(dllexport) (X) __cdecl
+  #define SL_EXPORT(X) extern "C" __declspec(dllexport) X __cdecl
 #else
   #define SL_CALL
   #define SL_EXPORT(X) X
