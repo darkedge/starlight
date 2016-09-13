@@ -331,6 +331,7 @@ unsigned int __stdcall MyThreadFunction(void*) {
             }
 
             s_gameFuncs = LoadGameFuncs();
+			g_LogInfo("Reloaded DLL.");
         }
 #endif
 
