@@ -15,13 +15,13 @@ void Java_ModdingApi_copyState(JNIEnv *, jobject, jlong ptr) {
 }
 
 void slCreateJVM() {
-    JNIEnv *env;       /* pointer to native method interface */
+    JNIEnv *env = NULL;       /* pointer to native method interface */
 	JavaVMInitArgs vm_args = {}; /* JDK/JRE 6 VM initialization arguments */
     JavaVMOption options[2] = {};
     options[0].optionString = "-Djava.class.path=.";
-    options[1].optionString = "-Djava.library.path=.";
+	options[1].optionString = "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005";
     vm_args.version = JNI_VERSION_1_6;
-    vm_args.nOptions = 1;
+    vm_args.nOptions = 2;
     vm_args.options = options;
     vm_args.ignoreUnrecognized = false;
     /* load and initialize a Java VM, return a JNI interface
