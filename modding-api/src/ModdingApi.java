@@ -5,7 +5,7 @@ public class ModdingApi {
     // Java keeps its own copy of the shared library, so its state is invalid
     // until we copy our state to it
     static {
-        System.loadLibrary("starlight");
+        System.loadLibrary("starlight_temp");
     }
 
     // State synchronization
