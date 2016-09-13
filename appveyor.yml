@@ -7,8 +7,7 @@ platform:
   - x86
   - x64
 install:
-  - ps: .\install.ps1
-#  - cmd: MSBuild .\external\protobuf-2.6.1\vsprojects\libprotobuf.vcxproj /p:Configuration=Release
+  - ps: .\win32\install.ps1
 build:
-  project: vs\starlight.sln
+  project: win32\vs\starlight.sln
   verbosity: minimal
