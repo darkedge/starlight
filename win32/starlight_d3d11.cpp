@@ -597,8 +597,8 @@ bool graphics::D3D11::Init(PlatformData *data, GameFuncs* funcs) {
 	    assert(SUCCEEDED(hr));
 
 		int width, height, n;
-		unsigned char* img = stbi_load("assets/terrain.png", &width, &height, &n, 4);
-		assert(data);
+		unsigned char* img = stbi_load("../assets/terrain.png", &width, &height, &n, 4);
+		assert(img);
 
 		// Split image into texture array
 		for (UINT i = 0; i < 256; i++) {

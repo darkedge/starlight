@@ -220,7 +220,7 @@ bool LoadRenderApiImpl(EGraphicsApi e) {
         // Reload fonts
         ImGuiIO& io = ImGui::GetIO();
         io.Fonts->Clear();
-        io.Fonts->AddFontFromFileTTF("assets/ProggyTiny.ttf", 10.0f, nullptr, io.Fonts->GetGlyphRangesCyrillic());
+        io.Fonts->AddFontFromFileTTF("../assets/ProggyTiny.ttf", 10.0f, nullptr, io.Fonts->GetGlyphRangesCyrillic());
         return true;
     }
 #else
