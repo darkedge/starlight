@@ -6,13 +6,12 @@
 
 static JavaVM *sl_jvm;
 
-void Java_ModdingApi_print(JNIEnv *env, jobject obj) {
-    // State needs to be set here
-    logger::LogInfo("C++ function called from Java!");
-}
+void Java_ModdingApi_copyState(JNIEnv *, jobject, jlong ptr) {
+    GameInfo* gameInfo = (GameInfo*) ptr;
 
-void Java_ModdingApi_copyState(JNIEnv *, jobject, jlong) {
-    // TODO: Assign the state here
+    // TODO: Probably need to set more pointers
+    ImGui::SetCurrentContext(gameInfo->imguiState);
+    logger::LogInfo("This should spam the console");
 }
 
 void slCreateJVM() {
@@ -53,4 +52,16 @@ void slCreateJVM() {
 
 void slDestroyJVM() {
     if (sl_jvm) sl_jvm->DestroyJavaVM();
+}
+
+void slSetJVMContext(void* ptr) {
+    JNIEnv *env = NULL;
+    sl_jvm->GetEnv((void**) &env, JNI_VERSION_1_6);
+
+    jclass cls = env->FindClass("ModdingApi");
+    assert(cls);
+    jmethodID mid = env->GetStaticMethodID(cls, "setContext", "(J)V");
+    assert(mid);
+
+    env->CallVoidMethod(cls, mid, (jlong) ptr);
 }

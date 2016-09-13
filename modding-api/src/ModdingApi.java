@@ -9,16 +9,14 @@ public class ModdingApi {
     }
 
     // State synchronization
-    public native void copyState(long ptr);
-    public native void print();
+    public static native void copyState(long ptr);
 
     public static String start(long ptr) {
-        ModdingApi api = new ModdingApi();
-        // We need to copy the state over to our own shared library
-        api.copyState(ptr);
-
-        // Testing
-        api.print();
         return "This is a Java string";
+    }
+
+    // Called once per frame
+    public static void setContext(long ptr) {
+        copyState(ptr);
     }
 }

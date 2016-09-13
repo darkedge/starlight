@@ -2,3 +2,4 @@
 
 void slCreateJVM();
 void slDestroyJVM();
+void slSetJVMContext(void* ptr);
