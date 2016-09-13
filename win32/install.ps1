@@ -66,13 +66,7 @@ foreach ($item in $shell.NameSpace($($workingDir + "7za920.zip")).Items()) {
 }
 
 # jom
-DownloadFile("http://download.qt.io/official_releases/jom/jom.zip")
-foreach ($item in $shell.NameSpace($($workingDir + "jom.zip")).Items()) {
-    if ($item.Name -eq "jom.exe") {
-        # 16 = "Respond with "Yes to All" for any dialog box that is displayed."
-        $shell.NameSpace($workingDir).CopyHere($item, 16)
-    }
-}
+DownloadFile("ftp://ftp.equation.com/make/64/make.exe")
 
 DownloadAndExtract("http://enet.bespin.org/download/enet-1.3.13.tar.gz")
 DownloadAndExtract("https://github.com/ocornut/imgui/archive/v1.49.zip")
@@ -90,4 +84,3 @@ DeleteFile("enet-1.3.13.tar*")
 DeleteFile("protobuf-2.6.1.zip")
 DeleteFile("v1.49.zip")
 DeleteFile("master.zip")
-DeleteFile("jom.zip")
