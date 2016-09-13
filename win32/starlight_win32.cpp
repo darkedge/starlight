@@ -25,27 +25,7 @@
 #include <process.h> // _beginthreadex
 #include <Psapi.h> // GetProcessMemoryInfo
 
-#ifdef SL_CL
-  static const char* s_dllName = "starlight.dll";
-#else
-  #ifdef SL_UB
-    #ifdef _DEBUG
-      #ifdef _WIN64
-        static const char* s_dllName = "starlight_ub_x64_UB Debug.dll";
-      #else
-        static const char* s_dllName = "starlight_ub_Win32_UB Debug.dll";
-      #endif
-    #endif
-  #else
-    #ifdef _DEBUG
-      #ifdef _WIN64
-        static const char* s_dllName = "starlight_x64_Debug.dll";
-      #else
-        static const char* s_dllName = "starlight_Win32_Debug.dll";
-      #endif
-    #endif
-  #endif
-#endif
+static const char* s_dllName = "starlight.dll";
 
 // Globals
 static graphics::API* g_renderApi;
