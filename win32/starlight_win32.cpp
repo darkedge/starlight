@@ -37,6 +37,10 @@ static std::atomic_bool s_running;
 static LARGE_INTEGER s_lastTime;
 static LARGE_INTEGER s_perfFreq;
 
+#ifdef _DEBUG
+static LARGE_INTEGER s_lastDLLLoadTime;
+#endif
+
 // Maybe separate struct for logger etc?
 struct GameFuncs {
     DestroyLoggerFunc* DestroyLogger;
@@ -127,31 +131,28 @@ GameFuncs LoadGameFuncs() {
     GameFuncs gameFuncs = { 0 };
 
 #if _DEBUG
-    WIN32_FILE_ATTRIBUTE_DATA fad;
-    if(!GetFileAttributesExA("LockFileName", GetFileExInfoStandard, &fad))
-    {
-        gameFuncs.DLLLastWriteTime = Win32GetLastWriteTime((char*)s_dllName);
+    gameFuncs.DLLLastWriteTime = Win32GetLastWriteTime((char*)s_dllName);
+    QueryPerformanceCounter(&s_lastDLLLoadTime);
 
-        CopyFileA(s_dllName, "starlight_temp.dll", FALSE);
+    CopyFileA(s_dllName, "starlight_temp.dll", FALSE);
 
-        gameFuncs.dll = LoadLibraryA("starlight_temp.dll");
-        if (!gameFuncs.dll) {
-            MessageBoxA(s_hwnd, "Could not find game .DLL!", "Error", MB_ICONHAND);
-        }
-        else {
-            gameFuncs.DestroyGame = (DestroyGameFunc*) GetProcAddress(gameFuncs.dll, "DestroyGame");
-            gameFuncs.UpdateGame = (UpdateGameFunc*) GetProcAddress(gameFuncs.dll, "UpdateGame");
-            gameFuncs.DestroyLogger = (DestroyLoggerFunc*) GetProcAddress(gameFuncs.dll, "DestroyLogger");
-            g_LogInfo = (LogInfoFunc*) GetProcAddress(gameFuncs.dll, "LogInfo");
-            if (gameFuncs.DestroyGame
-                && gameFuncs.UpdateGame
-                && gameFuncs.DestroyLogger
-                && g_LogInfo
-                ) {
-                gameFuncs.valid = true;
-            } else {
-                MessageBoxA(s_hwnd, "Could not load functions from .DLL!", "Error", MB_ICONHAND);
-            }
+    gameFuncs.dll = LoadLibraryA("starlight_temp.dll");
+    if (!gameFuncs.dll) {
+        MessageBoxA(s_hwnd, "Could not find game .DLL!", "Error", MB_ICONHAND);
+    }
+    else {
+        gameFuncs.DestroyGame = (DestroyGameFunc*) GetProcAddress(gameFuncs.dll, "DestroyGame");
+        gameFuncs.UpdateGame = (UpdateGameFunc*) GetProcAddress(gameFuncs.dll, "UpdateGame");
+        gameFuncs.DestroyLogger = (DestroyLoggerFunc*) GetProcAddress(gameFuncs.dll, "DestroyLogger");
+        g_LogInfo = (LogInfoFunc*) GetProcAddress(gameFuncs.dll, "LogInfo");
+        if (gameFuncs.DestroyGame
+            && gameFuncs.UpdateGame
+            && gameFuncs.DestroyLogger
+            && g_LogInfo
+            ) {
+            gameFuncs.valid = true;
+        } else {
+            MessageBoxA(s_hwnd, "Could not load functions from .DLL!", "Error", MB_ICONHAND);
         }
     }
 #else
@@ -325,13 +326,25 @@ unsigned int __stdcall MyThreadFunction(void*) {
 #ifdef _DEBUG
         // Reload DLL
         FILETIME NewDLLWriteTime = Win32GetLastWriteTime((char*)s_dllName);
-        if (CompareFileTime(&NewDLLWriteTime, &s_gameFuncs.DLLLastWriteTime) != 0) {
+
+        // If the .DLL is being written to, the last write time may change multiple times
+        // So we need to add a cooldown
+        LARGE_INTEGER currentTime;
+        QueryPerformanceCounter(&currentTime);
+
+        if (CompareFileTime(&NewDLLWriteTime, &s_gameFuncs.DLLLastWriteTime) != 0
+            && (currentTime.QuadPart - s_lastDLLLoadTime.QuadPart) / s_perfFreq.QuadPart >= 1) {
+
+            g_LogInfo("Reloaded DLL.");
+
             if (s_gameFuncs.dll) {
                 FreeLibrary(s_gameFuncs.dll);
             }
 
             s_gameFuncs = LoadGameFuncs();
-			g_LogInfo("Reloaded DLL.");
+        } else {
+            // Ignore changes
+            s_gameFuncs.DLLLastWriteTime = NewDLLWriteTime;
         }
 #endif
 
