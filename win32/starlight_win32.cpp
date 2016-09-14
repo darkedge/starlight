@@ -134,7 +134,9 @@ GameFuncs LoadGameFuncs() {
     gameFuncs.DLLLastWriteTime = Win32GetLastWriteTime((char*)s_dllName);
     QueryPerformanceCounter(&s_lastDLLLoadTime);
 
-    CopyFileA(s_dllName, "starlight_temp.dll", FALSE);
+    if (!CopyFileA(s_dllName, "starlight_temp.dll", FALSE)) {
+        MessageBoxA(s_hwnd, "Could not write to starlight_temp.dll!", "Error", MB_ICONHAND);
+    }
 
     gameFuncs.dll = LoadLibraryA("starlight_temp.dll");
     if (!gameFuncs.dll) {
@@ -335,13 +337,12 @@ unsigned int __stdcall MyThreadFunction(void*) {
         if (CompareFileTime(&NewDLLWriteTime, &s_gameFuncs.DLLLastWriteTime) != 0
             && (currentTime.QuadPart - s_lastDLLLoadTime.QuadPart) / s_perfFreq.QuadPart >= 1) {
 
-            g_LogInfo("Reloaded DLL.");
-
             if (s_gameFuncs.dll) {
                 FreeLibrary(s_gameFuncs.dll);
             }
 
             s_gameFuncs = LoadGameFuncs();
+            g_LogInfo("Reloaded DLL.");
         } else {
             // Ignore changes
             s_gameFuncs.DLLLastWriteTime = NewDLLWriteTime;
