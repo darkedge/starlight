@@ -622,9 +622,9 @@ void MoveCamera(GameInfo* gameInfo) {
     if (ImGui::GetIO().KeysDown[(intptr_t)'A'])     translation -= s_player.Right();
     if (ImGui::GetIO().KeysDown[(intptr_t)'S'])     translation -= s_player.Forward();
     if (ImGui::GetIO().KeysDown[(intptr_t)'D'])     translation += s_player.Right();
-    // TODO: Cross-platform
-    //if (ImGui::GetIO().KeysDown[VK_LCONTROL] || ImGui::GetIO().KeysDown[(intptr_t)'C'] || ImGui::GetIO().KeysDown[VK_LSHIFT]) translation -= Vector3(0, 1, 0);
-    //if (ImGui::GetIO().KeysDown[VK_SPACE]) translation += Vector3(0, 1, 0);
+    // FIXME: Cross-platform
+    if (ImGui::GetIO().KeysDown[VK_LCONTROL] || ImGui::GetIO().KeysDown[(intptr_t)'C'] || ImGui::GetIO().KeysDown[VK_LSHIFT]) translation -= Vector3(0, 1, 0);
+    if (ImGui::GetIO().KeysDown[VK_SPACE]) translation += Vector3(0, 1, 0);
     if (lengthSqr(translation) != 0.0f)
     {
         Vector3 pos = s_player.GetPosition();
@@ -652,12 +652,10 @@ SL_EXPORT(void) game::UpdateGame(GameInfo* gameInfo) {
     input::BeginFrame();
 
     static bool showMainMenuBar = true;
-#if 0
-    // TODO: Cross-platform
+    // FIXME: Cross-platform
     if(ImGui::GetIO().KeysDown[VK_F3]) {
         showMainMenuBar = !showMainMenuBar;
     }
-#endif
 
     if(showMainMenuBar) {
         ImGui::BeginMainMenuBar();
