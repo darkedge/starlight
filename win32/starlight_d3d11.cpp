@@ -1,3 +1,4 @@
+#define STARLIGHT_D3D11
 #include "starlight_graphics.h"
 #if defined(_WIN32) && defined(STARLIGHT_D3D11)
 
@@ -56,6 +57,7 @@ static ID3D11SamplerState* s_samplerState;
 static ID3D11ShaderResourceView* s_shaderResourceView;
 static ID3D11Resource* s_textureResource;
 static D3D11_VIEWPORT s_viewport;
+static ID3D11BlendState *s_blendState;
 
 static Matrix4 s_view;
 static Matrix4 s_projection;
@@ -129,6 +131,7 @@ static void CleanupRenderTarget()
 	if (s_depthStencilBuffer) { s_depthStencilBuffer->Release(); s_depthStencilBuffer = NULL; }
 	if (s_depthStencilView) { s_depthStencilView->Release(); s_depthStencilView = NULL; }
 	if (s_depthStencilState) { s_depthStencilState->Release(); s_depthStencilState = NULL; }
+	if (s_blendState) { s_blendState->Release(); s_blendState = NULL; }
 }
 
 static HRESULT CreateDeviceD3D(HWND hWnd, GameFuncs* funcs)
@@ -450,6 +453,7 @@ void graphics::D3D11::Render() {
 
 		// Output Merger
 		sl_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, s_depthStencilView);
+		sl_pd3dDeviceContext->OMSetBlendState(s_blendState, NULL, 0xFFFFFFFF);
 		sl_pd3dDeviceContext->OMSetDepthStencilState(s_depthStencilState, 1);
 
 		// Draw call
@@ -631,6 +635,22 @@ bool graphics::D3D11::Init(PlatformData *data, GameFuncs* funcs) {
 		g_meshes[i].state.next = &g_meshes[i + 1];
 	}
 	g_meshes[MAX_MESHES - 1].state.next = nullptr;
+
+	{
+		D3D11_BLEND_DESC bs = {};
+		for (int i = 0; i < 8; i++)	{
+			bs.RenderTarget[i].BlendEnable = TRUE;
+			bs.RenderTarget[i].BlendOp = D3D11_BLEND_OP_ADD;
+			bs.RenderTarget[i].BlendOpAlpha = D3D11_BLEND_OP_MAX;
+			bs.RenderTarget[i].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+			bs.RenderTarget[i].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+			bs.RenderTarget[i].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+			bs.RenderTarget[i].SrcBlendAlpha = D3D11_BLEND_ONE;
+			bs.RenderTarget[i].DestBlendAlpha = D3D11_BLEND_ONE;
+		}
+
+		D3D_TRY(sl_pd3dDevice->CreateBlendState(&bs, &s_blendState));
+	}
 
 	return true;
 }
