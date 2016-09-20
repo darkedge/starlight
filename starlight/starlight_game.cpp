@@ -99,7 +99,11 @@ static void AddQuad(TempMesh *mesh, float3 v0, float3 v1, float3 v2, float3 v3, 
     mesh->indices.insert(mesh->indices.end(), indices, indices + 6);
 }
 
-static void* GenerateChunkMesh(GameInfo* gameInfo, Chunk* chunk, int32_t cx, int32_t cz) {
+MULTI_FRAME_FUNC(GenerateChunkMesh) {
+    Chunk* chunk = params->chunk;
+    int32_t cx = params->cx;
+    int32_t cz = params->cz;
+
     // TODO: Separate thread
     // TODO: Do not bake chunk world position in here
 
@@ -297,7 +301,7 @@ static void* GenerateChunkMesh(GameInfo* gameInfo, Chunk* chunk, int32_t cx, int
 
     //graphics
     mesh.xz = int2 {cx * CHUNK_DIM_XZ, cz * CHUNK_DIM_XZ};
-    return gameInfo->gfxFuncs->AddChunk(&mesh);
+    //return gameInfo->gfxFuncs->AddChunk(&mesh); // TODO
 }
 
 
@@ -489,7 +493,13 @@ void UpdateChunkGrid(GameInfo* gameInfo) {
                 // TODO: This still embeds raw positional data instead of using a transform in rendering
                 int32_t cx = (int32_t) (x + chunkPos.x - CHUNK_RADIUS);
                 int32_t cz = (int32_t) (z + chunkPos.z - CHUNK_RADIUS);
-                chunk->data = GenerateChunkMesh(gameInfo, chunk->chunk, cx, cz);
+                //chunk->data = GenerateChunkMesh(gameInfo, chunk->chunk, cx, cz);
+                MultiFrameJob job = {};
+                job.Run = &GenerateChunkMesh;
+                job.params.cx = cx;
+                job.params.cz = cz;
+                job.params.chunk = chunk->chunk;
+                s_jobQueue.Enqueue(&job);
             }
         }
     }

@@ -35,7 +35,7 @@ namespace util {
 	public:
 		void Enqueue(T* t) {
 			std::unique_lock<std::mutex> lock(mutex);
-			queue.push(t);
+			queue.push(*t);
 			lock.unlock();
 			cv.notify_one();
 		}
