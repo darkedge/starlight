@@ -12,15 +12,18 @@
 #include <enet/enet.h>
 
 #include "starlight_d3d11.h"
+#include "starlight_thread_safe_queue.h"
 
 // temp
 #include <sstream>
 
 using namespace Vectormath::Aos;
 
+// TODO: Move this to GameInfo or something
 static Transform s_player;
 static int2 s_oldPlayerChunkPosition;
 static float s_deltaTime;
+static util::BlockingQueue<MultiFrameJob> s_jobQueue;
 
 // Currently returns by value... maybe we want to return by pointer when Block becomes a struct?
 // Or use SoA and this keeps being an integer.
@@ -530,8 +533,12 @@ void ResetPosition(GameInfo* gameInfo) {
 }
 
 GAME_THREAD(test);
-void test(void* args) {
-    // Multiframe worker threads
+void MultiFrameWorkerThread(void* args) {
+    while (true) {
+        MultiFrameJob job;
+        s_jobQueue.Dequeue(&job);
+        job.Run(&job.params);
+    }
 }
 
 void Init(GameInfo* gameInfo) {
@@ -571,7 +578,9 @@ void Init(GameInfo* gameInfo) {
     ResetPosition(gameInfo);
 
     // Background chunk loading thread
-    gameInfo->CreateThread(&test, nullptr);
+    for (uint32_t i = 0; i < gameInfo->hardware->numLogicalThreads; i++) {
+        gameInfo->CreateThread(&MultiFrameWorkerThread, nullptr);
+    }
 }
 
 void MoveCamera(GameInfo* gameInfo) {

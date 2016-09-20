@@ -53,6 +53,7 @@ struct GameFuncs {
 };
 
 static GameFuncs s_gameFuncs;
+static HardwareInfo s_hardware;
 
 // This is ugly
 #ifdef STARLIGHT_D3D11
@@ -280,6 +281,15 @@ unsigned int __stdcall MyThreadFunction(void*) {
     gameInfo.CalculateDeltaTime = CalculateDeltaTime;
     gameInfo.gfxFuncs = g_renderApi;
     gameInfo.CreateThread = mjCreateThread;
+
+    // Hardware info
+    {
+        SYSTEM_INFO sysinfo;
+        GetSystemInfo(&sysinfo);
+        s_hardware.numLogicalThreads = (uint32_t) sysinfo.dwNumberOfProcessors;
+    }
+    
+    gameInfo.hardware = &s_hardware;
 
     // ENet
 #if 0
