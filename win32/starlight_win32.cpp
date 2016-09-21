@@ -78,7 +78,7 @@ struct FunctionCall {
     HANDLE confirmation;
 };
 
-unsigned int __stdcall mjThreadProc(void* lpParameter) {
+unsigned int __stdcall slThreadProc(void* lpParameter) {
     // Copy 
     FunctionCall call = *((FunctionCall*)lpParameter);
 
@@ -91,8 +91,8 @@ unsigned int __stdcall mjThreadProc(void* lpParameter) {
     return S_OK;
 }
 
-CREATE_THREAD(mjCreateThread);
-void* mjCreateThread(GameThread* func, void* args) {
+CREATE_THREAD(slCreateThread);
+void* slCreateThread(GameThread* func, void* args) {
     // We wrap the arguments in a struct to avoid specifying a calling convention
     FunctionCall call = { 0 };
     call.func = func;
@@ -102,7 +102,7 @@ void* mjCreateThread(GameThread* func, void* args) {
 
     // Start the thread
     unsigned threadID; // TODO: Use this?
-    HANDLE thread = (HANDLE)_beginthreadex(nullptr, 0, mjThreadProc, &call, 0, &threadID);
+    HANDLE thread = (HANDLE)_beginthreadex(nullptr, 0, slThreadProc, &call, 0, &threadID);
     assert(thread);
 
     // Wait for the function call to be copied to the thread
@@ -280,7 +280,7 @@ unsigned int __stdcall MyThreadFunction(void*) {
     //gameInfo.allocator = &arena;
     gameInfo.CalculateDeltaTime = CalculateDeltaTime;
     gameInfo.gfxFuncs = g_renderApi;
-    gameInfo.CreateThread = mjCreateThread;
+    gameInfo.CreateThread = slCreateThread;
 
     // Hardware info
     {

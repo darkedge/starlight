@@ -23,7 +23,93 @@ using namespace Vectormath::Aos;
 static Transform s_player;
 static int2 s_oldPlayerChunkPosition;
 static float s_deltaTime;
-static util::BlockingQueue<MultiFrameJob> s_jobQueue;
+
+// Multiframe jobs
+struct MultiFrameJobParams {
+    Chunk* chunk;
+    int32_t cx;
+    int32_t cz;
+    void** data; // address of D3D11Mesh
+};
+
+#define MULTI_FRAME_FUNC(name) void name(MultiFrameJobParams*)
+typedef MULTI_FRAME_FUNC(MultiFrameFunc);
+
+struct MultiFrameJob {
+    MultiFrameFunc* Run;
+    // Params are a separate struct so we can do: job.Run(job.params)
+    MultiFrameJobParams params;
+};
+
+// Single producer, multiple consumer
+struct MultiFrameJobQueue {
+    std::condition_variable cv;
+    std::mutex mutex;
+    //mutable std::mutex cv_m;
+    std::queue<MultiFrameJob> queue;
+};
+static MultiFrameJobQueue s_jobQueue;
+
+void EnqueueMultiFrameJob(MultiFrameJobQueue* queue, MultiFrameJob* job) {
+    std::unique_lock<std::mutex> lock(queue->mutex);
+    queue->queue.push(*job);
+    lock.unlock();
+    queue->cv.notify_one();
+}
+
+// Blocks until a job is available.
+void DequeueMultiFrameJob(MultiFrameJobQueue* queue, MultiFrameJob* job) {
+    std::unique_lock<std::mutex> lk(queue->mutex);
+    queue->cv.wait(lk); // can use wait_for to timeout, return false
+    //std::unique_lock<std::mutex> lock(mutex); // Needed?
+    *job = queue->queue.front();
+    queue->queue.pop();
+}
+
+// Multiframe results
+#define PARSE_RESULT_FUNC(name) void name(GameInfo*, void*, void**)
+typedef PARSE_RESULT_FUNC(ParseResultFunc);
+
+// For now, the result is stored in dynamically allocated memory
+// which needs to be deleted by the result parsing function.
+struct MultiFrameResult {
+    ParseResultFunc* Run;
+    void* memory;
+    void** destination;
+};
+
+// Multiple producer, single consumer
+struct MultiFrameResultArray {
+    // This can simply be a vector because the array
+    // is guaranteed to be cleared every frame
+    std::vector<MultiFrameResult> array;
+    // And a simple mutex is enough
+    std::mutex mutex;
+};
+static MultiFrameResultArray s_resultArray;
+
+void PushMultiFrameResult(MultiFrameResultArray* array, MultiFrameResult* result) {
+    std::lock_guard<std::mutex> lock(array->mutex);
+    array->array.push_back(*result);
+}
+
+bool PopMultiFrameResult(MultiFrameResultArray* array, MultiFrameResult* result) {
+    std::lock_guard<std::mutex> lock(array->mutex);
+    if (array->array.empty()) {
+        return false;
+    } else {
+        *result = array->array.back();
+        array->array.pop_back();
+        return true;
+    }
+}
+
+PARSE_RESULT_FUNC(UploadMeshData);
+void UploadMeshData(GameInfo* gameInfo, void* memory, void** destination) {
+    TempMesh* mesh = (TempMesh*) memory;
+    *destination = gameInfo->gfxFuncs->AddChunk(mesh);
+    delete mesh;
+}
 
 // Currently returns by value... maybe we want to return by pointer when Block becomes a struct?
 // Or use SoA and this keeps being an integer.
@@ -99,7 +185,8 @@ static void AddQuad(TempMesh *mesh, float3 v0, float3 v1, float3 v2, float3 v3, 
     mesh->indices.insert(mesh->indices.end(), indices, indices + 6);
 }
 
-MULTI_FRAME_FUNC(GenerateChunkMesh) {
+MULTI_FRAME_FUNC(GenerateChunkMesh);
+void GenerateChunkMesh(MultiFrameJobParams* params) {
     Chunk* chunk = params->chunk;
     int32_t cx = params->cx;
     int32_t cz = params->cz;
@@ -107,7 +194,7 @@ MULTI_FRAME_FUNC(GenerateChunkMesh) {
     // TODO: Separate thread
     // TODO: Do not bake chunk world position in here
 
-    TempMesh mesh;
+    TempMesh* mesh = new TempMesh;
 
     // Note: This assertion guarantees that the mask is large enough
     assert(CHUNK_DIM_Y >= CHUNK_DIM_XZ);
@@ -228,7 +315,7 @@ MULTI_FRAME_FUNC(GenerateChunkMesh) {
                     switch (i) {
                         case 0: // -X
                         {
-                            AddQuad(&mesh,
+                            AddQuad(mesh,
                                 v,
                                 v + float3{ w[0], w[1], w[2] },
                                 v + float3{ h[0], h[1], h[2] },
@@ -237,7 +324,7 @@ MULTI_FRAME_FUNC(GenerateChunkMesh) {
                         }
                         case 1: // -Y
                         {
-                            AddQuad(&mesh,
+                            AddQuad(mesh,
                                 v,
                                 v + float3{ w[0], w[1], w[2] },
                                 v + float3{ h[0], h[1], h[2] },
@@ -246,7 +333,7 @@ MULTI_FRAME_FUNC(GenerateChunkMesh) {
                         }
                         case 2: // -Z
                         {
-                            AddQuad(&mesh,
+                            AddQuad(mesh,
                                 v + float3{ h[0], h[1], h[2] },
                                 v,
                                 v + float3{ w[0] + h[0], w[1] + h[1], w[2] + h[2] },
@@ -256,7 +343,7 @@ MULTI_FRAME_FUNC(GenerateChunkMesh) {
                         }
                         case 3: // +X
                         {
-                            AddQuad(&mesh,
+                            AddQuad(mesh,
                                 v + float3{ w[0], w[1], w[2] },
                                 v,
                                 v + float3{ w[0] + h[0], w[1] + h[1], w[2] + h[2] },
@@ -266,7 +353,7 @@ MULTI_FRAME_FUNC(GenerateChunkMesh) {
                         }
                         case 4: // +Y
                         {
-                            AddQuad(&mesh,
+                            AddQuad(mesh,
                                 v + float3{ h[0], h[1], h[2] },
                                 v + float3{ w[0] + h[0], w[1] + h[1], w[2] + h[2] },
                                 v,
@@ -275,7 +362,7 @@ MULTI_FRAME_FUNC(GenerateChunkMesh) {
                         }
                         case 5: // +Z
                         {
-                            AddQuad(&mesh,
+                            AddQuad(mesh,
                                 v,
                                 v + float3{ h[0], h[1], h[2] },
                                 v + float3{ w[0], w[1], w[2] },
@@ -300,8 +387,13 @@ MULTI_FRAME_FUNC(GenerateChunkMesh) {
     }
 
     //graphics
-    mesh.xz = int2 {cx * CHUNK_DIM_XZ, cz * CHUNK_DIM_XZ};
-    //return gameInfo->gfxFuncs->AddChunk(&mesh); // TODO
+    mesh->xz = int2 {cx * CHUNK_DIM_XZ, cz * CHUNK_DIM_XZ};
+
+    MultiFrameResult result;
+    result.Run = &UploadMeshData;
+    result.memory = mesh;
+    result.destination = params->data;
+    PushMultiFrameResult(&s_resultArray, &result);
 }
 
 
@@ -326,28 +418,6 @@ void GenerateChunk(Chunk* chunk, int32_t cx, int32_t cz) {
             }
         }
     }
-#if 0
-    // Floor
-    for (int32_t bz = 0; bz < CHUNK_DIM_XZ; bz++) {
-        for (int32_t bx = 0; bx < CHUNK_DIM_XZ; bx++) {
-            SetBlock(chunk, 1, bx, 0, bz);
-        }
-    }
-    if (cx < 0) {
-        SetBlock(chunk, 0, 2, 0, 0);
-    }
-    if (cz < 0) {
-        SetBlock(chunk, 0, 0, 0, 2);
-    }
-    for (int32_t x = 0; x <= abs(cx); x++) {
-        // X
-        SetBlock(chunk, 1, 1, x, 0);
-    }
-    for (int32_t z = 0; z <= abs(cz); z++) {
-        // Z
-        SetBlock(chunk, 1, 0, z, 1);
-    }
-#endif
 }
 
 void UpdateChunkGrid(GameInfo* gameInfo) {
@@ -499,13 +569,14 @@ void UpdateChunkGrid(GameInfo* gameInfo) {
                 job.params.cx = cx;
                 job.params.cz = cz;
                 job.params.chunk = chunk->chunk;
-                s_jobQueue.Enqueue(&job);
+                job.params.data = &chunk->data;
+                EnqueueMultiFrameJob(&s_jobQueue, &job);
             }
         }
     }
 
     /*
-    // Debug visible chunk grid
+    // Print visible chunk grid
     for (size_t z = 0; z < CHUNK_DIAMETER; z++) {
         char buf[64] = { 0 };
         for (size_t x = 0; x < CHUNK_DIAMETER; x++) {
@@ -542,11 +613,11 @@ void ResetPosition(GameInfo* gameInfo) {
     s_player.SetRotation(Quat(0, 0, 0, 1));
 }
 
-GAME_THREAD(test);
+GAME_THREAD(MultiFrameWorkerThread);
 void MultiFrameWorkerThread(void* args) {
     while (true) {
         MultiFrameJob job;
-        s_jobQueue.Dequeue(&job);
+        DequeueMultiFrameJob(&s_jobQueue, &job);
         job.Run(&job.params);
     }
 }
@@ -554,11 +625,8 @@ void MultiFrameWorkerThread(void* args) {
 void Init(GameInfo* gameInfo) {
     input::Init();
 
-    slCreateJVM();
+    //slCreateJVM();
 
-    // Cube
-    //s_mesh = CreateCube(graphicsApi);
-    
     // Timing
     s_deltaTime =  0.0f;
 
@@ -574,8 +642,6 @@ void Init(GameInfo* gameInfo) {
     // It's useful to have an error and output stream here
     // Even basic gameplay can (should?) be loaded as an addon
 
-    // Create one chunk
-
     gameInfo->numChunks = NUM_CHUNKS;
 
     // Chunkpool needs to be zeromem'd (set loaded flags to false)
@@ -585,12 +651,13 @@ void Init(GameInfo* gameInfo) {
     gameInfo->chunkGrid = new VisibleChunk[NUM_CHUNKS];
     ZERO_MEM(gameInfo->chunkGrid, sizeof(VisibleChunk) * NUM_CHUNKS);
 
-    ResetPosition(gameInfo);
+	// Background threads
+	for (uint32_t i = 0; i < gameInfo->hardware->numLogicalThreads; i++) {
+		gameInfo->CreateThread(&MultiFrameWorkerThread, nullptr);
+	}
 
-    // Background chunk loading thread
-    for (uint32_t i = 0; i < gameInfo->hardware->numLogicalThreads; i++) {
-        gameInfo->CreateThread(&MultiFrameWorkerThread, nullptr);
-    }
+	// This function requires the threads to be created
+    ResetPosition(gameInfo);
 }
 
 void MoveCamera(GameInfo* gameInfo) {
@@ -662,7 +729,7 @@ SL_EXPORT(void) game::UpdateGame(GameInfo* gameInfo) {
     // ImGui in the .dll is unset after code reload
     ImGui::SetCurrentContext(gameInfo->imguiState);
 
-    slSetJVMContext(gameInfo);
+    //slSetJVMContext(gameInfo);
 
     // Timing
     s_deltaTime = gameInfo->CalculateDeltaTime();
@@ -722,6 +789,12 @@ SL_EXPORT(void) game::UpdateGame(GameInfo* gameInfo) {
     network::Update(gameInfo);
     //network::DrawDebugMenu(gameInfo);
 
+    // Gather multiframe job results
+    MultiFrameResult result;
+    while (PopMultiFrameResult(&s_resultArray, &result)) {
+        result.Run(gameInfo, result.memory, result.destination);
+    }
+
     // Network chat test
 #if 0
     static char buf[128];
@@ -765,5 +838,5 @@ SL_EXPORT(void) game::UpdateGame(GameInfo* gameInfo) {
 
 SL_EXPORT(void) game::DestroyGame() {
     // Free dynamic memory used by game here
-    slDestroyJVM();
+    //slDestroyJVM();
 }

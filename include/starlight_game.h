@@ -127,21 +127,6 @@ struct HardwareInfo {
 	uint32_t numLogicalThreads;
 };
 
-struct MultiFrameJobParams {
-	Chunk* chunk;
-	int32_t cx;
-	int32_t cz;
-};
-
-// Background jobs
-#define MULTI_FRAME_FUNC(name) void name(MultiFrameJobParams* params)
-typedef MULTI_FRAME_FUNC(MultiFrameFunc);
-
-struct MultiFrameJob {
-	MultiFrameFunc* Run;
-	MultiFrameJobParams params;
-};
-
 struct GameInfo {
 	bool initialized;
 	EGraphicsApi graphicsApi;
