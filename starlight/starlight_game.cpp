@@ -45,25 +45,30 @@ struct MultiFrameJob {
 struct MultiFrameJobQueue {
     std::condition_variable cv;
     std::mutex mutex;
-    //mutable std::mutex cv_m;
     std::queue<MultiFrameJob> queue;
+	uint32_t numJobs;
 };
 static MultiFrameJobQueue s_jobQueue;
 
 void EnqueueMultiFrameJob(MultiFrameJobQueue* queue, MultiFrameJob* job) {
-    std::unique_lock<std::mutex> lock(queue->mutex);
+	std::lock_guard<std::mutex> lock(queue->mutex);
+	queue->numJobs++;
     queue->queue.push(*job);
-    lock.unlock();
+	logger::LogInfo(std::string("+ job, ") + std::to_string(queue->queue.size()));
     queue->cv.notify_one();
 }
 
 // Blocks until a job is available.
 void DequeueMultiFrameJob(MultiFrameJobQueue* queue, MultiFrameJob* job) {
-    std::unique_lock<std::mutex> lk(queue->mutex);
-    queue->cv.wait(lk); // can use wait_for to timeout, return false
-    //std::unique_lock<std::mutex> lock(mutex); // Needed?
+	std::unique_lock<std::mutex> lock(queue->mutex);
+	while (!queue->numJobs) {
+		queue->cv.wait(lock);
+	}
+	queue->numJobs--;
+
     *job = queue->queue.front();
     queue->queue.pop();
+	logger::LogInfo(std::string("- job, ") + std::to_string(queue->queue.size()));
 }
 
 // Multiframe results
@@ -91,15 +96,16 @@ static MultiFrameResultArray s_resultArray;
 void PushMultiFrameResult(MultiFrameResultArray* array, MultiFrameResult* result) {
     std::lock_guard<std::mutex> lock(array->mutex);
     array->array.push_back(*result);
+	logger::LogInfo(std::string("+ result: ") + std::to_string(array->array.size()));
 }
 
 bool PopMultiFrameResult(MultiFrameResultArray* array, MultiFrameResult* result) {
-    std::lock_guard<std::mutex> lock(array->mutex);
     if (array->array.empty()) {
         return false;
     } else {
         *result = array->array.back();
         array->array.pop_back();
+		logger::LogInfo(std::string("- result: ") + std::to_string(array->array.size()));
         return true;
     }
 }
@@ -787,11 +793,15 @@ SL_EXPORT(void) game::UpdateGame(GameInfo* gameInfo) {
     network::Update(gameInfo);
     //network::DrawDebugMenu(gameInfo);
 
-    // Gather multiframe job results
-    MultiFrameResult result;
-    while (PopMultiFrameResult(&s_resultArray, &result)) {
-        result.Run(gameInfo, result.memory, result.destination);
-    }
+    
+	{
+		// Gather multiframe job results
+		MultiFrameResult result;
+		std::lock_guard<std::mutex> lock(s_resultArray.mutex);
+		while (PopMultiFrameResult(&s_resultArray, &result)) {
+			result.Run(gameInfo, result.memory, result.destination);
+		}
+	}
 
     // Network chat test
 #if 0
