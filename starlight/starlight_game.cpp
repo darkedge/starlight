@@ -420,6 +420,16 @@ void GenerateChunk(Chunk* chunk, int32_t cx, int32_t cz) {
     }
 }
 
+static inline void DeleteChunkData(GameInfo* gameInfo, VisibleChunk* chunk) {
+	assert(gameInfo);
+	assert(chunk);
+
+	// Delete chunk + data
+	if (chunk->data) gameInfo->gfxFuncs->DeleteChunk(chunk->data);
+	chunk->data = nullptr;
+	if (chunk->chunk) chunk->chunk->loaded = false;
+}
+
 void UpdateChunkGrid(GameInfo* gameInfo) {
     assert(gameInfo->chunkGrid);
     assert(gameInfo->chunkPool);
@@ -437,10 +447,7 @@ void UpdateChunkGrid(GameInfo* gameInfo) {
             for(size_t z = 0; z < CHUNK_DIAMETER; z++) {
                 VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
                 if (x < dc.x) {
-                    // Delete chunk + data
-                    if (chunk->data) gameInfo->gfxFuncs->DeleteChunk(chunk->data);
-                    chunk->data = nullptr;
-                    if (chunk->chunk) chunk->chunk->loaded = false;
+					DeleteChunkData(gameInfo, chunk);
                 }
                 if (x + dc.x < CHUNK_DIAMETER) {
                     // Move chunk
@@ -457,10 +464,7 @@ void UpdateChunkGrid(GameInfo* gameInfo) {
             for(size_t z = 0; z < CHUNK_DIAMETER; z++) {
                 VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
                 if (x >= CHUNK_DIAMETER + dc.x || -dc.x >= CHUNK_DIAMETER) {
-                    // Delete chunk + data
-                    if (chunk->data) gameInfo->gfxFuncs->DeleteChunk(chunk->data);
-                    chunk->data = nullptr;
-                    if (chunk->chunk) chunk->chunk->loaded = false;
+					DeleteChunkData(gameInfo, chunk);
                 }
                 if (x + dc.x < CHUNK_DIAMETER) {
                     // Move chunk
@@ -480,10 +484,7 @@ void UpdateChunkGrid(GameInfo* gameInfo) {
             for (size_t x = 0; x < CHUNK_DIAMETER; x++) {
                 VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
                 if (z < dc.z) {
-                    // Delete chunk + data
-                    if (chunk->data) gameInfo->gfxFuncs->DeleteChunk(chunk->data);
-                    chunk->data = nullptr;
-                    if (chunk->chunk) chunk->chunk->loaded = false;
+					DeleteChunkData(gameInfo, chunk);
                 }
                 if (z + dc.z < CHUNK_DIAMETER) {
                     // Move chunk
@@ -500,10 +501,7 @@ void UpdateChunkGrid(GameInfo* gameInfo) {
             for (size_t x = 0; x < CHUNK_DIAMETER; x++) {
                 VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
                 if (z >= CHUNK_DIAMETER + dc.z || -dc.z >= CHUNK_DIAMETER) {
-                    // Delete chunk + data
-                    if (chunk->data) gameInfo->gfxFuncs->DeleteChunk(chunk->data);
-                    chunk->data = nullptr;
-                    if (chunk->chunk) chunk->chunk->loaded = false;
+					DeleteChunkData(gameInfo, chunk);
                 }
                 if (z + dc.z < CHUNK_DIAMETER) {
                     // Move chunk
