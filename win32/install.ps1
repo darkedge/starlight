@@ -70,6 +70,7 @@ DownloadFile("ftp://ftp.equation.com/make/64/make.exe")
 
 DownloadAndExtract("http://enet.bespin.org/download/enet-1.3.13.tar.gz")
 DownloadAndExtract("https://github.com/ocornut/imgui/archive/v1.49.zip")
+DownloadAndExtract("http://www.lua.org/ftp/lua-5.3.3.tar.gz")
 DownloadAndExtract("https://github.com/google/protobuf/releases/download/v2.6.1/protobuf-2.6.1.zip")
 DownloadAndExtract("https://github.com/erwincoumans/sce_vectormath/archive/master.zip")
 
@@ -81,6 +82,7 @@ function DeleteFile($file) {
 DeleteFile("7za.exe")
 DeleteFile("7za920.zip")
 DeleteFile("enet-1.3.13.tar*")
+DeleteFile("lua-5.3.3.tar*")
 DeleteFile("protobuf-2.6.1.zip")
 DeleteFile("v1.49.zip")
 DeleteFile("master.zip")
