@@ -29,7 +29,7 @@ struct MultiFrameJobParams {
     Chunk* chunk;
     int32_t cx;
     int32_t cz;
-    void** data; // address of D3D11Mesh
+    void** destination; // address of D3D11Mesh
 };
 
 #define MULTI_FRAME_FUNC(name) void name(MultiFrameJobParams*)
@@ -54,7 +54,6 @@ void EnqueueMultiFrameJob(MultiFrameJobQueue* queue, MultiFrameJob* job) {
 	std::lock_guard<std::mutex> lock(queue->mutex);
 	queue->numJobs++;
     queue->queue.push(*job);
-	logger::LogInfo(std::string("+ job, ") + std::to_string(queue->queue.size()));
     queue->cv.notify_one();
 }
 
@@ -68,7 +67,6 @@ void DequeueMultiFrameJob(MultiFrameJobQueue* queue, MultiFrameJob* job) {
 
     *job = queue->queue.front();
     queue->queue.pop();
-	logger::LogInfo(std::string("- job, ") + std::to_string(queue->queue.size()));
 }
 
 // Multiframe results
@@ -96,16 +94,15 @@ static MultiFrameResultArray s_resultArray;
 void PushMultiFrameResult(MultiFrameResultArray* array, MultiFrameResult* result) {
     std::lock_guard<std::mutex> lock(array->mutex);
     array->array.push_back(*result);
-	logger::LogInfo(std::string("+ result: ") + std::to_string(array->array.size()));
 }
 
+// Assumes that the array is locked before this function is called
 bool PopMultiFrameResult(MultiFrameResultArray* array, MultiFrameResult* result) {
     if (array->array.empty()) {
         return false;
     } else {
         *result = array->array.back();
         array->array.pop_back();
-		logger::LogInfo(std::string("- result: ") + std::to_string(array->array.size()));
         return true;
     }
 }
@@ -197,7 +194,6 @@ void GenerateChunkMesh(MultiFrameJobParams* params) {
     int32_t cx = params->cx;
     int32_t cz = params->cz;
 
-    // TODO: Separate thread
     // TODO: Do not bake chunk world position in here
 
     TempMesh* mesh = new TempMesh;
@@ -398,7 +394,7 @@ void GenerateChunkMesh(MultiFrameJobParams* params) {
     MultiFrameResult result;
     result.Run = &UploadMeshData;
     result.memory = mesh;
-    result.destination = params->data;
+    result.destination = params->destination;
     PushMultiFrameResult(&s_resultArray, &result);
 }
 
@@ -573,7 +569,7 @@ void UpdateChunkGrid(GameInfo* gameInfo) {
                 job.params.cx = cx;
                 job.params.cz = cz;
                 job.params.chunk = chunk->chunk;
-                job.params.data = &chunk->data;
+                job.params.destination = &chunk->data;
                 EnqueueMultiFrameJob(&s_jobQueue, &job);
             }
         }

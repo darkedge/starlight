@@ -680,8 +680,10 @@ void* graphics::D3D11::AddChunk(TempMesh *tempMesh) {
 
 	Vertex* vertices = tempMesh->vertices.data();
 	int32_t numVertices = (int32_t) tempMesh->vertices.size();
+	assert(numVertices);
 	int32_t* indices = tempMesh->indices.data();
 	int32_t numIndices = (int32_t) tempMesh->indices.size();
+	assert(numIndices);
 
 #if 1
 	// Create an initialize the vertex buffer.
@@ -827,6 +829,7 @@ void graphics::D3D11::DeleteChunk(void* data) {
 	// Also delete corresponding draw command
 	size_t ndx = mesh - g_meshes;
 	DrawCommand* cmd = &g_drawCommands[ndx];
+	cmd->state.live.mesh = NULL;
 	cmd->state.next = firstAvailableDrawCommand;
 	firstAvailableDrawCommand = cmd;
 
