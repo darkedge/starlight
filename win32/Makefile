@@ -57,15 +57,9 @@ imgui.lib: $(addprefix $(IMGUI)/,imgui.cpp imgui_demo.cpp imgui_draw.cpp example
 starlight_hlsl_generated.h: hlsl_codegen.lua
 	lua $^
 
-ModdingApi.class: ../modding-api/src/ModdingApi.java
-	javac -d . $^
-
-starlight_java_generated.h: ModdingApi.class
-	javah -o starlight_java_generated.h ModdingApi
-
-starlight.dll: enet.lib imgui.lib ../starlight/*.cpp $(INC)/*.h starlight_java_generated.h
+starlight.dll: enet.lib imgui.lib ../starlight/*.cpp $(INC)/*.h
 	if not exist $(BUILD)\bin mkdir $(BUILD)\bin
-	cl $(slCompile) /I"$(JAVA_HOME)\include" /I"$(JAVA_HOME)\include\win32" /Fo$(BUILD)/bin/ /LD /Festarlight.dll ../starlight/starlight_ub.cpp /link /libpath:"$(JAVA_HOME)\lib" $(slLink) jvm.lib Delayimp.lib /PDB:$(BUILD)/bin/starlight_$(SL_RANDOM).pdb /delayload:jvm.dll
+	cl $(slCompile) /Fo$(BUILD)/bin/ /LD /Festarlight.dll ../starlight/starlight_ub.cpp /link $(slLink) Delayimp.lib /PDB:$(BUILD)/bin/starlight_$(SL_RANDOM).pdb
 
 SimplePixelShader.h: SimplePixelShader.hlsl
 	fxc /Zi /E"main" /Od /Vn"g_SimplePixelShader" /WX /T ps_4_0 /Fh"SimplePixelShader.h" /nologo SimplePixelShader.hlsl
@@ -79,7 +73,6 @@ starlight.exe: enet.lib imgui.lib *.cpp SimplePixelShader.h SimpleVertexShader.h
 
 clean:
 	del $(ASSETS)\*.ttf
-	del *.class
 	del *.h
 	del *.log
 	del enet.lib

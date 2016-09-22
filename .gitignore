@@ -12,7 +12,6 @@ starlight.exe
 starlight.exp
 starlight.so
 starlight_hlsl_generated.h
-starlight_java_generated.h
 starlight_linux
 starlight_vertex_generated.h
 *.VC.db
