@@ -26,6 +26,7 @@ INC := ..\include
 
 ENET := $(EXTERNAL)\enet-1.3.13
 IMGUI := $(EXTERNAL)\imgui-1.49
+LUA := $(EXTERNAL)\lua-5.3.3\src
 PROTOBUF := $(EXTERNAL)/protobuf-2.6.1
 VECTORMATH := $(EXTERNAL)/sce_vectormath-master
 
@@ -39,7 +40,7 @@ slCompile := $(slBasicCompile) $(slDefinitions) $(slInclude) /Ob1 /WX /W4 /wd410
 
 slLink := /incremental:no /LIBPATH:$(BUILD)/lib enet.lib imgui.lib winmm.lib ws2_32.lib dxguid.lib ole32.lib
 
-all: starlight.dll starlight.exe assets
+all: starlight.dll starlight.exe luac.exe assets
 
 assets:
 	xcopy $(IMGUI)\extra_fonts\\*.ttf $(ASSETS) /Y /Q
@@ -54,10 +55,23 @@ imgui.lib: $(addprefix $(IMGUI)/,imgui.cpp imgui_demo.cpp imgui_draw.cpp example
 	cl /c $(slBasicCompile) /Fo$(BUILD)/imgui/ /I$(IMGUI) $^
 	lib /nologo /out:imgui.lib $(BUILD)/imgui/*.obj
 
-starlight_hlsl_generated.h: hlsl_codegen.lua
-	lua $^
+lua.lib: $(addprefix $(LUA)/,lapi.c lcode.c lctype.c ldebug.c ldo.c ldump.c lfunc.c lgc.c llex.c lmem.c lobject.c lopcodes.c lparser.c lstate.c lstring.c ltable.c ltm.c lundump.c lvm.c lzio.c lauxlib.c lbaselib.c lbitlib.c lcorolib.c ldblib.c liolib.c lmathlib.c loslib.c lstrlib.c ltablib.c lutf8lib.c loadlib.c linit.c)
+	if not exist $(BUILD)\lua mkdir $(BUILD)\lua
+	cl /c $(slBasicCompile) /Fo$(BUILD)/lua/ /I$(LUA) $^
+	lib /nologo /out:lua.lib $(BUILD)/lua/*.obj
 
-starlight.dll: enet.lib imgui.lib ../starlight/*.cpp $(INC)/*.h
+luac.exe: lua.lib $(LUA)/luac.c
+	if not exist $(BUILD)\lua mkdir $(BUILD)\lua
+	cl $(slBasicCompile) /Fo$(BUILD)/lua/ /Fe$@ /I$(LUA) $(LUA)/luac.c /link lua.lib
+
+lua.exe: lua.lib $(LUA)/lua.c
+	if not exist $(BUILD)\lua mkdir $(BUILD)\lua
+	cl $(slBasicCompile) /Fo$(BUILD)/lua/ /Fe$@ /I$(LUA) $(LUA)/lua.c /link lua.lib
+
+starlight_hlsl_generated.h: lua.exe hlsl_codegen.lua
+	lua hlsl_codegen.lua
+
+starlight.dll: enet.lib imgui.lib lua.lib ../starlight/*.cpp $(INC)/*.h
 	if not exist $(BUILD)\bin mkdir $(BUILD)\bin
 	cl $(slCompile) /Fo$(BUILD)/bin/ /LD /Festarlight.dll ../starlight/starlight_ub.cpp /link $(slLink) Delayimp.lib /PDB:$(BUILD)/bin/starlight_$(SL_RANDOM).pdb
 
@@ -67,17 +81,21 @@ SimplePixelShader.h: SimplePixelShader.hlsl
 SimpleVertexShader.h: SimpleVertexShader.hlsl starlight_hlsl_generated.h
 	fxc /I. /Zi /E"main" /Od /Vn"g_SimpleVertexShader" /WX /T vs_4_0 /Fh"SimpleVertexShader.h" /nologo SimpleVertexShader.hlsl
 
-starlight.exe: enet.lib imgui.lib *.cpp SimplePixelShader.h SimpleVertexShader.h $(INC)/*.h
+starlight.exe: enet.lib imgui.lib lua.lib *.cpp SimplePixelShader.h SimpleVertexShader.h $(INC)/*.h
 	if not exist $(BUILD)\bin mkdir $(BUILD)\bin
-	cl $(slCompile) /Fo$(BUILD)/bin/ /Festarlight.exe /I$(IMGUI)/examples/directx11_example starlight_win32_ub.cpp /link $(slLink) d3dcompiler.lib d3d11.lib Advapi32.lib
+	cl $(slCompile) /Fo$(BUILD)/bin/ /Fe$@ /I$(IMGUI)/examples/directx11_example starlight_win32_ub.cpp /link $(slLink) d3dcompiler.lib d3d11.lib Advapi32.lib
 
 clean:
 	del $(ASSETS)\*.ttf
 	del *.h
 	del *.log
 	del enet.lib
-	del imgui.ini
+#	del imgui.ini
 	del imgui.lib
+	del log.txt
+	del lua.exe
+	del lua.lib
+	del luac.exe
 	del SimplePixelShader.h
 	del SimpleVertexShader.h
 	del starlight.dll
