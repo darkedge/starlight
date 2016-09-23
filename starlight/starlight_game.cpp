@@ -5,13 +5,14 @@
 #include "starlight_graphics.h"
 #include <vectormath/scalar/cpp/vectormath_aos.h>
 #include <cstdint>
+#include <deque>
+#include <condition_variable>
 #include "imgui.h"
 #include "Network.h"
 #include "Noise.h"
 #include <enet/enet.h>
 
 #include "starlight_d3d11.h"
-#include "starlight_thread_safe_queue.h"
 
 // temp
 #include <sstream>
@@ -22,6 +23,13 @@ using namespace Vectormath::Aos;
 static Transform s_player;
 static int2 s_oldPlayerChunkPosition;
 static float s_deltaTime;
+
+static int2 WorldToChunkPosition(float x, float z) {
+    int2 xz;
+    xz.x = (int32_t)floorf(x / CHUNK_DIM_XZ);
+    xz.z = (int32_t)floorf(z / CHUNK_DIM_XZ);
+    return xz;
+}
 
 // Multiframe jobs
 struct MultiFrameJobParams {
@@ -34,6 +42,7 @@ struct MultiFrameJobParams {
 #define MULTI_FRAME_FUNC(name) void name(MultiFrameJobParams*)
 typedef MULTI_FRAME_FUNC(MultiFrameFunc);
 
+// These are used in result parsing as well for confirmation purposes
 struct MultiFrameJob {
     MultiFrameFunc* Run;
     // Params are a separate struct so we can do: job.Run(job.params)
@@ -44,32 +53,31 @@ struct MultiFrameJob {
 struct MultiFrameJobQueue {
     std::condition_variable cv;
     std::mutex mutex;
-    std::queue<MultiFrameJob> queue;
-	uint32_t numJobs;
+    std::deque<MultiFrameJob> queue;
 };
 static MultiFrameJobQueue s_jobQueue;
 
+// Assumes queue is locked.
 void EnqueueMultiFrameJob(MultiFrameJobQueue* queue, MultiFrameJob* job) {
-	std::lock_guard<std::mutex> lock(queue->mutex);
-	queue->numJobs++;
-    queue->queue.push(*job);
-    queue->cv.notify_one();
+    queue->queue.push_back(*job);
 }
 
 // Blocks until a job is available.
 void DequeueMultiFrameJob(MultiFrameJobQueue* queue, MultiFrameJob* job) {
 	std::unique_lock<std::mutex> lock(queue->mutex);
-	while (!queue->numJobs) {
-		queue->cv.wait(lock);
+	while (!queue->queue.size()) {
+		queue->cv.wait(lock); // release lock, block until notify_all, acquire lock
 	}
-	queue->numJobs--;
+
+    // not thread-safe: logger is not covered by mutex
+    //logger::LogInfo(std::string("- job, ") + std::to_string(queue->numJobs));
 
     *job = queue->queue.front();
-    queue->queue.pop();
+    queue->queue.pop_front();
 }
 
 // Multiframe results
-#define PARSE_RESULT_FUNC(name) void name(GameInfo*, void*, void**)
+#define PARSE_RESULT_FUNC(name) void name(GameInfo*, void*, MultiFrameJobParams* params)
 typedef PARSE_RESULT_FUNC(ParseResultFunc);
 
 // For now, the result is stored in dynamically allocated memory
@@ -77,7 +85,7 @@ typedef PARSE_RESULT_FUNC(ParseResultFunc);
 struct MultiFrameResult {
     ParseResultFunc* Run;
     void* memory;
-    void** destination;
+    MultiFrameJobParams params;
 };
 
 // Multiple producer, single consumer
@@ -107,9 +115,26 @@ bool PopMultiFrameResult(MultiFrameResultArray* array, MultiFrameResult* result)
 }
 
 PARSE_RESULT_FUNC(UploadMeshData);
-void UploadMeshData(GameInfo* gameInfo, void* memory, void** destination) {
+void UploadMeshData(GameInfo* gameInfo, void* memory, MultiFrameJobParams* params) {
+    Vector3 pos = s_player.GetPosition();
+    int2 pxz = WorldToChunkPosition(pos.getX(), pos.getZ());
+
     TempMesh* mesh = (TempMesh*) memory;
-    *destination = gameInfo->gfxFuncs->AddChunk(mesh);
+    
+    // Check if chunk is out of sight
+    int32_t x = params->cx - pxz.x;
+    int32_t z = params->cz - pxz.z;
+    if (abs(x) <= CHUNK_RADIUS && abs(z) <= CHUNK_RADIUS) {
+        // The VisibleChunk might have moved, so recalculate destination
+        x += CHUNK_RADIUS;
+        z += CHUNK_RADIUS;
+        VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
+
+        // Skip if we meshed the same chunk twice (happens if we moved fast enough)
+        if (!chunk->data) {
+            chunk->data = gameInfo->gfxFuncs->AddChunk(mesh);
+        }
+    }
     delete mesh;
 }
 
@@ -138,13 +163,6 @@ inline void SetBlock(Chunk* chunk, Block block, size_t x, size_t y, size_t z) {
     assert(y >= 0 && y < CHUNK_DIM_Y);
     assert(z >= 0 && z < CHUNK_DIM_XZ);
     chunk->blocks[y * CHUNK_DIM_XZ * CHUNK_DIM_XZ + z * CHUNK_DIM_XZ + x] = block;
-}
-
-static int2 WorldToChunkPosition(float x, float z) {
-    int2 xz;
-    xz.x = (int32_t)floorf(x / CHUNK_DIM_XZ);
-    xz.z = (int32_t)floorf(z / CHUNK_DIM_XZ);
-    return xz;
 }
 
 struct ChunkMesh {
@@ -390,10 +408,10 @@ void GenerateChunkMesh(MultiFrameJobParams* params) {
     //graphics
     mesh->xz = int2 {cx * CHUNK_DIM_XZ, cz * CHUNK_DIM_XZ};
 
-    MultiFrameResult result;
+    MultiFrameResult result = {};
     result.Run = &UploadMeshData;
     result.memory = mesh;
-    result.destination = params->destination;
+    result.params = *params;
     PushMultiFrameResult(&s_resultArray, &result);
 }
 
@@ -555,23 +573,27 @@ void UpdateChunkGrid(GameInfo* gameInfo) {
     }
 
     // Meshing step
-    for (size_t x = 0; x < CHUNK_DIAMETER; x++) {
-        for (size_t z = 0; z < CHUNK_DIAMETER; z++) {
-            VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
-            if (!chunk->data) {
-                // TODO: This still embeds raw positional data instead of using a transform in rendering
-                int32_t cx = (int32_t) (x + chunkPos.x - CHUNK_RADIUS);
-                int32_t cz = (int32_t) (z + chunkPos.z - CHUNK_RADIUS);
-                //chunk->data = GenerateChunkMesh(gameInfo, chunk->chunk, cx, cz);
-                MultiFrameJob job = {};
-                job.Run = &GenerateChunkMesh;
-                job.params.cx = cx;
-                job.params.cz = cz;
-                job.params.chunk = chunk->chunk;
-                job.params.destination = &chunk->data;
-                EnqueueMultiFrameJob(&s_jobQueue, &job);
+    {
+        std::lock_guard<std::mutex> lock(s_jobQueue.mutex);
+        for (size_t x = 0; x < CHUNK_DIAMETER; x++) {
+            for (size_t z = 0; z < CHUNK_DIAMETER; z++) {
+                VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
+                if (!chunk->data) {
+                    // TODO: This still embeds raw positional data instead of using a transform in rendering
+                    int32_t cx = (int32_t) (x + chunkPos.x - CHUNK_RADIUS);
+                    int32_t cz = (int32_t) (z + chunkPos.z - CHUNK_RADIUS);
+                    //chunk->data = GenerateChunkMesh(gameInfo, chunk->chunk, cx, cz);
+                    MultiFrameJob job = {};
+                    job.Run = &GenerateChunkMesh;
+                    job.params.cx = cx;
+                    job.params.cz = cz;
+                    job.params.chunk = chunk->chunk;
+                    job.params.destination = &chunk->data;
+                    EnqueueMultiFrameJob(&s_jobQueue, &job);
+                }
             }
         }
+        s_jobQueue.cv.notify_all();
     }
 
     /*
@@ -701,7 +723,7 @@ void MoveCamera(GameInfo* gameInfo) {
     }
 
     // Translation
-    const float SPEED = 30.0f;
+    const float SPEED = 300.0f;
     Vector3 translation(0, 0, 0);
     if (ImGui::GetIO().KeysDown[(intptr_t)'W'])     translation += s_player.Forward();
     if (ImGui::GetIO().KeysDown[(intptr_t)'A'])     translation -= s_player.Right();
@@ -776,6 +798,16 @@ SL_EXPORT(void) game::UpdateGame(GameInfo* gameInfo) {
     arr[127] = s_deltaTime * 1000.0f;
     ImGui::PlotLines("CPU Time", arr, COUNT_OF(arr), 0, NULL, 0.0f, 33.0f, ImVec2(0,80));
 
+    {
+        std::lock_guard<std::mutex> lock(s_jobQueue.mutex);
+        ImGui::Text((std::string("Queued jobs: ") + std::to_string(s_jobQueue.queue.size())).c_str());
+    }
+    {
+        std::lock_guard<std::mutex> lock(s_resultArray.mutex);
+        ImGui::Text((std::string("Queued results: ") + std::to_string(s_resultArray.array.size())).c_str());
+    }
+    
+
     ImGui::End();
 
     int2 newXZ = WorldToChunkPosition(pos.getX(), pos.getZ());
@@ -788,13 +820,33 @@ SL_EXPORT(void) game::UpdateGame(GameInfo* gameInfo) {
     network::Update(gameInfo);
     //network::DrawDebugMenu(gameInfo);
 
+    {
+        // Remove jobs that are outdated
+        std::lock_guard<std::mutex> lock(s_jobQueue.mutex);
+        s_jobQueue.queue.erase(std::remove_if(s_jobQueue.queue.begin(), s_jobQueue.queue.end(), [&](MultiFrameJob& job) 
+        {
+            int32_t x = job.params.cx - s_oldPlayerChunkPosition.x;
+            int32_t z = job.params.cz - s_oldPlayerChunkPosition.z;
+			if (abs(x) <= CHUNK_RADIUS && abs(z) <= CHUNK_RADIUS) {
+				// The VisibleChunk might have moved, so recalculate destination
+				x += CHUNK_RADIUS;
+				z += CHUNK_RADIUS;
+				VisibleChunk* chunk = &gameInfo->chunkGrid[x * CHUNK_DIAMETER + z];
+
+				// Skip if we meshed the same chunk twice (happens if we moved fast enough)
+				return !!chunk->data;
+			} else {
+				return true;
+			}
+        }), s_jobQueue.queue.end());
+    }
     
 	{
 		// Gather multiframe job results
 		MultiFrameResult result;
 		std::lock_guard<std::mutex> lock(s_resultArray.mutex);
 		while (PopMultiFrameResult(&s_resultArray, &result)) {
-			result.Run(gameInfo, result.memory, result.destination);
+			result.Run(gameInfo, result.memory, &result.params);
 		}
 	}
 
