@@ -35,7 +35,6 @@ struct MultiFrameJobParams {
     Chunk* chunk;
     int32_t cx;
     int32_t cz;
-    void** destination; // address of D3D11Mesh
 };
 
 #define MULTI_FRAME_FUNC(name) void name(MultiFrameJobParams*)
@@ -587,7 +586,6 @@ void UpdateChunkGrid(GameInfo* gameInfo) {
                     job.params.cx = cx;
                     job.params.cz = cz;
                     job.params.chunk = chunk->chunk;
-                    job.params.destination = &chunk->data;
                     EnqueueMultiFrameJob(&s_jobQueue, &job);
                 }
             }
