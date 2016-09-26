@@ -94,7 +94,7 @@ $LUA = $($externalDir + "\LuaJIT-2.0.4\src")
 
 $BUILD = $($workingDir + "build")
 
-$slBasicCompile = "/nologo /Gm- /MDd /GR- /EHs-c- /fp:fast /fp:except- /Oi"
+$slBasicCompile = "/nologo /O2 /Gm- /MDd /GR- /EHs-c- /fp:fast /fp:except- /Oi"
 
 # ENet
 New-Item "$BUILD\enet" -type directory -force
