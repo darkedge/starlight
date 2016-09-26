@@ -39,14 +39,12 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <NMakeOutput>..\starlight.exe</NMakeOutput>
-    <NMakeBuildCommandLine>"$(VSInstallDir)vcvarsall.bat" amd64
-..\build</NMakeBuildCommandLine>
+    <NMakeBuildCommandLine>"$(VSInstallDir)VC\vcvarsall.bat" amd64 &amp; ..\build</NMakeBuildCommandLine>
     <NMakeCleanCommandLine>cd .. &amp; make clean</NMakeCleanCommandLine>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <NMakeOutput>..\starlight.exe</NMakeOutput>
-    <NMakeBuildCommandLine>"$(VSInstallDir)vcvarsall.bat" amd64
-..\build</NMakeBuildCommandLine>
+    <NMakeBuildCommandLine>"$(VSInstallDir)VC\vcvarsall.bat" amd64 &amp; ..\build</NMakeBuildCommandLine>
     <NMakeCleanCommandLine>cd .. &amp; make clean</NMakeCleanCommandLine>
   </PropertyGroup>
   <ItemDefinitionGroup>
