@@ -66,13 +66,8 @@ clean:
 	del $(ASSETS)\*.ttf
 	del *.h
 	del *.log
-	del enet.lib
 #	del imgui.ini
-	del imgui.lib
 	del log.txt
-	del lua.exe
-	del lua.lib
-	del luac.exe
 	del SimplePixelShader.h
 	del SimpleVertexShader.h
 	del starlight.dll
