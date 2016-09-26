@@ -12,6 +12,8 @@ extern "C"
 #include <lualib.h>
 }
 
+static lua_State* L;
+
 static const luaL_Reg lualibs[] = {
     {"", luaopen_base},
     {LUA_LOADLIBNAME, luaopen_package},
@@ -23,9 +25,7 @@ static const luaL_Reg lualibs[] = {
 };
 
 void slCreateLuaVM() {
-    char buff[256];
-    int error;
-    lua_State *L = lua_open();
+    L = lua_open();
 
     // luaL_openlibs(L)
     const luaL_Reg *lib = lualibs;
@@ -34,19 +34,8 @@ void slCreateLuaVM() {
         lua_pushstring(L, lib->name);
         lua_call(L, 1, 0);
     }
-
-    while (fgets(buff, sizeof(buff), stdin) != NULL) {
-        error = luaL_loadbuffer(L, buff, strlen(buff), "line") ||
-        lua_pcall(L, 0, 0, 0);
-        if (error) {
-            fprintf(stderr, "%s", lua_tostring(L, -1));
-            lua_pop(L, 1);
-        }
-    }
-
-    lua_close(L);
 }
 
 void slDestroyLuaVM() {
-	
+	lua_close(L);
 }
