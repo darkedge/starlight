@@ -1,6 +1,5 @@
 #pragma once
 #include "starlight_graphics.h"
-#include "starlight_memory.h"
 #include "starlight_vertex_generated.h"
 
 // Assumption: Block size = 1

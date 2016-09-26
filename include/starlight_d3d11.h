@@ -2,6 +2,31 @@
 #include "starlight_graphics.h"
 #include "starlight_renderer_windows.h"
 
+template<typename T>
+inline void SafeRelease(T& ptr) {
+	if (ptr) {
+		ptr->Release();
+		ptr = nullptr;
+	}
+}
+
+#ifdef _DEBUG
+#include <sstream>
+#define STR(x) #x
+#define XSTR(x) STR(x)
+#define D3D_TRY(_expr) \
+do { \
+	HRESULT	_hr = _expr; \
+	if (FAILED( _hr )) { \
+		std::stringstream _s;\
+		_s << __FILE__ << "(" << __LINE__ << "): " << STR(_expr) << "failed\n";\
+		g_LogInfo(_s.str());\
+	} \
+} while (0)
+#else
+#define D3D_TRY(expr) expr
+#endif
+
 struct ID3D11PixelShader;
 struct ID3D11VertexShader;
 struct ID3D11Device;

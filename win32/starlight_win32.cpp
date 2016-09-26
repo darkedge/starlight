@@ -13,14 +13,13 @@
 
 #define SL_IMPL
 
-#include "starlight_win32.h"
+#include "starlight_renderer_windows.h"
 #include "starlight_graphics.h"
 #include "starlight_game.h"
 #include <imgui.h>
 #include <atomic>
 #include "starlight_thread_safe_queue.h"
 #include "starlight_log.h"
-#include "starlight_memory.h"
 
 #include <process.h> // _beginthreadex
 #include <Psapi.h> // GetProcessMemoryInfo

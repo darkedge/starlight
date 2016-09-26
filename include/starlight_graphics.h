@@ -1,9 +1,10 @@
 #pragma once
 #include "starlight.h"
 #include <vectormath/scalar/cpp/vectormath_aos.h>
-#include "starlight_config.h"
 #include <stddef.h>
 #include <stdint.h>
+
+#define STARLIGHT_D3D11
 
 // Platform needs to provide this
 struct PlatformData;

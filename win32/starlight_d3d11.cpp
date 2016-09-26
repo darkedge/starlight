@@ -2,7 +2,6 @@
 #include "starlight_graphics.h"
 #if defined(_WIN32) && defined(STARLIGHT_D3D11)
 
-#include "starlight_d3d_shared.h"
 #include "starlight_d3d11.h"
 #include "starlight_renderer_windows.h"
 
