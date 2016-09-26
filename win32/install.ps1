@@ -115,4 +115,5 @@ popd
 Copy-Item $LUA\lua51.lib $workingDir
 Copy-Item $LUA\lua51.dll $workingDir
 Copy-Item $LUA\luajit.exe $workingDir
+New-Item $workingDir\lua\jit -type directory -force
 Copy-Item $LUA\jit\* $workingDir\lua\jit
