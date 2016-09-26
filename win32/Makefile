@@ -68,8 +68,6 @@ clean:
 	del *.log
 #	del imgui.ini
 	del log.txt
-	del SimplePixelShader.h
-	del SimpleVertexShader.h
 	del starlight.dll
 	del starlight.exe
 	del starlight.exp
