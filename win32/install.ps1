@@ -4,7 +4,7 @@ $webClient = New-Object Net.WebClient
 
 # -aoa: Overwrite all without prompt
 # -r: Recursive
-$7zargs = " -aoa -r *.cpp *.hpp *.c *.h *.inl *.ttf *.lua *.dasc *.bat"
+$7zargs = " -aoa -r *.cpp *.hpp *.c *.h *.inl *.ttf *.lua *.dasc *.bat *.lua"
 
 # Get working directory
 $workingDir = $((Split-Path -Path $MyInvocation.MyCommand.Definition -Parent) + "\")
@@ -115,3 +115,4 @@ popd
 Copy-Item $LUA\lua51.lib $workingDir
 Copy-Item $LUA\lua51.dll $workingDir
 Copy-Item $LUA\luajit.exe $workingDir
+Copy-Item $LUA\jit\* $workingDir\lua\jit
