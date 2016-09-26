@@ -9,5 +9,6 @@
 #include "starlight_graphics.cpp"
 #include "starlight_input.cpp"
 #include "starlight_log.cpp"
+#include "starlight_lua.cpp"
 #include "starlight_transform.cpp"
 #include "WorldGen.cpp"

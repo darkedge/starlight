@@ -1,6 +1,7 @@
 #include "starlight_game.h"
 #include "starlight_input.h"
 #include "starlight_log.h"
+#include "starlight_lua.h"
 #include "starlight_transform.h"
 #include "starlight_graphics.h"
 #include <vectormath/scalar/cpp/vectormath_aos.h>
@@ -676,6 +677,8 @@ void Init(GameInfo* gameInfo) {
 	for (uint32_t i = 0; i < gameInfo->hardware->numLogicalThreads; i++) {
 		gameInfo->CreateThread(&MultiFrameWorkerThread, nullptr);
 	}
+
+    slCreateLuaVM();
 
 	// This function requires the threads to be created
     ResetPosition(gameInfo);
