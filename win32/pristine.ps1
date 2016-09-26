@@ -1,7 +1,11 @@
-# Makefile clean target
-if ((Test-Path "jom")) {
-    $cmd = "jom clean"
+function Execute($cmd) {
+    Write-Host $cmd
     Invoke-Expression $cmd
+}
+
+# Makefile clean target
+if ((Test-Path "make")) {
+    Execute("make clean")
 }
 
 # Add git to path
@@ -11,5 +15,6 @@ if ((Test-Path $($env:ProgramFiles + "\Git\bin"))) {
     $env:Path += $(";" + ${env:ProgramFiles(x86)} + "\Git\bin")
 }
 
-$cmd = "git clean -d -f -f -X"
-Invoke-Expression $cmd
+pushd ..
+Execute("git clean -d -f -f -X")
+popd

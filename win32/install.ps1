@@ -4,7 +4,7 @@ $webClient = New-Object Net.WebClient
 
 # -aoa: Overwrite all without prompt
 # -r: Recursive
-$7zargs = " -aoa -r *.cpp *.hpp *.c *.h *.inl *.ttf jom.exe"
+$7zargs = " -aoa -r *.cpp *.hpp *.c *.h *.inl *.ttf *.lua *.dasc *.bat"
 
 # Get working directory
 $workingDir = $((Split-Path -Path $MyInvocation.MyCommand.Definition -Parent) + "\")
@@ -13,6 +13,11 @@ $workingDir = $((Split-Path -Path $MyInvocation.MyCommand.Definition -Parent) + 
 $externalDir = $($workingDir + "..\external")
 
 # Convenience functions
+function Execute($cmd) {
+    Write-Host $cmd
+    Invoke-Expression $cmd
+}
+
 function DownloadFile($address) {
 	$file = Split-Path $address -Leaf
 	$dest = $($workingDir + $file)
@@ -38,18 +43,12 @@ function DownloadAndExtract($address) {
 	$extension = [System.IO.Path]::GetExtension($file)
 	Write-Host $("Extracting " + $file + "...")
 	if ($extension -eq ".zip") {
-		$cmd = $($workingDir + "7za.exe x " + $dest + " -o" + $externalDir + $7zargs)
-        Write-Host $cmd
-		Invoke-Expression $cmd
+		Execute($($workingDir + "7za.exe x " + $dest + " -o" + $externalDir + $7zargs))
 	} elseif ($extension -eq ".gz") { # .tar.gz
-        $cmd = $($workingDir + "7za.exe e " + $dest + " -o$workingDir -aoa")
-        Write-Host $cmd
-        Invoke-Expression $cmd
+        Execute($($workingDir + "7za.exe e " + $dest + " -o$workingDir -aoa"))
 
         $tar = $($workingDir + [System.IO.Path]::GetFileNameWithoutExtension($file))
-        $cmd = $($workingDir + "7za.exe x $tar -o$externalDir $7zargs")
-        Write-Host $cmd
-        Invoke-Expression $cmd
+        Execute($($workingDir + "7za.exe x $tar -o$externalDir $7zargs"))
 	} else {
 		Write-Host $($file + ": Unsupported archive format!")
 	}
@@ -65,12 +64,13 @@ foreach ($item in $shell.NameSpace($($workingDir + "7za920.zip")).Items()) {
     }
 }
 
-# jom
+# A recent Win32 version of make
+# TODO: Compile ourselves
 DownloadFile("ftp://ftp.equation.com/make/64/make.exe")
 
 DownloadAndExtract("http://enet.bespin.org/download/enet-1.3.13.tar.gz")
 DownloadAndExtract("https://github.com/ocornut/imgui/archive/v1.49.zip")
-DownloadAndExtract("http://www.lua.org/ftp/lua-5.3.3.tar.gz")
+DownloadAndExtract("http://luajit.org/download/LuaJIT-2.0.4.zip")
 DownloadAndExtract("https://github.com/google/protobuf/releases/download/v2.6.1/protobuf-2.6.1.zip")
 DownloadAndExtract("https://github.com/erwincoumans/sce_vectormath/archive/master.zip")
 
@@ -82,7 +82,36 @@ function DeleteFile($file) {
 DeleteFile("7za.exe")
 DeleteFile("7za920.zip")
 DeleteFile("enet-1.3.13.tar*")
-DeleteFile("lua-5.3.3.tar*")
+DeleteFile("LuaJIT-2.0.4.zip")
 DeleteFile("protobuf-2.6.1.zip")
 DeleteFile("v1.49.zip")
 DeleteFile("master.zip")
+
+# Build libraries
+$ENET = $($externalDir + "\enet-1.3.13")
+$IMGUI = $($externalDir + "\imgui-1.49")
+$LUA = $($externalDir + "\LuaJIT-2.0.4\src")
+
+$BUILD = $($workingDir + "build")
+
+$slBasicCompile = "/nologo /Gm- /MDd /GR- /EHs-c- /fp:fast /fp:except- /Oi"
+
+# ENet
+New-Item "$BUILD\enet" -type directory -force
+Execute("cl /c $slBasicCompile /Fo$BUILD/enet/ /I$ENET/include $ENET/*.c")
+Execute("lib /nologo /out:enet.lib $BUILD/enet/*.obj")
+
+# ImGui
+New-Item "$BUILD\imgui" -type directory -force
+$imgui_srcs = "imgui.cpp", "imgui_demo.cpp", "imgui_draw.cpp", "examples/directx11_example/imgui_impl_dx11.cpp"
+$imgui_srcs = foreach($src in $imgui_srcs) { "$IMGUI\$src" }
+Execute("cl /c $slBasicCompile /Fo$BUILD/imgui/ /I$IMGUI $imgui_srcs")
+Execute("lib /nologo /out:imgui.lib $BUILD/imgui/*.obj")
+
+# LuaJIT
+pushd $LUA
+cmd.exe /c msvcbuild.bat
+popd
+Copy-Item $LUA\lua51.lib $workingDir
+Copy-Item $LUA\lua51.dll $workingDir
+Copy-Item $LUA\luajit.exe $workingDir
