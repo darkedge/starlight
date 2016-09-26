@@ -2,6 +2,7 @@
 *.class
 assets/*.ttf
 build
+export
 external
 imgui.ini
 log.txt
