@@ -19,3 +19,4 @@ win32/lua
 *.VC.db
 *.VC.VC.opendb
 *.lastbuildstate
+win32/starlight.lbc

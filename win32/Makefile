@@ -40,13 +40,16 @@ slCompile := $(slBasicCompile) $(slDefinitions) $(slInclude) /Ob1 /WX /W4 /wd410
 
 slLink := /incremental:no /LIBPATH:$(BUILD)/lib enet.lib imgui.lib lua51.lib winmm.lib ws2_32.lib dxguid.lib ole32.lib
 
-all: starlight.dll starlight.exe assets
+all: starlight.dll starlight.exe starlight.lbc assets
 
 assets:
 	xcopy $(IMGUI)\extra_fonts\\*.ttf $(ASSETS) /Y /Q
 
 starlight_hlsl_generated.h: hlsl_codegen.lua
 	luajit hlsl_codegen.lua
+
+starlight.lbc: ../starlight/starlight.lua
+	luajit -b $^ $@
 
 starlight.dll: ../starlight/*.cpp $(INC)/*.h
 	if not exist $(BUILD)\bin mkdir $(BUILD)\bin
