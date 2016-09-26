@@ -13,8 +13,6 @@
 #include "Noise.h"
 #include <enet/enet.h>
 
-#include "starlight_d3d11.h"
-
 // temp
 #include <sstream>
 
