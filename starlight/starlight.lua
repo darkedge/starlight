@@ -1,3 +1,3 @@
-function f(n)
+function f()
 	print("Hello World!")
 end

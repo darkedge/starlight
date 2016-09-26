@@ -8,8 +8,8 @@
 extern "C"
 {
 #include <lua.h>
-#include <lauxlib.h>
 #include <lualib.h>
+#include <lauxlib.h>
 }
 
 static lua_State* L;
@@ -33,6 +33,21 @@ void slCreateLuaVM() {
         lua_pushcfunction(L, lib->func);
         lua_pushstring(L, lib->name);
         lua_call(L, 1, 0);
+    }
+
+    luaL_loadfile(L, "starlight.lbc");
+    lua_pcall(L, 0, 0, 0);
+
+
+    lua_getglobal(L, "f");
+    if (!lua_isfunction(L, -1)) {
+        logger::LogInfo("f is not a function");
+    }
+
+    if (lua_pcall(L, 0, 0, 0)) {
+        char buf[256] = {};
+        sprintf(buf,"error running function: %s", lua_tostring(L, -1));
+        logger::LogInfo(buf);
     }
 }
 
