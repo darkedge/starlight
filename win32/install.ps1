@@ -1,3 +1,13 @@
+# vcvarsall
+pushd "$env:VS140COMNTOOLS..\..\VC"
+cmd /c "vcvarsall.bat amd64 & set" |
+    foreach {
+        if ($_ -match "=") {
+            $v = $_.split("="); Set-Item -Force -Path "ENV:\$($v[0])" -Value "$($v[1])"
+        }
+    }
+popd
+
 # This saves typing
 $shell = New-Object -com Shell.Application
 $webClient = New-Object Net.WebClient
