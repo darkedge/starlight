@@ -223,37 +223,6 @@ bool LoadRenderApiImpl(EGraphicsApi e) {
     return false;
 }
 
-#if 0
-class HeapArea
-{
-public:
-    explicit HeapArea(std::size_t bytes) {
-        start = VirtualAlloc(nullptr, bytes, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
-    }
-
-    ~HeapArea() {
-        VirtualFree(start, 0, MEM_RELEASE);
-    }
-
-    void* GetStart() { return start; }
-    void* GetEnd() { return end; }
-
-private:
-    void* start;
-    void* end;
-};
-
-static HeapArea* heapArea;
-
-void* CALLBACK LibMalloc(std::size_t size) {
-    return nullptr;
-}
-
-void CALLBACK LibFree(void* ptr) {
-
-}
-#endif
-
 void ParseMessages() {
     WindowEvent message;
     // Clear queue for now
@@ -294,15 +263,6 @@ unsigned int __stdcall MyThreadFunction(void*) {
     gameInfo.hardware = &s_hardware;
 
     // ENet
-#if 0
-    ENetCallbacks callbacks;
-    ZERO_MEM(&callbacks, sizeof(callbacks));
-    callbacks.malloc = memory::malloc;
-    callbacks.free = memory::free;
-    callbacks.no_memory = memory::no_memory;
-
-    if (enet_initialize_with_callbacks(ENET_VERSION, &callbacks) != 0)
-#endif
     if (enet_initialize() != 0)
     {
         s_running.store(false);
@@ -330,13 +290,6 @@ unsigned int __stdcall MyThreadFunction(void*) {
 
         s_gameFuncs.UpdateGame(&gameInfo);
 
-        // Memory stuff
-        PROCESS_MEMORY_COUNTERS_EX pmc = { 0 };
-        GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*) &pmc, sizeof(pmc));
-
-        ImGui::Begin("starlight_win32");
-        ImGui::Text(std::to_string(pmc.PrivateUsage).c_str());
-        ImGui::End();
         s_controls.EndFrame();
 
 #ifdef _DEBUG
@@ -579,42 +532,3 @@ int CALLBACK WinMain(
 
     return 0;
 }
-
-#if 0
-
-// Global memory functions
-
-void* MEM_CALL operator new(std::size_t n) throw() {
-    return memory::malloc(n);
-}
-
-void* MEM_CALL operator new[](std::size_t s) throw() {
-    return operator new(s);
-}
-
-void MEM_CALL operator delete(void * p) throw() {
-    return memory::free(p);
-}
-
-void MEM_CALL operator delete[](void *p) throw() {
-    return operator delete(p);
-}
-
-// Wrappers
-
-void* MEM_CALL memory::malloc(std::size_t size) {
-    return ::malloc(size);
-}
-
-void MEM_CALL memory::free(void* ptr) {
-    return ::free(ptr);
-}
-
-void* MEM_CALL memory::realloc(void* ptr, std::size_t size) {
-    return ::realloc(ptr, size);
-}
-
-void MEM_CALL memory::no_memory() {
-
-}
-#endif

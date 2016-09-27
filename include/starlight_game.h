@@ -144,13 +144,6 @@ struct GameInfo {
 	CalculateDeltaTimeFunc* CalculateDeltaTime;
 	CreateThreadFunc* CreateThread;
 
-
-#if 0
-	MallocFunc* Malloc;
-	FreeFunc* Free;
-	ReallocFunc* Realloc;
-	NoMemoryFunc* NoMemory;
-#endif
 	HardwareInfo* hardware;
 	MJControls* controls;
 
