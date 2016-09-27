@@ -144,7 +144,6 @@ struct GameInfo {
 	CalculateDeltaTimeFunc* CalculateDeltaTime;
 	CreateThreadFunc* CreateThread;
 
-	HardwareInfo *hardware;
 
 #if 0
 	MallocFunc* Malloc;
@@ -152,6 +151,7 @@ struct GameInfo {
 	ReallocFunc* Realloc;
 	NoMemoryFunc* NoMemory;
 #endif
+	HardwareInfo* hardware;
 	MJControls* controls;
 
 	// Below this line is all game state
