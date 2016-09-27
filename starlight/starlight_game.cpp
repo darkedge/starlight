@@ -27,6 +27,17 @@ static int2 WorldToChunkPosition(float x, float z) {
     return xz;
 }
 
+static std::string s_controls[] = {
+    "LookLeft",
+    "LookRight",
+    "MoveForward",
+    "MoveBackward",
+    "StrafeLeft",
+    "StrafeRight",
+    "Jump",
+    "Crouch"
+};
+
 // Multiframe jobs
 struct MultiFrameJobParams {
     Chunk* chunk;
@@ -798,6 +809,33 @@ SL_EXPORT(void) game::UpdateGame(GameInfo* gameInfo) {
     }
     
 
+    ImGui::End();
+
+    // Controls
+    ImGui::Begin("Controls");
+    for (const std::string& str : s_controls) {
+        if (ImGui::Button(str.c_str())) {
+            ImGui::OpenPopup(str.c_str());
+        }
+        ImGui::SameLine(); ImGui::Text(std::to_string(gameInfo->controls->GetAssociatedKey(str)).c_str());
+        if (ImGui::BeginPopupModal(str.c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::Text((std::string("Press a key for ") + str).c_str());
+            ImGui::Separator();
+
+            int key = gameInfo->controls->AnyKey();
+            if (key) {
+                gameInfo->controls->AssociateKey(key, str);
+                ImGui::CloseCurrentPopup();
+            }
+
+            if (ImGui::Button("Cancel", ImVec2(120,0))) {
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        }
+    }
+    
     ImGui::End();
 
     int2 newXZ = WorldToChunkPosition(pos.getX(), pos.getZ());

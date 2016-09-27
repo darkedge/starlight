@@ -229,6 +229,20 @@ void ParseMessages() {
         if (g_renderApi) {
             g_renderApi->ImGuiHandleEvent(&message);
         }
+
+        switch (message.msg)
+        {
+        case WM_KEYDOWN:
+            if (message.wParam < NUM_KEYBOARD_KEYS) {
+                s_controls.ChangeKeyState((int)message.wParam, true);
+            }
+            break;
+        case WM_KEYUP:
+            if (message.wParam < NUM_KEYBOARD_KEYS) {
+                s_controls.ChangeKeyState((int)message.wParam, false);
+            }
+            break;
+        }
     }
 }
 
