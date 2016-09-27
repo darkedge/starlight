@@ -1,6 +1,7 @@
 #pragma once
 #include "starlight_graphics.h"
 #include "starlight_vertex_generated.h"
+#include "starlight_transform.h"
 #include "mj_controls.h"
 
 // Assumption: Block size = 1
@@ -148,6 +149,7 @@ struct GameInfo {
 	MJControls* controls;
 
 	// Below this line is all game state
+	Transform player;
 
 	// A grid of pointers to chunks in chunkPool
 	VisibleChunk* chunkGrid;

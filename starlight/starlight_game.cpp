@@ -1,7 +1,6 @@
 #include "starlight_game.h"
 #include "starlight_log.h"
 #include "starlight_lua.h"
-#include "starlight_transform.h"
 #include "starlight_graphics.h"
 #include <vectormath/scalar/cpp/vectormath_aos.h>
 #include <cstdint>
@@ -18,7 +17,6 @@
 using namespace Vectormath::Aos;
 
 // TODO: Move this to GameInfo or something
-static Transform s_player;
 static int2 s_oldPlayerChunkPosition;
 static float s_deltaTime;
 
@@ -113,7 +111,7 @@ bool PopMultiFrameResult(MultiFrameResultArray* array, MultiFrameResult* result)
 
 PARSE_RESULT_FUNC(UploadMeshData);
 void UploadMeshData(GameInfo* gameInfo, void* memory, MultiFrameJobParams* params) {
-    Vector3 pos = s_player.GetPosition();
+    Vector3 pos = gameInfo->player.GetPosition();
     int2 pxz = WorldToChunkPosition(pos.getX(), pos.getZ());
 
     TempMesh* mesh = (TempMesh*) memory;
@@ -450,7 +448,7 @@ void UpdateChunkGrid(GameInfo* gameInfo) {
     assert(gameInfo->chunkGrid);
     assert(gameInfo->chunkPool);
 
-    Vector3 pos = s_player.GetPosition();
+    Vector3 pos = gameInfo->player.GetPosition();
     int2 chunkPos = WorldToChunkPosition(pos.getX(), pos.getZ());
 
     int2 dc = chunkPos - s_oldPlayerChunkPosition;
@@ -607,7 +605,7 @@ void UpdateChunkGrid(GameInfo* gameInfo) {
 
 void ResetPosition(GameInfo* gameInfo) {
     // Set chunk position of player
-    Vector3 pos = s_player.GetPosition();
+    Vector3 pos = gameInfo->player.GetPosition();
     s_oldPlayerChunkPosition = WorldToChunkPosition(pos.getX(), pos.getZ());
 
     UpdateChunkGrid(gameInfo);
@@ -626,8 +624,8 @@ void ResetPosition(GameInfo* gameInfo) {
         }
     }
 
-    s_player.SetPosition(x + 0.5f, (float) y + 2.5f, z + 0.5f);
-    s_player.SetRotation(Quat(0, 0, 0, 1));
+    gameInfo->player.SetPosition(x + 0.5f, (float) y + 2.5f, z + 0.5f);
+    gameInfo->player.SetRotation(Quat(0, 0, 0, 1));
 }
 
 GAME_THREAD(MultiFrameWorkerThread);
@@ -713,7 +711,7 @@ void MoveCamera(GameInfo* gameInfo) {
         }
         if (currentRotation.x != lastRotation.x || currentRotation.y != lastRotation.y)
         {
-            s_player.SetRotation(Quat::rotationY(currentRotation.y) * Quat::rotationX(currentRotation.x));
+            gameInfo->player.SetRotation(Quat::rotationY(currentRotation.y) * Quat::rotationX(currentRotation.x));
             lastRotation = currentRotation;
         }
     }
@@ -721,18 +719,18 @@ void MoveCamera(GameInfo* gameInfo) {
     // Translation
     const float SPEED = 300.0f;
     Vector3 translation(0, 0, 0);
-    if (ImGui::GetIO().KeysDown[(intptr_t)'W'])     translation += s_player.Forward();
-    if (ImGui::GetIO().KeysDown[(intptr_t)'A'])     translation -= s_player.Right();
-    if (ImGui::GetIO().KeysDown[(intptr_t)'S'])     translation -= s_player.Forward();
-    if (ImGui::GetIO().KeysDown[(intptr_t)'D'])     translation += s_player.Right();
+    if (ImGui::GetIO().KeysDown[(intptr_t)'W'])     translation += gameInfo->player.Forward();
+    if (ImGui::GetIO().KeysDown[(intptr_t)'A'])     translation -= gameInfo->player.Right();
+    if (ImGui::GetIO().KeysDown[(intptr_t)'S'])     translation -= gameInfo->player.Forward();
+    if (ImGui::GetIO().KeysDown[(intptr_t)'D'])     translation += gameInfo->player.Right();
     // FIXME: Cross-platform
     if (ImGui::GetIO().KeysDown[VK_LCONTROL] || ImGui::GetIO().KeysDown[(intptr_t)'C'] || ImGui::GetIO().KeysDown[VK_LSHIFT]) translation -= Vector3(0, 1, 0);
     if (ImGui::GetIO().KeysDown[VK_SPACE]) translation += Vector3(0, 1, 0);
     if (lengthSqr(translation) != 0.0f)
     {
-        Vector3 pos = s_player.GetPosition();
+        Vector3 pos = gameInfo->player.GetPosition();
         pos += normalize(translation) * SPEED * s_deltaTime;
-        s_player.SetPosition(pos);
+        gameInfo->player.SetPosition(pos);
         //printf("pos: %.1f, %.1f, %.1f\n", m_player.GetPosition().x, m_player.GetPosition().y, m_player.GetPosition().z);
     }
 }
@@ -770,16 +768,16 @@ SL_EXPORT(void) game::UpdateGame(GameInfo* gameInfo) {
 
     MoveCamera(gameInfo);
 
-    Vector3 pos = s_player.GetPosition();
+    Vector3 pos = gameInfo->player.GetPosition();
 
     // Debug menu
     bool stay = true;
     ImGui::Begin("game::UpdateGame", &stay);
     //if (ImGui::Button("Load D3D11")) gameInfo->graphicsApi = EGraphicsApi::D3D11;
     if (ImGui::InputFloat3("Position", (float*) &pos, -1, ImGuiInputTextFlags_EnterReturnsTrue)) {
-        s_player.SetPosition(pos);
+        gameInfo->player.SetPosition(pos);
     }
-    Quat rot = s_player.GetRotation();
+    Quat rot = gameInfo->player.GetRotation();
     ImGui::InputFloat4("Rotation", (float*)&rot);
 
     // FPS bar
@@ -867,7 +865,7 @@ SL_EXPORT(void) game::UpdateGame(GameInfo* gameInfo) {
     // Does not render, but builds display lists
     logger::Render();
 
-    gameInfo->gfxFuncs->SetPlayerCameraViewMatrix(s_player.GetViewMatrix());
+    gameInfo->gfxFuncs->SetPlayerCameraViewMatrix(gameInfo->player.GetViewMatrix());
 
     // Gameplay code concept
 #if 0
