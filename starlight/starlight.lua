@@ -35,7 +35,7 @@ function MoveCamera()
         lastRotation = currentRotation
     end]]
 
-    --[[ Translation
+    -- Translation
     local SPEED = 300.0
     local translation = {x=0, y=0, z=0}
     if KeyDown("MoveForward")	then translation = translation + C_Forward() end
@@ -48,6 +48,5 @@ function MoveCamera()
         local pos = GetPosition()
         pos = pos + normalize(translation) * SPEED * s_deltaTime
         SetPosition(pos)
-    end]]
-    KeyDown("MoveForward")
+    end
 end
