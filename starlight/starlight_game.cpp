@@ -649,8 +649,6 @@ void MultiFrameWorkerThread(void* args) {
 }
 
 void Init(GameInfo* gameInfo) {
-    //slCreateJVM();
-
     // Timing
     s_deltaTime =  0.0f;
 
@@ -681,11 +679,13 @@ void Init(GameInfo* gameInfo) {
 	}
 
     slCreateLuaVM();
+    SetLuaGameInfo(gameInfo);
 
 	// This function requires the threads to be created
     ResetPosition(gameInfo);
 }
 
+#if 0
 void MoveCamera(GameInfo* gameInfo) {
     // TODO: probably need to check if i'm typing something in ImGui or not
     static float2 lastRotation;
@@ -745,6 +745,7 @@ void MoveCamera(GameInfo* gameInfo) {
         //printf("pos: %.1f, %.1f, %.1f\n", m_player.GetPosition().x, m_player.GetPosition().y, m_player.GetPosition().z);
     }
 }
+#endif
 
 SL_EXPORT(void) game::UpdateGame(GameInfo* gameInfo) {
     if(!gameInfo->initialized) {
@@ -777,7 +778,8 @@ SL_EXPORT(void) game::UpdateGame(GameInfo* gameInfo) {
         ImGui::EndMainMenuBar();
     }
 
-    MoveCamera(gameInfo);
+    //MoveCamera(gameInfo);
+    luaMoveCamera();
 
     Vector3 pos = gameInfo->player.GetPosition();
 

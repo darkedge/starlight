@@ -1,5 +1,6 @@
 #include "starlight_lua.h"
 
+#include "starlight_game.h"
 #include "starlight_log.h"
 
 #include <stdio.h>
@@ -12,45 +13,101 @@ extern "C"
 #include <lauxlib.h>
 }
 
+static GameInfo* luaGameInfo;
+
+int KeyDown(lua_State* L) {
+    assert(luaGameInfo);
+    const char* str = lua_tostring(L, -1);
+    int down = luaGameInfo->controls->GetKey(str) ? 1 : 0;
+    lua_pushboolean(L, down);
+    return 1;
+}
+
+int KeyPressed(lua_State* L) {
+    assert(luaGameInfo);
+    const char* str = lua_tolstring(L, 1, NULL);
+    int down = luaGameInfo->controls->GetKeyDown(str) ? 1 : 0;
+    lua_pushboolean(L, down);
+    return 1;
+}
+
+int Forward(lua_State* L) {
+    return 0;
+}
+
+int Right(lua_State* L) {
+    return 0;
+}
+
+int GetPosition(lua_State* L) {
+    assert(luaGameInfo);
+    Vectormath::Aos::Vector3 v = luaGameInfo->player.GetPosition();
+
+    lua_createtable(L, 0, 4);
+
+    lua_pushstring(L, "x");
+    lua_pushnumber(L, v.getX());
+    lua_settable(L, -3);  /* 3rd element from the stack top */
+
+    lua_pushstring(L, "y");
+    lua_pushnumber(L, v.getY());
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "z");
+    lua_pushnumber(L, v.getZ());
+    lua_settable(L, -3);
+
+    return 1;
+}
+
+int SetPosition(lua_State* L) {
+    assert(luaGameInfo);
+
+    return 0;
+}
+
+// Our interface
+static const luaL_Reg mylib [] = {
+    {"C_Forward", Forward},
+    {"C_Right", Right},
+    {"KeyDown", KeyDown},
+    {"KeyPressed", KeyPressed},
+    {"GetPosition", GetPosition},
+    {"SetPosition", SetPosition},
+    {NULL, NULL}
+};
+
 static lua_State* L;
 
-static const luaL_Reg lualibs[] = {
-    {"", luaopen_base},
-    {LUA_LOADLIBNAME, luaopen_package},
-    {LUA_TABLIBNAME, luaopen_table},
-    {LUA_STRLIBNAME, luaopen_string},
-    {LUA_MATHLIBNAME, luaopen_math},
-    {LUA_DBLIBNAME, luaopen_debug},
-    {NULL, NULL},
-};
+void SetLuaGameInfo(GameInfo* gameInfo) {
+    luaGameInfo = gameInfo;
+}
 
 void slCreateLuaVM() {
     L = lua_open();
 
-    // luaL_openlibs(L)
-    const luaL_Reg *lib = lualibs;
+    luaL_openlibs(L);
+
+    const luaL_Reg* lib = mylib;
     for (; lib->func; lib++) {
         lua_pushcfunction(L, lib->func);
-        lua_pushstring(L, lib->name);
-        lua_call(L, 1, 0);
+        lua_setglobal(L, lib->name);
     }
 
-    luaL_loadfile(L, "starlight.lbc");
+    //luaL_loadfile(L, "starlight.lbc");
+    luaL_loadfile(L, "../starlight/starlight.lua");
     lua_pcall(L, 0, 0, 0);
-
-
-    lua_getglobal(L, "f");
-    if (!lua_isfunction(L, -1)) {
-        logger::LogInfo("f is not a function");
-    }
-
-    if (lua_pcall(L, 0, 0, 0)) {
-        char buf[256] = {};
-        sprintf(buf,"error running function: %s", lua_tostring(L, -1));
-        logger::LogInfo(buf);
-    }
 }
 
 void slDestroyLuaVM() {
 	lua_close(L);
+    L = NULL;
+}
+
+void luaMoveCamera() {
+    assert(L);
+    lua_getglobal(L, "MoveCamera");
+    if (lua_pcall(L, 0, 0, 0)) {
+        logger::LogInfo(lua_tostring(L, -1));
+    }
 }
