@@ -15,7 +15,6 @@
 #include "Network.cpp"
 #include "Noise.cpp"
 #include "starlight_game.cpp"
-#include "starlight_input.cpp"
 #include "starlight_log.cpp"
 #include "starlight_lua.cpp"
 #include "starlight_transform.cpp"

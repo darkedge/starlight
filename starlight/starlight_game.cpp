@@ -1,5 +1,4 @@
 #include "starlight_game.h"
-#include "starlight_input.h"
 #include "starlight_log.h"
 #include "starlight_lua.h"
 #include "starlight_transform.h"
@@ -641,8 +640,6 @@ void MultiFrameWorkerThread(void* args) {
 }
 
 void Init(GameInfo* gameInfo) {
-    input::Init();
-
     //slCreateJVM();
 
     // Timing
@@ -754,9 +751,6 @@ SL_EXPORT(void) game::UpdateGame(GameInfo* gameInfo) {
     // Timing
     s_deltaTime = gameInfo->CalculateDeltaTime();
 
-    // Begin logic
-    input::BeginFrame();
-
     static bool showMainMenuBar = true;
     // FIXME: Cross-platform
     if(ImGui::GetIO().KeysDown[VK_F3]) {
@@ -775,7 +769,6 @@ SL_EXPORT(void) game::UpdateGame(GameInfo* gameInfo) {
     }
 
     MoveCamera(gameInfo);
-    input::EndFrame();
 
     Vector3 pos = s_player.GetPosition();
 

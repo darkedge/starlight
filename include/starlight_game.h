@@ -1,6 +1,7 @@
 #pragma once
 #include "starlight_graphics.h"
 #include "starlight_vertex_generated.h"
+#include "mj_controls.h"
 
 // Assumption: Block size = 1
 
@@ -151,6 +152,7 @@ struct GameInfo {
 	ReallocFunc* Realloc;
 	NoMemoryFunc* NoMemory;
 #endif
+	MJControls* controls;
 
 	// Below this line is all game state
 
