@@ -225,9 +225,11 @@ bool LoadRenderApiImpl(EGraphicsApi e) {
 
 void ParseMessages() {
     WindowEvent message;
-    // Clear queue for now
-    // TODO: Process input
-    while (s_queue->Dequeue(&message)) {}
+    while (s_queue->Dequeue(&message)) {
+        if (g_renderApi) {
+            g_renderApi->ImGuiHandleEvent(&message);
+        }
+    }
 }
 
 unsigned int __stdcall MyThreadFunction(void*) {
@@ -334,17 +336,13 @@ unsigned int __stdcall MyThreadFunction(void*) {
 }
 
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-    WindowEvent params;
-    ZeroMemory(&params, sizeof(params));
+    WindowEvent params = {};
     params.hWnd = hWnd;
     params.msg = msg;
     params.wParam = wParam;
     params.lParam = lParam;
 
     s_queue->Enqueue(params);
-
-    if (g_renderApi && g_renderApi->ImGuiHandleEvent(&params))
-        return true;
 
     switch (msg)
     {
