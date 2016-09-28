@@ -8,12 +8,12 @@ pushd export
 if not exist %datetime% mkdir %datetime%
 pushd %datetime%
 
-mkdir bin
 popd
 popd
 
 xcopy ..\assets export\%datetime%\assets\ /Y /Q
-
-xcopy starlight.dll export\%datetime%\bin /Y /Q
-xcopy lua51.dll export\%datetime%\bin /Y /Q
-xcopy starlight.exe export\%datetime%\bin /Y /Q
+xcopy ..\starlight\*.lua export\%datetime%\starlight\ /Y /Q
+xcopy *.lbc export\%datetime%\bin\ /Y /Q
+xcopy starlight.dll export\%datetime%\bin\ /Y /Q
+xcopy lua51.dll export\%datetime%\bin\ /Y /Q
+xcopy starlight.exe export\%datetime%\bin\ /Y /Q
