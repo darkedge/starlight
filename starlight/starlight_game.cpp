@@ -10,6 +10,8 @@
 #include "Network.h"
 #include "Noise.h"
 #include <enet/enet.h>
+#include "mj_config.h"
+#include "mj_controls.h"
 
 // temp
 #include <sstream>
@@ -678,6 +680,10 @@ void Init(GameInfo* gameInfo) {
 		gameInfo->CreateThread(&MultiFrameWorkerThread, nullptr);
 	}
 
+    for (const std::string& str : s_controls) {
+        gameInfo->controls->AssociateKey(gameInfo->config->GetIntProperty(str, -1), str);
+    }
+
     slCreateLuaVM();
     SetLuaGameInfo(gameInfo);
 
@@ -921,7 +927,12 @@ SL_EXPORT(void) game::UpdateGame(GameInfo* gameInfo) {
 #endif
 }
 
-SL_EXPORT(void) game::DestroyGame() {
+SL_EXPORT(void) game::DestroyGame(GameInfo* gameInfo) {
     // Free dynamic memory used by game here
     //slDestroyJVM();
+
+    // Save controls
+    for (const std::string& str : s_controls) {
+        gameInfo->config->SetIntProperty(str, gameInfo->controls->GetAssociatedKey(str));
+    }
 }

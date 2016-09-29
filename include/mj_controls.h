@@ -1,16 +1,19 @@
 #pragma once
 #include <map>
 #include <string>
-#include <assert.h>
 
 #define NUM_KEYBOARD_KEYS 0x100
 //#define NUM_MOUSE_BUTTONS 5
 
 class MJControls {
 public:
-	void AssociateKey(int key, const std::string& name) {
-		assert(key < NUM_KEYBOARD_KEYS);
-		configuration[name] = key;
+	bool AssociateKey(int key, const std::string& name) {
+		if (key >= 0 && key < NUM_KEYBOARD_KEYS) {
+			configuration[name] = key;
+			return true;
+		} else {
+			return false;
+		}
 	}
 	int GetAssociatedKey(const std::string& name) {
 		if (configuration.count(name) == 0) {

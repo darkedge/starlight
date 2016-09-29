@@ -16,6 +16,7 @@
 #include "starlight_renderer_windows.h"
 #include "starlight_graphics.h"
 #include "starlight_game.h"
+#include "mj_config.h"
 #include "mj_controls.h"
 #include <imgui.h>
 #include <atomic>
@@ -55,6 +56,7 @@ struct GameFuncs {
 static GameFuncs s_gameFuncs;
 static HardwareInfo s_hardware;
 static MJControls s_controls;
+static MJConfig s_config;
 
 // This is ugly
 #ifdef STARLIGHT_D3D11
@@ -266,6 +268,7 @@ unsigned int __stdcall MyThreadFunction(void*) {
     //gameInfo.allocator = &arena;
     gameInfo.CalculateDeltaTime = CalculateDeltaTime;
     gameInfo.gfxFuncs = g_renderApi;
+    gameInfo.config = &s_config;
     gameInfo.controls = &s_controls;
     gameInfo.CreateThread = slCreateThread;
 
@@ -336,7 +339,7 @@ unsigned int __stdcall MyThreadFunction(void*) {
         g_renderApi->Render();
     }
 
-    s_gameFuncs.DestroyGame();
+    s_gameFuncs.DestroyGame(&gameInfo);
     g_renderApi->Destroy();
     ImGui::Shutdown();
     g_renderApi = nullptr;
@@ -493,6 +496,8 @@ int CALLBACK WinMain(
     }
 #endif
 
+    s_config.Load();
+
     s_hwnd = CreateWindowExW(
         0L,
         className,
@@ -535,6 +540,8 @@ int CALLBACK WinMain(
     s_gameFuncs.DestroyLogger();
 
     io.Fonts->Clear();
+
+    s_config.Save();
 
     delete s_queue;
 

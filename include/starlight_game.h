@@ -2,7 +2,6 @@
 #include "starlight_graphics.h"
 #include "starlight_vertex_generated.h"
 #include "starlight_transform.h"
-#include "mj_controls.h"
 
 // Assumption: Block size = 1
 
@@ -128,6 +127,9 @@ struct HardwareInfo {
 	uint32_t numLogicalThreads;
 };
 
+class MJConfig;
+class MJControls;
+
 struct GameInfo {
 	bool initialized;
 	EGraphicsApi graphicsApi;
@@ -147,6 +149,7 @@ struct GameInfo {
 
 	HardwareInfo* hardware;
 	MJControls* controls;
+	MJConfig* config;
 
 	// Below this line is all game state
 	Transform player;
@@ -177,12 +180,11 @@ typedef DESTROY_LOGGER(DestroyLoggerFunc);
 #define GAME_UPDATE(name) void name(struct GameInfo *)
 typedef GAME_UPDATE(UpdateGameFunc);
 
-#define GAME_DESTROY(name) void name()
+#define GAME_DESTROY(name) void name(struct GameInfo *)
 typedef GAME_DESTROY(DestroyGameFunc);
 
 // NOTE: Platform layer can't use exported functions in debug (linker errors!)
 namespace game {
 	SL_EXPORT(void) UpdateGame(GameInfo* gameInfo);
-
-	SL_EXPORT(void) DestroyGame();
+	SL_EXPORT(void) DestroyGame(GameInfo* gameInfo);
 }
