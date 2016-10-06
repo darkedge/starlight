@@ -1,2 +1,9 @@
 # starlight
-[![Build status](https://ci.appveyor.com/api/projects/status/nwu5skix98cb35ua?svg=true)](https://ci.appveyor.com/project/darkedge/starlight)
+How to install
+  - Open /win32/cmd.bat
+  - Run the following commands:
+```
+powershell .\install.ps1
+build.bat
+starlight.exe
+```
