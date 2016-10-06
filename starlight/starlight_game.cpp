@@ -763,7 +763,10 @@ SL_EXPORT(void) game::UpdateGame(GameInfo* gameInfo) {
     // ImGui in the .dll is unset after code reload
     ImGui::SetCurrentContext(gameInfo->imguiState);
 
-    //slSetJVMContext(gameInfo);
+    if (gameInfo->reloadLua) {
+        luaReload();
+        gameInfo->reloadLua = false;
+    }
 
     // Timing
     gameInfo->deltaTime = gameInfo->CalculateDeltaTime();

@@ -152,4 +152,11 @@ void luaUpdate(GameInfo* gameInfo) {
     if (lua_pcall(L, 0, 0, 0)) {
         logger::LogInfo(lua_tostring(L, -1));
     }
+
+    ImGui::Begin("Lua");
+    ImGui::Checkbox("Reload on Save", &gameInfo->reloadOnSave);
+    if (ImGui::Button("Manual Reload")) {
+        luaReload();
+    }
+    ImGui::End();
 }

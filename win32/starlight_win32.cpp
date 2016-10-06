@@ -42,6 +42,8 @@ static LARGE_INTEGER s_perfFreq;
 static LARGE_INTEGER s_lastDLLLoadTime;
 #endif
 
+static HANDLE hDirectoryChange;
+
 // Maybe separate struct for logger etc?
 struct GameFuncs {
     DestroyLoggerFunc* DestroyLogger;
@@ -271,6 +273,7 @@ unsigned int __stdcall MyThreadFunction(void*) {
     gameInfo.config = &s_config;
     gameInfo.controls = &s_controls;
     gameInfo.CreateThread = slCreateThread;
+    gameInfo.reloadOnSave = true;
 
     // Hardware info
     {
@@ -302,6 +305,52 @@ unsigned int __stdcall MyThreadFunction(void*) {
             }
         }
 
+#ifdef _DEBUG
+        {
+            // Reload DLL
+            FILETIME NewDLLWriteTime = Win32GetLastWriteTime((char*)s_dllName);
+
+            // If the .DLL is being written to, the last write time may change multiple times
+            // So we need to add a cooldown
+            LARGE_INTEGER currentTime;
+            QueryPerformanceCounter(&currentTime);
+
+            if (CompareFileTime(&NewDLLWriteTime, &s_gameFuncs.DLLLastWriteTime) != 0
+                && (currentTime.QuadPart - s_lastDLLLoadTime.QuadPart) / s_perfFreq.QuadPart >= 1) {
+
+                if (s_gameFuncs.dll) {
+                    FreeLibrary(s_gameFuncs.dll);
+                }
+
+                s_gameFuncs = LoadGameFuncs();
+                g_LogInfo("Reloaded DLL.");
+            } else {
+                // Ignore changes
+                s_gameFuncs.DLLLastWriteTime = NewDLLWriteTime;
+            }
+        }
+#endif
+
+        // Reload Lua
+        if (gameInfo.reloadOnSave) {
+            DWORD obj = WaitForSingleObject(hDirectoryChange, 0);
+            if (obj == WAIT_OBJECT_0) {
+                if (!FindNextChangeNotification(hDirectoryChange)) {
+                    g_LogInfo("Error: FindNextChangeNotification failed.");
+                }
+                
+                // TODO: Change only of lua files changed (or make separate lua directory)
+                LARGE_INTEGER currentTime;
+                static LARGE_INTEGER s_lastLuaLoadTime;
+                QueryPerformanceCounter(&currentTime);
+
+                if ((currentTime.QuadPart - s_lastLuaLoadTime.QuadPart) / s_perfFreq.QuadPart >= 1) {
+                    s_lastLuaLoadTime = currentTime;
+                    gameInfo.reloadLua = true;
+                }
+            }
+        }
+
         ParseMessages();
 
         g_renderApi->ImGuiNewFrame();
@@ -310,30 +359,6 @@ unsigned int __stdcall MyThreadFunction(void*) {
         s_gameFuncs.UpdateGame(&gameInfo);
 
         s_controls.EndFrame();
-
-#ifdef _DEBUG
-        // Reload DLL
-        FILETIME NewDLLWriteTime = Win32GetLastWriteTime((char*)s_dllName);
-
-        // If the .DLL is being written to, the last write time may change multiple times
-        // So we need to add a cooldown
-        LARGE_INTEGER currentTime;
-        QueryPerformanceCounter(&currentTime);
-
-        if (CompareFileTime(&NewDLLWriteTime, &s_gameFuncs.DLLLastWriteTime) != 0
-            && (currentTime.QuadPart - s_lastDLLLoadTime.QuadPart) / s_perfFreq.QuadPart >= 1) {
-
-            if (s_gameFuncs.dll) {
-                FreeLibrary(s_gameFuncs.dll);
-            }
-
-            s_gameFuncs = LoadGameFuncs();
-            g_LogInfo("Reloaded DLL.");
-        } else {
-            // Ignore changes
-            s_gameFuncs.DLLLastWriteTime = NewDLLWriteTime;
-        }
-#endif
 
         // Rendering
         g_renderApi->Render();
@@ -524,6 +549,12 @@ int CALLBACK WinMain(
     if (!thread) {
         // Error creating thread
         return 1;
+    }
+
+    // Watch Lua directory
+    hDirectoryChange = FindFirstChangeNotification(L"../starlight/", TRUE, FILE_NOTIFY_CHANGE_LAST_WRITE);
+    if (!hDirectoryChange) {
+        g_LogInfo("Error creating directory change event: Lua reload on save will not work.");
     }
 
     // Message loop

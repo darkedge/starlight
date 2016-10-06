@@ -151,6 +151,9 @@ struct GameInfo {
 	MJControls* controls;
 	MJConfig* config;
 
+	bool reloadOnSave;
+	bool reloadLua;
+
 	// Below this line is all game state
 	Transform player;
 
