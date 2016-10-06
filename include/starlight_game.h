@@ -154,6 +154,8 @@ struct GameInfo {
 	// Below this line is all game state
 	Transform player;
 
+	float deltaTime;
+
 	// A grid of pointers to chunks in chunkPool
 	VisibleChunk* chunkGrid;
 	// Unordered chunk data

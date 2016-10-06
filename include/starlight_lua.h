@@ -1,7 +1,8 @@
 #pragma once
 
-void slCreateLuaVM();
-void slDestroyLuaVM();
+void luaCreateVM();
+void luaDestroyVM();
 
-void luaMoveCamera();
 void SetLuaGameInfo(GameInfo* gameInfo);
+void luaUpdate(GameInfo* gameInfo);
+void luaReload();

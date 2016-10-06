@@ -20,7 +20,6 @@ using namespace Vectormath::Aos;
 
 // TODO: Move this to GameInfo or something
 static int2 s_oldPlayerChunkPosition;
-static float s_deltaTime;
 
 static int2 WorldToChunkPosition(float x, float z) {
     int2 xz;
@@ -37,7 +36,8 @@ static std::string s_controls[] = {
     "StrafeLeft",
     "StrafeRight",
     "Jump",
-    "Crouch"
+    "Crouch",
+    "ReloadLua"
 };
 
 // Multiframe jobs
@@ -652,7 +652,7 @@ void MultiFrameWorkerThread(void* args) {
 
 void Init(GameInfo* gameInfo) {
     // Timing
-    s_deltaTime =  0.0f;
+    gameInfo->deltaTime = 0.0f;
 
     // Addon loading
     // This should happen according to a configuration file.
@@ -684,7 +684,8 @@ void Init(GameInfo* gameInfo) {
         gameInfo->controls->AssociateKey(gameInfo->config->GetIntProperty(str, -1), str);
     }
 
-    slCreateLuaVM();
+    luaCreateVM();
+    luaReload();
     SetLuaGameInfo(gameInfo);
 
 	// This function requires the threads to be created
@@ -765,7 +766,7 @@ SL_EXPORT(void) game::UpdateGame(GameInfo* gameInfo) {
     //slSetJVMContext(gameInfo);
 
     // Timing
-    s_deltaTime = gameInfo->CalculateDeltaTime();
+    gameInfo->deltaTime = gameInfo->CalculateDeltaTime();
 
     static bool showMainMenuBar = true;
     // FIXME: Cross-platform
@@ -784,8 +785,7 @@ SL_EXPORT(void) game::UpdateGame(GameInfo* gameInfo) {
         ImGui::EndMainMenuBar();
     }
 
-    //MoveCamera(gameInfo);
-    luaMoveCamera();
+    luaUpdate(gameInfo);
 
     Vector3 pos = gameInfo->player.GetPosition();
 
@@ -804,7 +804,7 @@ SL_EXPORT(void) game::UpdateGame(GameInfo* gameInfo) {
     for (size_t i = 0; i < 127; i++) {
         arr[i] = arr[i + 1];
     }
-    arr[127] = s_deltaTime * 1000.0f;
+    arr[127] = gameInfo->deltaTime * 1000.0f;
     ImGui::PlotLines("CPU Time", arr, COUNT_OF(arr), 0, NULL, 0.0f, 33.0f, ImVec2(0,80));
 
     {
@@ -818,6 +818,10 @@ SL_EXPORT(void) game::UpdateGame(GameInfo* gameInfo) {
     
 
     ImGui::End();
+
+    if (gameInfo->controls->GetKeyDown("ReloadLua")) {
+        luaReload();
+    }
 
     // Controls
     ImGui::Begin("Controls");
@@ -929,7 +933,7 @@ SL_EXPORT(void) game::UpdateGame(GameInfo* gameInfo) {
 
 SL_EXPORT(void) game::DestroyGame(GameInfo* gameInfo) {
     // Free dynamic memory used by game here
-    //slDestroyJVM();
+    luaDestroyVM();
 
     // Save controls
     for (const std::string& str : s_controls) {

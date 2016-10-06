@@ -13,6 +13,7 @@ extern "C"
 #include <lauxlib.h>
 }
 
+// Don't really want to keep track of this variable
 static GameInfo* luaGameInfo;
 
 int KeyDown(lua_State* L) {
@@ -57,11 +58,41 @@ int GetPosition(lua_State* L) {
     lua_pushnumber(L, v.getZ());
     lua_settable(L, -3);
 
+    luaL_getmetatable(L, "Vector");
+    lua_setmetatable(L, -2);
+
     return 1;
 }
 
 int SetPosition(lua_State* L) {
     assert(luaGameInfo);
+
+    // Pop vector
+    lua_pushstring(L, "x");
+    lua_gettable(L, -2);
+    if (!lua_isnumber(L, -1)) {
+        logger::LogInfo("could not find x");
+    }
+    float x = (float) lua_tonumber(L, -1);
+    lua_pop(L, 1);
+
+    lua_pushstring(L, "y");
+    lua_gettable(L, -2);
+    if (!lua_isnumber(L, -1)) {
+        logger::LogInfo("could not find y");
+    }
+    float y = (float) lua_tonumber(L, -1);
+    lua_pop(L, 1);
+
+    lua_pushstring(L, "z");
+    lua_gettable(L, -2);
+    if (!lua_isnumber(L, -1)) {
+        logger::LogInfo("could not find z");
+    }
+    float z = (float) lua_tonumber(L, -1);
+    lua_pop(L, 1);
+
+    luaGameInfo->player.SetPosition(x, y, z);
 
     return 0;
 }
@@ -83,7 +114,7 @@ void SetLuaGameInfo(GameInfo* gameInfo) {
     luaGameInfo = gameInfo;
 }
 
-void slCreateLuaVM() {
+void luaCreateVM() {
     L = lua_open();
 
     luaL_openlibs(L);
@@ -93,19 +124,30 @@ void slCreateLuaVM() {
         lua_pushcfunction(L, lib->func);
         lua_setglobal(L, lib->name);
     }
-
-    //luaL_loadfile(L, "starlight.lbc");
-    luaL_loadfile(L, "../starlight/starlight.lua");
-    lua_pcall(L, 0, 0, 0);
 }
 
-void slDestroyLuaVM() {
+void luaReload() {
+    //luaL_loadfile(L, "starlight.lbc"); // bytecode
+    luaL_loadfile(L, "../starlight/starlight.lua"); // ascii
+    lua_pcall(L, 0, 0, 0);
+
+    logger::LogInfo("Loaded Lua code.");
+}
+
+void luaDestroyVM() {
 	lua_close(L);
     L = NULL;
 }
 
-void luaMoveCamera() {
+void luaUpdate(GameInfo* gameInfo) {
     assert(L);
+    
+    // Set game globals
+    // There should be a global game table instead of loose global vars
+    lua_pushnumber(L, gameInfo->deltaTime);
+    lua_setglobal(L, "g_deltaTime");
+
+    // Call MoveCamera
     lua_getglobal(L, "MoveCamera");
     if (lua_pcall(L, 0, 0, 0)) {
         logger::LogInfo(lua_tostring(L, -1));
