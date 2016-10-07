@@ -91,7 +91,7 @@ function MoveCamera()
     end]]
 
     -- Translation
-    local SPEED = 300
+    local SPEED = 75
     local translation = Vector.new()
     if KeyDown("MoveForward")	then translation = translation + C_Forward() end
     if KeyDown("StrafeLeft")	then translation = translation - C_Right() end

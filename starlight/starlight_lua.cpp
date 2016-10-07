@@ -32,35 +32,43 @@ int KeyPressed(lua_State* L) {
     return 1;
 }
 
+static void PushVector(lua_State* L, Vectormath::Aos::Vector3* v) {
+    lua_createtable(L, 0, 4);
+
+    lua_pushstring(L, "x");
+    lua_pushnumber(L, v->getX());
+    lua_settable(L, -3);  /* 3rd element from the stack top */
+
+    lua_pushstring(L, "y");
+    lua_pushnumber(L, v->getY());
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "z");
+    lua_pushnumber(L, v->getZ());
+    lua_settable(L, -3);
+
+    luaL_getmetatable(L, "Vector");
+    lua_setmetatable(L, -2);
+}
+
 int Forward(lua_State* L) {
-    return 0;
+    assert(luaGameInfo);
+    Vectormath::Aos::Vector3 v = luaGameInfo->player.Forward();
+    PushVector(L, &v);
+    return 1;
 }
 
 int Right(lua_State* L) {
-    return 0;
+    assert(luaGameInfo);
+    Vectormath::Aos::Vector3 v = luaGameInfo->player.Right();
+    PushVector(L, &v);
+    return 1;
 }
 
 int GetPosition(lua_State* L) {
     assert(luaGameInfo);
     Vectormath::Aos::Vector3 v = luaGameInfo->player.GetPosition();
-
-    lua_createtable(L, 0, 4);
-
-    lua_pushstring(L, "x");
-    lua_pushnumber(L, v.getX());
-    lua_settable(L, -3);  /* 3rd element from the stack top */
-
-    lua_pushstring(L, "y");
-    lua_pushnumber(L, v.getY());
-    lua_settable(L, -3);
-
-    lua_pushstring(L, "z");
-    lua_pushnumber(L, v.getZ());
-    lua_settable(L, -3);
-
-    luaL_getmetatable(L, "Vector");
-    lua_setmetatable(L, -2);
-
+    PushVector(L, &v);
     return 1;
 }
 
