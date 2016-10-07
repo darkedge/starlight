@@ -554,7 +554,7 @@ int CALLBACK WinMain(
     // Watch Lua directory
     hDirectoryChange = FindFirstChangeNotification(L"../starlight/", TRUE, FILE_NOTIFY_CHANGE_LAST_WRITE);
     if (!hDirectoryChange) {
-        g_LogInfo("Error creating directory change event: Lua reload on save will not work.");
+        g_LogInfo("Error creating directory change notification handle: Lua reload on save will not work.");
     }
 
     // Message loop
@@ -567,6 +567,12 @@ int CALLBACK WinMain(
 
     WaitForSingleObject(thread, INFINITE);
     CloseHandle(thread);
+
+    if (hDirectoryChange) {
+        if (!FindCloseChangeNotification(hDirectoryChange)) {
+            g_LogInfo("Failed to close directory change notification handle.");
+        }
+    }
 
     s_gameFuncs.DestroyLogger();
 
