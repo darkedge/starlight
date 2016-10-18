@@ -31,7 +31,7 @@ static const char* s_dllName = "starlight.dll";
 // Globals
 static graphics::API* g_renderApi;
 
-static HWND s_hwnd = nullptr;
+static HWND s_hwnd;
 static util::ThreadSafeQueue<WindowEvent>* s_queue;
 static std::atomic_bool s_running;
 
@@ -373,7 +373,6 @@ unsigned int __stdcall MyThreadFunction(void*) {
 
     enet_deinitialize();
 
-    _endthreadex(0);
     return 0;
 }
 
