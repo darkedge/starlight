@@ -23,6 +23,7 @@
 #include "starlight_thread_safe_queue.h"
 #include "starlight_log.h"
 
+#include <intrin.h> // __cpuid
 #include <process.h> // _beginthreadex
 #include <Psapi.h> // GetProcessMemoryInfo
 

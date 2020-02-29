@@ -478,7 +478,7 @@ void graphics::D3D11::Render() {
 	ImGui::Render();
 
 	// Present
-	g_pSwapChain->Present(0, 0);
+	g_pSwapChain->Present(1, 0);
 }
 
 void graphics::D3D11::Resize(int32_t, int32_t) {
